@@ -152,16 +152,19 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .cookFill{height:100%;width:0;background:linear-gradient(90deg,#8a3a12,var(--hot));transition:background .15s}
 .zone{position:absolute;top:0;bottom:0;background:rgba(65,214,127,.28);border-left:1px solid var(--good);border-right:1px solid var(--good)}
 
-/* ---------- sous chef ---------- */
-.sousFig{display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px}
-.sousFig .hat{width:15px;height:5px;border-radius:4px 4px 1px 1px}
-.sousFig .face{font-size:15px}
-.sousFig .ap{width:13px;height:4px;border-radius:1px 1px 3px 3px}
+/* ---------- crew ---------- */
+.chefImg{image-rendering:pixelated;display:inline-block;vertical-align:middle;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 .sousBadge{display:inline-flex;align-items:center;gap:5px;margin-left:auto}
 .sousBadge .nm{font-size:8px;letter-spacing:1px;color:var(--dim)}
-.sousBig .face{font-size:26px}
-.sousBig .hat{width:24px;height:8px}
-.sousBig .ap{width:21px;height:6px}
+.swatch{width:22px;height:22px;border:1px solid var(--line2);border-radius:3px;cursor:pointer;padding:0}
+.swatch.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.hatBtn{background:var(--panel);border:1px solid var(--line2);border-radius:3px;color:var(--txt);
+  font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:4px 8px;cursor:pointer}
+.hatBtn.sel{border-color:var(--gold);color:var(--gold)}
+#crewDock{display:flex;align-items:center;gap:10px}
+#crewDock .dockM{display:flex;align-items:center;gap:4px}
+#crewDock .dockM .nm{font-size:8px;letter-spacing:1px;color:var(--dim)}
 #sousCfg{background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:10px;margin-top:8px;grid-column:1 / -1}
 #sousCfg .row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
 #sousCfg label{font-size:10px;letter-spacing:1.5px;color:var(--dim);min-width:64px}
@@ -176,12 +179,14 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 }
 .faceBtn{background:var(--panel);border:1px solid var(--line2);border-radius:3px;font-size:17px;padding:2px 6px;cursor:pointer}
 .faceBtn.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.quirkTag{display:inline-block;background:var(--panel);border:1px solid var(--line2);border-radius:3px;
+  font-size:9px;letter-spacing:1px;padding:1px 6px;color:var(--cold);margin-top:3px}
 
 /* ---------- footer ---------- */
 #ctl{
   flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line2);
   padding:6px 12px;display:flex;justify-content:space-between;align-items:center;
-  font-size:10px;color:var(--dim);letter-spacing:.6px;
+  font-size:10px;color:var(--dim);letter-spacing:.6px;gap:12px;
 }
 kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:3px;padding:1px 5px;color:var(--txt);font-family:var(--mono);font-size:10px}
 #ctl button{
@@ -200,7 +205,7 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 #overlay{position:fixed;inset:0;z-index:50;background:rgba(5,7,9,.93);display:flex;align-items:center;justify-content:center;padding:20px}
 #overlay.hide{display:none}
 #card{
-  background:var(--panel);border:1px solid var(--line2);border-radius:4px;max-width:680px;width:100%;
+  background:var(--panel);border:1px solid var(--line2);border-radius:4px;max-width:700px;width:100%;
   padding:26px 30px;box-shadow:0 24px 70px rgba(0,0,0,.7);max-height:92vh;overflow:auto;
 }
 #card h1{font-size:30px;letter-spacing:-.5px;line-height:1;margin-bottom:2px}
@@ -235,7 +240,8 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 
 /* ---------- shop ---------- */
 #shopHead{font-size:11px;letter-spacing:3px;color:var(--gold);margin:16px 0 8px;display:flex;justify-content:space-between}
-#shop{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.crewHead{font-size:11px;letter-spacing:3px;color:var(--cold);margin:14px 0 8px}
+#shop,.crewGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .upg{background:var(--panel2);border:1px solid var(--line);padding:9px 10px;border-radius:3px;display:flex;flex-direction:column;gap:3px}
 .upg b{font-size:12px;letter-spacing:.5px}
 .upg small{font-size:10.5px;color:var(--dim);line-height:1.45}
@@ -246,8 +252,8 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 .upg button:hover{background:#e6c65a}
 .upg button:disabled{background:var(--line2);color:var(--dim);cursor:default}
 .upg.owned{border-color:var(--good);opacity:.6}
-.upg.owned button{background:transparent;color:var(--good);border:1px solid var(--good)}
-.upg.sousCard{border-color:var(--gold);opacity:1}
+.upg.crewCard{border-color:var(--cold);opacity:1}
+.upg.crewCard button{background:var(--cold);color:#03181d}
 
 @keyframes blink{50%{opacity:.25}}
 @keyframes chitIn{from{transform:translateY(-42px) rotate(-4deg);opacity:0}}
@@ -284,9 +290,10 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 
   <footer id="ctl">
     <div id="keysHelp">
-      <kbd>click ticket item</kbd> fire &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>9</kbd>/<kbd>0</kbd>/<kbd>Q</kbd>/<kbd>W</kbd> pull pan &nbsp;·&nbsp;
+      <kbd>click</kbd> fire &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>9</kbd>/<kbd>0</kbd>/<kbd>Q</kbd>/<kbd>W</kbd> pull &nbsp;·&nbsp;
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
+    <div id="crewDock"></div>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -299,12 +306,12 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
     <h1><small>THE PASS</small>DINNER RUSH</h1>
     <div class="nightLine"><b id="introNight">NIGHT 1</b><span class="bankB" id="introBank">BANK $0</span></div>
     <div id="introMod"></div>
-    <p>Four stations, a printer that will not stop, and a career one service long — until you survive it. You are the whole line.</p>
+    <p>Four stations, a printer that will not stop, and a career one service long — until you survive it. Start alone. End up running a kitchen.</p>
     <div class="rules">
       <div><em>FIRE —</em> click an item on a ticket to drop it in a pan on its station.</div>
       <div><em>PULL —</em> hit the pan's key inside the <span style="color:var(--good)">green window</span>. Early is raw, late is burnt.</div>
       <div><em>PLATE —</em> a ticket goes out when every item is pulled. Plates score on their <span style="color:var(--hot)">coldest</span> component.</div>
-      <div><em>CAREER —</em> tips bank between nights. Hire and dress your own sous chef, upgrade the line, and survive nights that never stop escalating: VIPs, bus tours, 86'd stations, the critic, big parties, short-staffed services.</div>
+      <div><em>BRIGADE —</em> bank your tips and hire a crew: up to three cooks on stations, an expo calling the pass, a host working the room. Dress every one of them. Every hire rolls a random quirk.</div>
     </div>
     <div id="shopBoxIntro"></div>
     <button id="start">START SERVICE</button>
@@ -315,15 +322,18 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 <script>
 'use strict';
 /* ============================== CONFIG ============================== */
-const SERVICE   = 240;   // seconds of ticket flow
-const CLOSE_CAP = 50;    // grace after last call to clear the rail
-const HOLD      = 13;    // base seconds for a pulled item to go stone cold
+const SERVICE   = 240;
+const CLOSE_CAP = 50;
+const HOLD      = 13;
 const HEAT_FLOOR= .30;
-const BURN_GRACE= 1.6;   // seconds past the window before it's trash
+const BURN_GRACE= 1.6;
 const WEEDS_IN  = 6, WEEDS_OUT = 3;
-const MAX_RAIL  = 10;   // the board is finite — host holds the door when it fills
+const MAX_RAIL  = 10;
 const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w'];
-const FACES = ['🧑‍🍳','👨‍🍳','👩‍🍳','🧑🏽‍🍳','👨🏾‍🍳','👩🏻‍🍳'];
+const SKINS = ['#f6d7b0','#eac086','#d29b6c','#a96f44','#7c4a26','#5a3319'];
+const HAIRS = ['#1a1a1a','#3b2a1a','#6b3f1d','#a56a2a','#c9a227','#7a7a7a','#c0392b','#2563eb'];
+const HATSTYLES = ['toque','bandana','beanie','none'];
+const COOK_COSTS=[500,800,1400];
 
 const STATIONS = [
   {id:'grill', name:'GRILL', tag:'GRL', emo:'🔥', color:'#ff5330'},
@@ -352,8 +362,6 @@ const MENU = [
 ];
 const TABLES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T12','T14','BAR1','BAR2','BAR3','PAT1','PAT2','CHEF'];
 
-/* -------- night modifiers (night 6+): deterministic per night so the
-   end-of-night preview and the actual service always agree -------- */
 const MODS = [
   {id:'party',   n:'BIG PARTY BOOKED',  d:'A 5-top lands mid-service — one huge ticket, big payout, tight team timing.'},
   {id:'rush',    n:'DOUBLE RUSH',       d:'Bus tours twice as likely tonight. The rail will slam.'},
@@ -363,6 +371,17 @@ const MODS = [
   {id:'critic2', n:'CRITICS\' TABLE',   d:'The critic is back — and brought a colleague. Two purple tickets.'},
 ];
 function modFor(n){ return n>=6 ? MODS[(n*13+5)%MODS.length] : null; }
+
+const QUIRKS = [
+  {id:'owl',    n:'NIGHT OWL',      d:'20% faster hands once the rush hits'},
+  {id:'steady', n:'STEADY HANDS',   d:'Half as likely to space out'},
+  {id:'fav',    n:'CROWD FAVORITE', d:'The room loves them — +3% tips'},
+  {id:'clutch', n:'CLUTCH',         d:'25% faster when you\'re in the weeds'},
+  {id:'slow',   n:'SLOW STARTER',   d:'30% slower for the first minute'},
+  {id:'loud',   n:'LOUD CALLER',    d:'Their station\'s pull windows run 10% wider'},
+];
+function rollQuirk(){ return QUIRKS[(Math.random()*QUIRKS.length)|0].id; }
+function quirkOf(m){ return QUIRKS.find(q=>q.id===m.quirk); }
 
 /* ============================== CAREER / UPGRADES ============================== */
 const UPGRADES = [
@@ -377,17 +396,41 @@ const UPGRADES = [
   {id:'regs',      n:'REGULARS',       e:'💛', cost:280, d:'The room loves you — all tables 15% more patient.'},
   {id:'skin',      n:'THICK SKIN',     e:'🧊', cost:320, d:'Weeds pressure drains patience 40% slower.'},
   {id:'menu',      n:'MENU REWRITE',   e:'📋', cost:400, d:'Reprice the menu — every plate worth 10% more.'},
-  {id:'valet',     n:'SMOOTH HOST',    e:'🎩', cost:260, d:'Walkouts handled gracefully — half the tip damage.'},
-  {id:'sous',      n:'HIRE A SOUS CHEF', e:'🧑‍🍳', cost:500, special:'sous',
-    d:'Your own cook on the line. Name them, dress them, pick their station — they pull dishes in the window for you.'},
-  {id:'train1',    n:'TRAIN THE SOUS I', e:'📖', cost:300, req:'sous', d:'Faster hands, fewer spaced-out pans.'},
-  {id:'train2',    n:'TRAIN THE SOUS II',e:'🎓', cost:500, req:'train1', d:'Near-instant reactions. They barely miss.'},
+  {id:'valet',     n:'SMOOTH HOST STAND', e:'🎩', cost:260, d:'Walkouts handled gracefully — half the tip damage.'},
+  {id:'train1',    n:'COOK TRAINING I', e:'📖', cost:300, req:'cook',   d:'Your cooks: faster hands, fewer spaced-out pans.'},
+  {id:'train2',    n:'COOK TRAINING II',e:'🎓', cost:500, req:'train1', d:'Near-instant reactions across the brigade.'},
+  {id:'expoT',     n:'EXPO DRILLS',    e:'⏱️', cost:400, req:'hire_expo', d:'Your expo plates the instant a ticket is ready.'},
+  {id:'hostT',     n:'HOST CHARM SCHOOL', e:'✨', cost:400, req:'hire_host', d:'Your host saves furious tables more often.'},
 ];
 
-let META = {night:1, bank:0, up:{}, sous:null};
-function loadMeta(){ try{ const m=JSON.parse(localStorage.getItem('pass_meta')||'null'); if(m&&m.up){ META=m; if(!('sous' in META)) META.sous=null; } }catch(e){} }
+let META = {night:1, bank:0, up:{}, crew:[]};
+function loadMeta(){
+  try{
+    const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
+    if(m&&m.up){
+      META=m;
+      if(!Array.isArray(META.crew)) META.crew=[];
+      if(m.sous && !META.crew.length){       // migrate v3 saves: the sous becomes cook #1
+        META.crew.push({role:'cook', name:m.sous.name, hat:m.sous.hat,
+          apron:m.sous.apron, station:m.sous.station, quirk:rollQuirk()});
+        delete META.sous;
+      }
+      // migrate emoji-era members to pixel chefs
+      META.crew.forEach(c=>{
+        if(!c.skin){ c.skin=SKINS[(Math.random()*SKINS.length)|0]; c.hair=HAIRS[(Math.random()*HAIRS.length)|0];
+          c.hatStyle=c.role==='host'?'none':'toque'; c.coat=c.role==='host'?'#1e293b':'#f4f4f4'; }
+        delete c.face;
+      });
+    }
+  }catch(e){}
+}
 function saveMeta(){ try{ localStorage.setItem('pass_meta',JSON.stringify(META)); }catch(e){} }
 loadMeta();
+
+function cooks(){ return META.crew.filter(m=>m.role==='cook'); }
+function expo(){ return META.crew.find(m=>m.role==='expo'); }
+function host(){ return META.crew.find(m=>m.role==='host'); }
+function crewWith(qid){ return META.crew.filter(m=>m.quirk===qid).length; }
 
 function panCount(stId){ return 2 + (META.up['pan_'+stId]?1:0); }
 function cookTime(m){
@@ -396,24 +439,25 @@ function cookTime(m){
   if(META.up.knives && m.st==='cold') c*=.85;
   return c;
 }
-function winTime(m){
+function winTime(m, stId){
   let w=m.win*(META.up.expo?1.2:1);
   if(G.mod && G.mod.id==='fragile') w*=.75;
+  if(cooks().some(c=>c.station===stId&&c.quirk==='loud')) w*=1.1;
   return w;
 }
 function holdTime(){ return HOLD*(META.up.lamps?1.5:1); }
 function nightMult(){ return Math.min(2.8, 1+(META.night-1)*.15); }
 function patienceFactor(){ return Math.max(.68, 1-(META.night-1)*.035); }
-function sousSkill(){ return (META.up.train1?1:0)+(META.up.train2?1:0); }
+function cookSkill(){ return (META.up.train1?1:0)+(META.up.train2?1:0); }
 
 /* ============================== STATE ============================== */
 const G = {
   running:false, over:false, paused:false,
   t:0, clock:SERVICE, closing:false, closeT:0,
   tips:0, covers:0, walkouts:0, waste:0,
-  perfects:0, pulls:0, weeds:false, weedsTime:0, sousPulls:0,
+  perfects:0, pulls:0, weeds:false, weedsTime:0, crewPulls:0, expoPlates:0, hostSaves:0,
   nextSpawn:2.2, ticketNo:0,
-  tickets:[], pans:[], mod:null,
+  tickets:[], pans:[], mod:null, hostCd:0,
   downUntil:{}, downSchedule:[], criticAt:0, criticDone:false,
   criticAt2:0, criticDone2:true, partyAt:0, partyDone:true,
 };
@@ -454,6 +498,7 @@ const SFX = {
   weeds(){ tone(90,.7,'sawtooth',.1); },
   down(){ tone(220,.4,'square',.13,90); noise(.35,.12); },
   buy(){ tone(988,.09,'triangle',.14); setTimeout(()=>tone(1318,.16,'triangle',.14),80); },
+  save(){ tone(659,.12,'triangle',.13); setTimeout(()=>tone(880,.14,'triangle',.11),70); },
   end(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.34,'triangle',.15),i*130)); },
 };
 
@@ -461,13 +506,48 @@ const SFX = {
 const $ = s => document.querySelector(s);
 const railEl=$('#rail'), lineEl=$('#line'), overlay=$('#overlay'), card=$('#card'), floats=$('#floats');
 
-function sousFig(big){
-  const s=META.sous; if(!s) return '';
-  return `<span class="sousFig${big?' sousBig':''}">
-    <i class="hat" style="background:${s.hat}"></i>
-    <span class="face">${s.face}</span>
-    <i class="ap" style="background:${s.apron}"></i>
-  </span>`;
+/* ---- the lil guy: hand-drawn 12x17 pixel chef, colored per member ---- */
+const CHEF_HATS = {
+  toque:   ['..HHHHHHHH..','.HHHHHHHHHH.','.HHHHHHHHHH.','..HHHHHHHH..'],
+  bandana: ['............','............','..HHHHHHHH..','.HHHHHHHHHHH'],
+  beanie:  ['............','..HHHHHHHH..','.HHHHHHHHHH.','.HHHHHHHHHH.'],
+  none:    ['............','............','..RRRRRRRR..','.RRRRRRRRRR.'],
+};
+const CHEF_BODY = [
+  '.RSSSSSSSSR.',   // brow: hair peeks at the sides
+  '..SESSSSES..',   // eyes
+  '..SSSSSSSS..',
+  '...SSSSSS...',   // chin
+  '..CCCCCCCC..',   // shoulders
+  '.SCCAAAACCS.',   // arms out, apron front
+  '.SCCAAAACCS.',
+  '.SCCAAAACCS.',
+  '..CCAAAACC..',
+  '..CCAAAACC..',
+  '..PP....PP..',   // legs
+  '..PP....PP..',
+  '.OO......OO.',   // shoes
+];
+function chefURL(m,px=3){
+  const rows=[...CHEF_HATS[m.hatStyle||'toque'],...CHEF_BODY];
+  const cv=document.createElement('canvas');
+  cv.width=12*px; cv.height=rows.length*px;
+  const x=cv.getContext('2d');
+  const pal={H:m.hat,R:m.hair||'#3b2a1a',S:m.skin||SKINS[0],E:'#14100c',
+             C:m.coat||'#f4f4f4',A:m.apron,P:'#232a31',O:'#0d0f11'};
+  rows.forEach((row,ry)=>{
+    [...row].forEach((ch,rx)=>{
+      if(ch==='.') return;
+      x.fillStyle=pal[ch]||'#f0f';
+      x.fillRect(rx*px,ry*px,px,px);
+    });
+  });
+  return cv.toDataURL();
+}
+function memberFig(m,big){
+  if(!m) return '';
+  const px=big?4:2;
+  return `<img class="chefImg" src="${chefURL(m,px)}" alt="${m.name}">`;
 }
 
 function buildLine(){
@@ -475,9 +555,9 @@ function buildLine(){
   let ki=0;
   STATIONS.forEach(st=>{
     const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
-    const sousHere = META.sous && META.sous.station===st.id;
+    const here=cooks().filter(c=>c.station===st.id);
     col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em>
-      ${sousHere?`<span class="sousBadge">${sousFig(false)}<span class="nm">${META.sous.name}</span></span>`:''}</div>`;
+      ${here.map(c=>`<span class="sousBadge">${memberFig(c)}<span class="nm">${c.name}</span></span>`).join('')}</div>`;
     const wrap=document.createElement('div'); wrap.className='pans';
     for(let i=0;i<panCount(st.id);i++){
       const keyLabel=KEYS[ki].toUpperCase();
@@ -498,6 +578,11 @@ function buildLine(){
     }
     col.appendChild(wrap); lineEl.appendChild(col);
   });
+  // expo + host live in the footer dock
+  const dock=$('#crewDock'); dock.innerHTML='';
+  const e=expo(), h=host();
+  if(e) dock.innerHTML+=`<span class="dockM">📣${memberFig(e)}<span class="nm">${e.name} · EXPO</span></span>`;
+  if(h) dock.innerHTML+=`<span class="dockM">🎩${memberFig(h)}<span class="nm">${h.name} · HOST</span></span>`;
 }
 
 function toast(msg,color='var(--warn)'){
@@ -519,7 +604,7 @@ function spawnTicket(opts={}){
   let count=1;
   if(Math.random() < (.25+p*.65)*Math.min(1.35,nm)) count++;
   if(Math.random() < p*.55*Math.min(1.35,nm)) count++;
-  if(META.night>=7 && Math.random()<.12*(nm-1)) count++;   // deep nights: 4-tops appear
+  if(META.night>=7 && Math.random()<.12*(nm-1)) count++;
   if(opts.critic) count=3;
   if(opts.big) count=opts.big;
   const items=[], used=[];
@@ -535,9 +620,9 @@ function spawnTicket(opts={}){
   const tk={
     id:++G.ticketNo,
     table: opts.critic?'CRITIC★' : opts.big?'PARTY×'+count : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
-    items, born:G.t, el:null, dead:false,
+    items, born:G.t, el:null, dead:false, readyAt:0, saved:false,
     vip, critic:!!opts.critic, party:!!opts.big,
-    limit:(78-32*p)*(META.up.regs?1.15:1)*patienceFactor(),
+    limit:(78-32*p)*(META.up.regs?1.15:1)*patienceFactor()*(host()?1.08:1),
   };
   if(vip) tk.limit*=.62;
   if(tk.critic) tk.limit=Math.max(tk.limit,62);
@@ -559,7 +644,7 @@ function buildChit(tk){
   tk.items.forEach((it,i)=>{
     const st=STATIONS.find(s=>s.id===it.m.st);
     const d=document.createElement('div'); d.className='item todo';
-    d.style.borderLeft='3px solid '+st.color;   // station reads as colour, not text
+    d.style.borderLeft='3px solid '+st.color;
     d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${it.m.e}</span>${it.m.n}</span>
         <span class="tag" style="display:none"></span></div>
       <div class="mini" style="display:none"><i></i></div>`;
@@ -589,7 +674,7 @@ function fire(tk,idx){
   if(!pan){ toast('NO OPEN PAN ON '+st.name,'var(--bad)'); return; }
   it.state='cooking'; it.pan=pan;
   pan.item=it; pan.ticket=tk; pan.t=0; pan.sousDecided=false; pan.sousSkip=false;
-  pan.cookNeed=cookTime(it.m); pan.winLen=winTime(it.m);
+  pan.cookNeed=cookTime(it.m); pan.winLen=winTime(it.m, pan.st);
   pan.el.classList.remove('empty'); pan.el.classList.add('live');
   pan.big.className='panBig'; pan.trk.style.display='';
   pan.dish.textContent=it.m.n; pan.tk.textContent=`#${String(tk.id).padStart(3,'0')} · ${tk.table}`;
@@ -611,11 +696,11 @@ function fireOldest(){
   toast('NOTHING TO FIRE');
 }
 
-function pull(pan, bySous=false){
+function pull(pan, byCrew=null){
   if(!G.running||G.paused||!pan.item) return;
   const it=pan.item, tk=pan.ticket, m=it.m;
   G.pulls++;
-  if(pan.t < pan.cookNeed){                       // raw
+  if(pan.t < pan.cookNeed){
     it.state='todo'; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
     toast('RAW — REFIRE '+m.n,'var(--bad)'); floatText(pan.el,'RAW','#ef4444'); SFX.raw();
   } else {
@@ -626,7 +711,7 @@ function pull(pan, bySous=false){
     if(over){ floatText(pan.el,'OVER','#facc15'); SFX.over(); }
     else {
       G.perfects++;
-      if(bySous){ G.sousPulls++; floatText(pan.el,META.sous.face+' '+META.sous.name,'#5ad1e6'); SFX.sous(); }
+      if(byCrew){ G.crewPulls++; floatText(pan.el,'✋ '+byCrew.name,'#5ad1e6'); SFX.sous(); }
       else { floatText(pan.el,it.m.e+' PERFECT','#41d67f'); SFX.perfect(); }
     }
   }
@@ -654,7 +739,7 @@ function ready(tk){ return tk.items.every(i=>i.state==='pass'); }
 
 function heatOf(it){ return Math.max(HEAT_FLOOR, 1-(G.t-it.pulledAt)/holdTime()*(1-HEAT_FLOOR)); }
 
-function plate(tk){
+function plate(tk, byExpo=false){
   if(!G.running||G.paused||tk.dead||!ready(tk)) return;
   let base=0, qual=0, minHeat=1, allPerfect=true;
   tk.items.forEach(it=>{
@@ -670,8 +755,10 @@ function plate(tk){
   let tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
   if(tk.vip) tip*=2;
   if(tk.party) tip=Math.round(tip*1.3);
+  tip=Math.round(tip*(1+.03*crewWith('fav')));
   G.tips+=tip; G.covers++;
-  floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
+  if(byExpo){ G.expoPlates++; floatText(tk.el,'📣 +$'+tip,'#5ad1e6'); }
+  else floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
   if(tk.critic){
     if(allPerfect && minHeat>.7){
       G.tips+=150;
@@ -711,26 +798,53 @@ function walkout(tk){
 
 function refreshTicket(tk){
   const r=ready(tk);
+  if(r && !tk.readyAt) tk.readyAt=G.t;
+  if(!r) tk.readyAt=0;
   tk.btn.style.display=r?'':'none';
   tk.el.classList.toggle('done',r);
 }
 
-/* ============================== SOUS CHEF AI ============================== */
-function sousStep(){
-  const s=META.sous; if(!s) return;
-  if(stationDown(s.station)) return;
-  const skill=sousSkill();
-  const react=.55-.16*skill;              // seconds into the window before they move
-  const spaceOut=[.18,.09,.03][skill];    // chance they blank on a pan entirely
-  for(const pan of G.pans){
-    if(pan.st!==s.station || !pan.item || pan.sousSkip) continue;
-    const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
-    if(!inWin) continue;
-    if(!pan.sousDecided){
-      pan.sousDecided=true;
-      if(Math.random()<spaceOut){ pan.sousSkip=true; continue; }   // your job now
+/* ============================== BRIGADE AI ============================== */
+function crewStep(){
+  const skill=cookSkill();
+  // cooks pull on their stations
+  for(const c of cooks()){
+    if(stationDown(c.station)) continue;
+    let react=.55-.16*skill;
+    if(c.quirk==='owl' && G.t>120) react*=.8;
+    if(c.quirk==='clutch' && G.weeds) react*=.75;
+    if(c.quirk==='slow' && G.t<60) react*=1.3;
+    let spaceOut=[.18,.09,.03][skill];
+    if(c.quirk==='steady') spaceOut*=.5;
+    for(const pan of G.pans){
+      if(pan.st!==c.station || !pan.item || pan.sousSkip) continue;
+      const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
+      if(!inWin) continue;
+      if(!pan.sousDecided){
+        pan.sousDecided=true;
+        if(Math.random()<spaceOut){ pan.sousSkip=true; continue; }
+      }
+      if(pan.t >= pan.cookNeed+Math.min(react, pan.winLen*.8)) pull(pan,c);
     }
-    if(pan.t >= pan.cookNeed+Math.min(react, pan.winLen*.8)) pull(pan,true);
+  }
+  // expo plates ready tickets while they're hot
+  const e=expo();
+  if(e){
+    const react=META.up.expoT?.25:.9;
+    for(const tk of G.tickets.slice()){
+      if(!tk.dead && tk.readyAt && G.t-tk.readyAt>=react){ plate(tk,true); }
+    }
+  }
+  // host saves a table on the brink
+  const h=host();
+  if(h && G.t>=G.hostCd){
+    const saveable=G.tickets.find(t=>!t.dead && !t.saved && t.left/t.limit<.06);
+    if(saveable){
+      saveable.saved=true; saveable.left=saveable.limit*.25;
+      G.hostCd=G.t+(META.up.hostT?28:42); G.hostSaves++;
+      toast(h.name+' SWEET-TALKED '+saveable.table+' — THEY\'RE STAYING','#5ad1e6');
+      floatText(saveable.el,'🎩 SAVED','#5ad1e6'); SFX.save();
+    }
   }
 }
 
@@ -746,7 +860,6 @@ function frame(now){
 function step(dt){
   G.t+=dt;
 
-  // clock / phases
   if(!G.closing){
     G.clock-=dt;
     if(G.clock<=0){ G.clock=0; G.closing=true; toast('LAST CALL — CLEAR THE RAIL','var(--hot)'); }
@@ -755,7 +868,6 @@ function step(dt){
     if(!G.tickets.length || G.closeT>CLOSE_CAP){ finish(); return; }
   }
 
-  // 86'd station events (night 4+)
   for(const ev of G.downSchedule){
     if(!ev.fired && G.t>=ev.at){
       ev.fired=true;
@@ -769,20 +881,16 @@ function step(dt){
     if(col) col.classList.toggle('down', stationDown(st.id));
   }
 
-  // critic (night 5+; CRITICS' TABLE brings two)
   if(G.criticAt && !G.criticDone && G.t>=G.criticAt && !G.closing && G.tickets.length<MAX_RAIL){
     G.criticDone=true; spawnTicket({critic:true});
   }
   if(G.criticAt2 && !G.criticDone2 && G.t>=G.criticAt2 && !G.closing && G.tickets.length<MAX_RAIL){
     G.criticDone2=true; spawnTicket({critic:true});
   }
-
-  // big party (mod)
   if(G.partyAt && !G.partyDone && G.t>=G.partyAt && !G.closing && G.tickets.length<MAX_RAIL-1){
     G.partyDone=true; spawnTicket({big:5});
   }
 
-  // spawn
   if(!G.closing){
     G.nextSpawn-=dt;
     if(G.nextSpawn<=0){
@@ -796,24 +904,21 @@ function step(dt){
     }
   }
 
-  // pans
   for(const pan of G.pans){
     if(!pan.item) continue;
     pan.t+=dt;
     if(pan.t > pan.cookNeed+pan.winLen+BURN_GRACE) burnPan(pan);
   }
 
-  // the sous works their station
-  sousStep();
+  crewStep();
 
-  // weeds
   const live=G.tickets.length;
   if(!G.weeds && live>=WEEDS_IN){ G.weeds=true; document.body.classList.add('weeds'); SFX.weeds(); toast('YOU ARE IN THE WEEDS','#fff'); }
   else if(G.weeds && live<=WEEDS_OUT){ G.weeds=false; document.body.classList.remove('weeds'); toast('DUG OUT — BREATHE','var(--good)'); }
   if(G.weeds) G.weedsTime+=dt;
 
-  // ticket patience
-  const drain = G.weeds?(META.up.skin?1.2:1.35):1;
+  let drain = G.weeds?(META.up.skin?1.2:1.35):1;
+  if(host()) drain*=.92;
   for(const tk of G.tickets.slice()){
     tk.left-=dt*drain;
     if(tk.left<=0) walkout(tk);
@@ -870,83 +975,146 @@ function render(){
 
 /* ============================== SHOP ============================== */
 function upgAvailable(u){
-  if(u.req && !META.up[u.req] && !(u.req==='sous'&&META.sous)) return false;
-  return true;
+  if(!u.req) return true;
+  if(u.req==='cook') return cooks().length>0;
+  if(u.req==='hire_expo') return !!expo();
+  if(u.req==='hire_host') return !!host();
+  return !!META.up[u.req];
+}
+
+function hireMember(role, station){
+  const names={cook:['REMY','LUZ','TATS','MARCO','NINA','KAI'],expo:['DENA','ROSS','VIC'],host:['ELLE','JUNO','MAX']};
+  const pool=names[role];
+  const taken=META.crew.map(m=>m.name);
+  const name=pool.find(n=>!taken.includes(n))||pool[0];
+  const m={role, name,
+    skin:SKINS[(Math.random()*SKINS.length)|0],
+    hair:HAIRS[(Math.random()*HAIRS.length)|0],
+    hatStyle: role==='host'?'none':HATSTYLES[(Math.random()*3)|0],
+    hat:['#f4f4f4','#1a1a1a','#c0392b','#2563eb'][(Math.random()*4)|0],
+    coat: role==='host'?'#1e293b':'#f4f4f4',
+    apron:['#c0392b','#14532d','#1e293b','#7c2d12'][(Math.random()*4)|0],
+    quirk:rollQuirk()};
+  if(role==='cook') m.station=station||'grill';
+  META.crew.push(m); saveMeta();
+  return m;
 }
 
 function renderShop(container){
   container.innerHTML='';
   const box=document.createElement('div');
   box.innerHTML=`<div id="shopHead"><span>THE BACK OFFICE — SPEND YOUR BANK</span><span style="color:var(--gold)">$${META.bank}</span></div>`;
+
+  /* ----- brigade section ----- */
+  const bHead=document.createElement('div'); bHead.className='crewHead'; bHead.textContent='YOUR BRIGADE — '+(META.crew.length?META.crew.length+' ON STAFF':'NOBODY YET. IT\'S JUST YOU.');
+  box.appendChild(bHead);
+  const crewGrid=document.createElement('div'); crewGrid.className='crewGrid';
+
+  META.crew.forEach(m=>{
+    const q=quirkOf(m);
+    const d=document.createElement('div'); d.className='upg crewCard';
+    const roleLabel=m.role==='cook'?STATIONS.find(s=>s.id===m.station).name+' COOK':m.role.toUpperCase();
+    d.innerHTML=`<b>${memberFig(m)} ${m.name} — ${roleLabel}</b>
+      <small><span class="quirkTag">◈ ${q?q.n:''}</span> ${q?q.d:''}</small>`;
+    const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
+    b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container));
+    d.appendChild(b); crewGrid.appendChild(d);
+  });
+
+  const hires=[];
+  if(cooks().length<3) hires.push({role:'cook', n:(['HIRE A SOUS CHEF','HIRE A 2ND COOK','HIRE A 3RD COOK'])[cooks().length], e:'🧑‍🍳',
+    cost:COOK_COSTS[cooks().length], d:'A cook on a station of your choice — pulls dishes in the window. Rolls a random quirk.'});
+  if(!expo()) hires.push({role:'expo', n:'HIRE AN EXPO', e:'📣', cost:900, d:'Calls the pass — plates every ready ticket while it\'s still hot. The single biggest quality-of-life hire.'});
+  if(!host()) hires.push({role:'host', n:'HIRE A HOST', e:'🎩', cost:700, d:'Works the room — all tables more patient, and once in a while talks a furious table out of walking.'});
+  hires.forEach(hcard=>{
+    const d=document.createElement('div'); d.className='upg crewCard';
+    d.innerHTML=`<b>${hcard.e} ${hcard.n}</b><small>${hcard.d}</small>`;
+    const b=document.createElement('button'); b.textContent='HIRE — $'+hcard.cost;
+    b.disabled=META.bank<hcard.cost;
+    b.addEventListener('click',()=>{
+      if(META.bank<hcard.cost) return;
+      META.bank-=hcard.cost; SFX.buy();
+      const m=hireMember(hcard.role);
+      renderShop(container);
+      toast(m.name+' JOINED THE BRIGADE — quirk: '+quirkOf(m).n,'#5ad1e6');
+    });
+    d.appendChild(b); crewGrid.appendChild(d);
+  });
+  box.appendChild(crewGrid);
+
+  /* ----- upgrades section ----- */
+  const uHead=document.createElement('div'); uHead.className='crewHead'; uHead.style.color='var(--gold)'; uHead.textContent='THE LINE';
+  box.appendChild(uHead);
   const grid=document.createElement('div'); grid.id='shop';
   UPGRADES.forEach(u=>{
-    const isSous=u.special==='sous';
-    const owned=isSous?!!META.sous:!!META.up[u.id];
+    const owned=!!META.up[u.id];
     const avail=upgAvailable(u);
-    const d=document.createElement('div'); d.className='upg'+(owned?' owned':'')+(isSous&&META.sous?' sousCard owned':'');
-    d.innerHTML=`<b>${u.e} ${u.n}</b><small>${u.d}${!avail&&u.req?' <em style="color:var(--warn)">(needs '+(u.req==='sous'?'a sous chef':'previous training')+')</em>':''}</small>`;
-    if(isSous&&META.sous){
-      d.innerHTML=`<b>${sousFig(false)} ${META.sous.name.toUpperCase()} — YOUR SOUS</b>
-        <small>Working ${STATIONS.find(s=>s.id===META.sous.station).name} · trained ${sousSkill()}/2</small>`;
-      const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
-      b.addEventListener('click',()=>{ renderSousCfg(grid); });
-      d.appendChild(b);
-    } else {
-      const b=document.createElement('button');
-      b.textContent=owned?'ON THE LINE':'BUY — $'+u.cost;
-      b.disabled=owned||META.bank<u.cost||!avail;
-      b.addEventListener('click',()=>{
-        if(owned||META.bank<u.cost||!avail) return;
-        META.bank-=u.cost; SFX.buy();
-        if(isSous){
-          META.sous={name:'REMY',face:FACES[0],hat:'#f4f4f4',apron:'#c0392b',station:'grill'};
-          saveMeta(); renderShop(container); renderSousCfg(container.querySelector('#shop'));
-          return;
-        }
-        META.up[u.id]=true; saveMeta();
-        renderShop(container);
-      });
-      d.appendChild(b);
-    }
+    const d=document.createElement('div'); d.className='upg'+(owned?' owned':'');
+    d.innerHTML=`<b>${u.e} ${u.n}</b><small>${u.d}${!avail&&u.req?' <em style="color:var(--warn)">(needs '+(u.req==='cook'?'a cook':u.req==='hire_expo'?'an expo':u.req==='hire_host'?'a host':'previous training')+')</em>':''}</small>`;
+    const b=document.createElement('button');
+    b.textContent=owned?'ON THE LINE':'BUY — $'+u.cost;
+    b.disabled=owned||META.bank<u.cost||!avail;
+    b.addEventListener('click',()=>{
+      if(owned||META.bank<u.cost||!avail) return;
+      META.bank-=u.cost; META.up[u.id]=true; saveMeta(); SFX.buy();
+      renderShop(container);
+    });
+    d.appendChild(b);
     grid.appendChild(d);
   });
   box.appendChild(grid); container.appendChild(box);
 }
 
-function renderSousCfg(grid){
-  const old=grid.querySelector('#sousCfg'); if(old){ old.remove(); return; }
-  const s=META.sous; if(!s) return;
-  const cfg=document.createElement('div'); cfg.id='sousCfg';
+function renderMemberCfg(grid,m,container){
+  const old=grid.querySelector('#sousCfg'); if(old){ old.remove(); if(old._for===m) return; }
+  const cfg=document.createElement('div'); cfg.id='sousCfg'; cfg._for=m;
   cfg.innerHTML=`
-    <div class="row"><label>NAME</label><input type="text" maxlength="10" value="${s.name}" id="sN"></div>
-    <div class="row"><label>FACE</label><span id="sF"></span></div>
-    <div class="row"><label>HAT</label><input type="color" value="${s.hat}" id="sH">
-      <label style="min-width:0">APRON</label><input type="color" value="${s.apron}" id="sA"></div>
-    <div class="row"><label>STATION</label><select id="sS">${STATIONS.map(st=>`<option value="${st.id}"${st.id===s.station?' selected':''}>${st.emo} ${st.name}</option>`).join('')}</select>
-      <span style="margin-left:auto" id="sPrev">${sousFig(true)}</span></div>`;
-  const faceBox=cfg.querySelector('#sF');
-  FACES.forEach(f=>{
-    const b=document.createElement('button'); b.className='faceBtn'+(f===s.face?' sel':''); b.textContent=f;
-    b.addEventListener('click',()=>{ s.face=f; sync(); faceBox.querySelectorAll('.faceBtn').forEach(x=>x.classList.toggle('sel',x.textContent===f)); });
-    faceBox.appendChild(b);
+    <div class="row"><label>NAME</label><input type="text" maxlength="10" value="${m.name}" id="sN">
+      <span style="margin-left:auto" id="sPrev"></span></div>
+    <div class="row"><label>SKIN</label><span id="sSk"></span></div>
+    <div class="row"><label>HAIR</label><span id="sHr"></span></div>
+    <div class="row"><label>HAT</label><span id="sHs"></span><input type="color" value="${m.hat}" id="sH" title="hat color"></div>
+    <div class="row"><label>COAT</label><input type="color" value="${m.coat||'#f4f4f4'}" id="sC">
+      <label style="min-width:0">APRON</label><input type="color" value="${m.apron}" id="sA"></div>
+    ${m.role==='cook'?`<div class="row"><label>STATION</label><select id="sS">${STATIONS.map(st=>`<option value="${st.id}"${st.id===m.station?' selected':''}>${st.emo} ${st.name}</option>`).join('')}</select></div>`:''}`;
+  const sync=()=>{ saveMeta(); cfg.querySelector('#sPrev').innerHTML=memberFig(m,true); };
+  const skBox=cfg.querySelector('#sSk');
+  SKINS.forEach(c=>{
+    const b=document.createElement('button'); b.className='swatch'+(c===m.skin?' sel':''); b.style.background=c;
+    b.addEventListener('click',()=>{ m.skin=c; sync(); skBox.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('sel',x.style.background===b.style.background)); });
+    skBox.appendChild(b);
   });
-  const sync=()=>{ saveMeta(); cfg.querySelector('#sPrev').innerHTML=sousFig(true); };
-  cfg.querySelector('#sN').addEventListener('input',e=>{ s.name=(e.target.value||'SOUS').toUpperCase(); sync(); });
-  cfg.querySelector('#sH').addEventListener('input',e=>{ s.hat=e.target.value; sync(); });
-  cfg.querySelector('#sA').addEventListener('input',e=>{ s.apron=e.target.value; sync(); });
-  cfg.querySelector('#sS').addEventListener('change',e=>{ s.station=e.target.value; sync(); });
+  const hrBox=cfg.querySelector('#sHr');
+  HAIRS.forEach(c=>{
+    const b=document.createElement('button'); b.className='swatch'+(c===m.hair?' sel':''); b.style.background=c;
+    b.addEventListener('click',()=>{ m.hair=c; sync(); hrBox.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('sel',x.style.background===b.style.background)); });
+    hrBox.appendChild(b);
+  });
+  const hsBox=cfg.querySelector('#sHs');
+  HATSTYLES.forEach(h=>{
+    const b=document.createElement('button'); b.className='hatBtn'+(h===(m.hatStyle||'toque')?' sel':''); b.textContent=h.toUpperCase();
+    b.addEventListener('click',()=>{ m.hatStyle=h; sync(); hsBox.querySelectorAll('.hatBtn').forEach(x=>x.classList.toggle('sel',x.textContent===h.toUpperCase())); });
+    hsBox.appendChild(b);
+  });
+  cfg.querySelector('#sN').addEventListener('input',e=>{ m.name=(e.target.value||m.role.toUpperCase()).toUpperCase(); sync(); });
+  cfg.querySelector('#sH').addEventListener('input',e=>{ m.hat=e.target.value; sync(); });
+  cfg.querySelector('#sC').addEventListener('input',e=>{ m.coat=e.target.value; sync(); });
+  cfg.querySelector('#sA').addEventListener('input',e=>{ m.apron=e.target.value; sync(); });
+  const sel=cfg.querySelector('#sS');
+  if(sel) sel.addEventListener('change',e=>{ m.station=e.target.value; sync(); });
   grid.appendChild(cfg);
+  cfg.querySelector('#sPrev').innerHTML=memberFig(m,true);
 }
 
 /* ============================== FLOW ============================== */
 function start(){
   Object.assign(G,{running:true,over:false,paused:false,t:0,clock:SERVICE,closing:false,closeT:0,
-    tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,sousPulls:0,
+    tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,
+    crewPulls:0,expoPlates:0,hostSaves:0,hostCd:0,
     nextSpawn:2.2,ticketNo:0,tickets:[],mod:modFor(META.night),
     downUntil:{},downSchedule:[],criticAt:0,criticDone:false,
     criticAt2:0,criticDone2:true,partyAt:0,partyDone:true});
   document.body.classList.remove('weeds');
-  // night events
   if(META.night>=4){
     const n = META.night>=6?2:1;
     for(let i=0;i<n;i++) G.downSchedule.push({at:45+Math.random()*150, dur:10+Math.random()*5, fired:false});
@@ -972,7 +1140,6 @@ function finish(){
   const acc = G.pulls?Math.round(G.perfects/G.pulls*100):0;
   const served=G.covers+G.walkouts;
   const rate = served?G.covers/served:0;
-  // calibrated against simulated services: elite ~1250, competent ~900, struggling ~350
   let grade='D', col='var(--bad)';
   const sc = G.tips*rate - G.walkouts*15 - G.waste*10;
   if(sc>=1100&&G.walkouts<=3){grade='S';col='#ffd84d'}
@@ -986,6 +1153,9 @@ function finish(){
   META.night++;
   saveMeta();
 
+  const crewLine = META.crew.length
+    ? `${G.crewPulls} crew pulls · ${G.expoPlates} expo plates · ${G.hostSaves} saves`
+    : Math.round(G.weedsTime)+'s in the weeds';
   const nextMod=modFor(META.night);
   card.innerHTML=`<h1><small>NIGHT ${closedNight} — SERVICE CLOSED</small>${G.walkouts===0&&G.covers>0?'CLEAN NIGHT':'THAT WAS A NIGHT'}</h1>
     <div id="grade" style="color:${col}">${grade}</div>
@@ -995,7 +1165,7 @@ function finish(){
       <div><b style="color:var(--bad)">${G.walkouts}</b><span>WALKOUTS</span></div>
       <div><b>${acc}%</b><span>PERFECT PULLS</span></div>
       <div><b>${G.waste}</b><span>BURNT / WASTED</span></div>
-      <div><b>${META.sous?G.sousPulls:Math.round(G.weedsTime)+'s'}</b><span>${META.sous?META.sous.name+"'S PULLS":'IN THE WEEDS'}</span></div>
+      <div><b style="font-size:12px;line-height:1.4">${crewLine}</b><span>THE BRIGADE</span></div>
     </div>
     <p>${grade==='S'?'You never blinked. The room never knew how close it got.'
       : grade==='A'?'Solid service. A couple of plates went out cooler than you\'d like.'
@@ -1046,7 +1216,7 @@ overlay.querySelector('#start').addEventListener('click',start);
   const im=$('#introMod'), mod=modFor(META.night);
   if(mod) im.innerHTML=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   const box=$('#shopBoxIntro');
-  if(META.bank>0 || Object.keys(META.up).length || META.sous) renderShop(box);
+  if(META.bank>0 || Object.keys(META.up).length || META.crew.length) renderShop(box);
 })();
 
 buildLine();
