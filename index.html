@@ -67,6 +67,7 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .chit.urgent{border-top-color:#000;animation:shake .35s infinite}
 .chit.vip{background:#f2e2ac;border-top-color:var(--gold);box-shadow:0 3px 0 rgba(90,70,0,.5),0 8px 22px rgba(212,175,55,.28)}
 .chit.critic{background:#e8d8f0;border-top-color:#7c3aed}
+.chit.party{background:#d8ecf0;border-top-color:#0e7490;width:170px}
 .chHead{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.5px;color:#5b4b3f}
 .chHead .tbl{color:#1a1512}
 .timerTrk{height:4px;background:#cbbb9b;margin:4px 0 6px;border-radius:2px;overflow:hidden}
@@ -80,7 +81,6 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .iRow{display:flex;justify-content:space-between;align-items:center;gap:5px}
 .iName{font-size:11px;font-weight:700;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .iEmo{font-size:12px;margin-right:3px}
-.st{font-size:8px;letter-spacing:.8px;color:#6b5a4c;font-weight:700;flex:0 0 auto}
 .tag{font-size:8px;font-weight:700;letter-spacing:.8px;padding:0 3px;border-radius:2px;flex:0 0 auto}
 .tag.ck{background:#1a1512;color:var(--fry)}
 .tag.pf{background:#1c6b3f;color:#fff}
@@ -100,7 +100,7 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .station{flex:1;background:var(--panel);display:flex;flex-direction:column;min-width:0;position:relative}
 .stHead{
   padding:6px 10px;font-size:11px;font-weight:700;letter-spacing:2.5px;
-  border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:6px;
 }
 .stHead em{font-style:normal;font-size:9px;color:var(--dim);letter-spacing:1px}
 .station.down .stHead{color:var(--bad)!important;animation:blink .5s steps(2,end) infinite}
@@ -116,6 +116,7 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
   position:relative;overflow:hidden;min-height:0;
 }
 .pan.empty{border-style:dashed;opacity:.5}
+.pan.dead{opacity:.3;border-style:dotted;pointer-events:none;filter:grayscale(1)}
 .pan.live{cursor:pointer;border-color:var(--line2);background:#20272d}
 .pan.live:hover{background:#262f36}
 .pan.perfect{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good),0 0 16px rgba(65,214,127,.18)}
@@ -145,11 +146,36 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
   position:absolute;right:8px;bottom:28px;font-size:19px;display:none;z-index:2;
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));
 }
-.pan.perfect .panFx{display:block;content:'';animation:steamUp 1s ease-out infinite}
+.pan.perfect .panFx{display:block;animation:steamUp 1s ease-out infinite}
 .pan.burning .panFx{display:block;animation:flameUp .5s ease-in-out infinite}
 .cookTrk{height:10px;background:#0c1013;border-radius:2px;position:relative;overflow:hidden;flex:0 0 auto}
 .cookFill{height:100%;width:0;background:linear-gradient(90deg,#8a3a12,var(--hot));transition:background .15s}
 .zone{position:absolute;top:0;bottom:0;background:rgba(65,214,127,.28);border-left:1px solid var(--good);border-right:1px solid var(--good)}
+
+/* ---------- sous chef ---------- */
+.sousFig{display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px}
+.sousFig .hat{width:15px;height:5px;border-radius:4px 4px 1px 1px}
+.sousFig .face{font-size:15px}
+.sousFig .ap{width:13px;height:4px;border-radius:1px 1px 3px 3px}
+.sousBadge{display:inline-flex;align-items:center;gap:5px;margin-left:auto}
+.sousBadge .nm{font-size:8px;letter-spacing:1px;color:var(--dim)}
+.sousBig .face{font-size:26px}
+.sousBig .hat{width:24px;height:8px}
+.sousBig .ap{width:21px;height:6px}
+#sousCfg{background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:10px;margin-top:8px;grid-column:1 / -1}
+#sousCfg .row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
+#sousCfg label{font-size:10px;letter-spacing:1.5px;color:var(--dim);min-width:64px}
+#sousCfg input[type=text]{
+  background:var(--panel);border:1px solid var(--line2);border-radius:3px;color:var(--txt);
+  font-family:var(--mono);font-size:12px;padding:4px 7px;width:130px;
+}
+#sousCfg input[type=color]{width:34px;height:24px;border:1px solid var(--line2);background:var(--panel);border-radius:3px;padding:1px;cursor:pointer}
+#sousCfg select{
+  background:var(--panel);border:1px solid var(--line2);border-radius:3px;color:var(--txt);
+  font-family:var(--mono);font-size:11px;padding:4px 6px;
+}
+.faceBtn{background:var(--panel);border:1px solid var(--line2);border-radius:3px;font-size:17px;padding:2px 6px;cursor:pointer}
+.faceBtn.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
 
 /* ---------- footer ---------- */
 #ctl{
@@ -189,6 +215,12 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 }
 .nightLine b{color:var(--hot);font-size:14px;letter-spacing:2px}
 .nightLine .bankB{color:var(--gold)}
+.modLine{
+  margin:8px 0;padding:8px 11px;background:var(--panel2);border:1px solid var(--line);
+  border-left:3px solid var(--hot);border-radius:3px;font-size:12px;line-height:1.5;
+}
+.modLine b{letter-spacing:1.5px;color:var(--hot)}
+.modLine span{color:var(--dim)}
 #start{
   margin-top:16px;width:100%;background:var(--hot);border:0;border-radius:3px;color:#150c05;
   font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:3px;padding:13px 0;cursor:pointer;
@@ -215,6 +247,7 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 .upg button:disabled{background:var(--line2);color:var(--dim);cursor:default}
 .upg.owned{border-color:var(--good);opacity:.6}
 .upg.owned button{background:transparent;color:var(--good);border:1px solid var(--good)}
+.upg.sousCard{border-color:var(--gold);opacity:1}
 
 @keyframes blink{50%{opacity:.25}}
 @keyframes chitIn{from{transform:translateY(-42px) rotate(-4deg);opacity:0}}
@@ -265,13 +298,13 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
   <div id="card">
     <h1><small>THE PASS</small>DINNER RUSH</h1>
     <div class="nightLine"><b id="introNight">NIGHT 1</b><span class="bankB" id="introBank">BANK $0</span></div>
+    <div id="introMod"></div>
     <p>Four stations, a printer that will not stop, and a career one service long — until you survive it. You are the whole line.</p>
     <div class="rules">
       <div><em>FIRE —</em> click an item on a ticket to drop it in a pan on its station.</div>
-      <div><em>PULL —</em> hit the pan's key inside the <span style="color:var(--good)">green window</span>. Early is raw, late is burnt. Both cost you a re-fire.</div>
-      <div><em>PLATE —</em> a ticket goes out when every item is pulled. Plates score on their <span style="color:var(--hot)">coldest</span> component — time your pulls together.</div>
-      <div><em>WEEDS —</em> six tickets on the rail and the room turns on you until you dig out.</div>
-      <div><em>CAREER —</em> tips bank between nights. Spend the bank on the line: more pans, heat lamps, a prep cook. Deeper nights hit harder: VIPs, bus tours, stations going 86'd, and the critic.</div>
+      <div><em>PULL —</em> hit the pan's key inside the <span style="color:var(--good)">green window</span>. Early is raw, late is burnt.</div>
+      <div><em>PLATE —</em> a ticket goes out when every item is pulled. Plates score on their <span style="color:var(--hot)">coldest</span> component.</div>
+      <div><em>CAREER —</em> tips bank between nights. Hire and dress your own sous chef, upgrade the line, and survive nights that never stop escalating: VIPs, bus tours, 86'd stations, the critic, big parties, short-staffed services.</div>
     </div>
     <div id="shopBoxIntro"></div>
     <button id="start">START SERVICE</button>
@@ -290,6 +323,7 @@ const BURN_GRACE= 1.6;   // seconds past the window before it's trash
 const WEEDS_IN  = 6, WEEDS_OUT = 3;
 const MAX_RAIL  = 10;   // the board is finite — host holds the door when it fills
 const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w'];
+const FACES = ['🧑‍🍳','👨‍🍳','👩‍🍳','🧑🏽‍🍳','👨🏾‍🍳','👩🏻‍🍳'];
 
 const STATIONS = [
   {id:'grill', name:'GRILL', tag:'GRL', emo:'🔥', color:'#ff5330'},
@@ -318,6 +352,18 @@ const MENU = [
 ];
 const TABLES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T12','T14','BAR1','BAR2','BAR3','PAT1','PAT2','CHEF'];
 
+/* -------- night modifiers (night 6+): deterministic per night so the
+   end-of-night preview and the actual service always agree -------- */
+const MODS = [
+  {id:'party',   n:'BIG PARTY BOOKED',  d:'A 5-top lands mid-service — one huge ticket, big payout, tight team timing.'},
+  {id:'rush',    n:'DOUBLE RUSH',       d:'Bus tours twice as likely tonight. The rail will slam.'},
+  {id:'short',   n:'SHORT STAFFED',     d:'One pan is out of commission ALL night.'},
+  {id:'vipnight',n:'VIP NIGHT',         d:'The room is full of VIPs — triple the usual. Double tips, short fuses.'},
+  {id:'fragile', n:'DELICATE MENU',     d:'Tasting-menu night: every pull window is 25% tighter.'},
+  {id:'critic2', n:'CRITICS\' TABLE',   d:'The critic is back — and brought a colleague. Two purple tickets.'},
+];
+function modFor(n){ return n>=6 ? MODS[(n*13+5)%MODS.length] : null; }
+
 /* ============================== CAREER / UPGRADES ============================== */
 const UPGRADES = [
   {id:'pan_grill', n:'3RD GRILL PAN',  e:'🍳', cost:220, d:'One more pan on the grill. Ribeyes stop queueing.'},
@@ -330,10 +376,16 @@ const UPGRADES = [
   {id:'knives',    n:'SHARPER KNIVES', e:'🔪', cost:240, d:'Garde manger works 15% faster.'},
   {id:'regs',      n:'REGULARS',       e:'💛', cost:280, d:'The room loves you — all tables 15% more patient.'},
   {id:'skin',      n:'THICK SKIN',     e:'🧊', cost:320, d:'Weeds pressure drains patience 40% slower.'},
+  {id:'menu',      n:'MENU REWRITE',   e:'📋', cost:400, d:'Reprice the menu — every plate worth 10% more.'},
+  {id:'valet',     n:'SMOOTH HOST',    e:'🎩', cost:260, d:'Walkouts handled gracefully — half the tip damage.'},
+  {id:'sous',      n:'HIRE A SOUS CHEF', e:'🧑‍🍳', cost:500, special:'sous',
+    d:'Your own cook on the line. Name them, dress them, pick their station — they pull dishes in the window for you.'},
+  {id:'train1',    n:'TRAIN THE SOUS I', e:'📖', cost:300, req:'sous', d:'Faster hands, fewer spaced-out pans.'},
+  {id:'train2',    n:'TRAIN THE SOUS II',e:'🎓', cost:500, req:'train1', d:'Near-instant reactions. They barely miss.'},
 ];
 
-let META = {night:1, bank:0, up:{}};
-function loadMeta(){ try{ const m=JSON.parse(localStorage.getItem('pass_meta')||'null'); if(m&&m.up) META=m; }catch(e){} }
+let META = {night:1, bank:0, up:{}, sous:null};
+function loadMeta(){ try{ const m=JSON.parse(localStorage.getItem('pass_meta')||'null'); if(m&&m.up){ META=m; if(!('sous' in META)) META.sous=null; } }catch(e){} }
 function saveMeta(){ try{ localStorage.setItem('pass_meta',JSON.stringify(META)); }catch(e){} }
 loadMeta();
 
@@ -344,19 +396,26 @@ function cookTime(m){
   if(META.up.knives && m.st==='cold') c*=.85;
   return c;
 }
-function winTime(m){ return m.win*(META.up.expo?1.2:1); }
+function winTime(m){
+  let w=m.win*(META.up.expo?1.2:1);
+  if(G.mod && G.mod.id==='fragile') w*=.75;
+  return w;
+}
 function holdTime(){ return HOLD*(META.up.lamps?1.5:1); }
-function nightMult(){ return Math.min(1.9, 1+(META.night-1)*.13); }
+function nightMult(){ return Math.min(2.8, 1+(META.night-1)*.15); }
+function patienceFactor(){ return Math.max(.68, 1-(META.night-1)*.035); }
+function sousSkill(){ return (META.up.train1?1:0)+(META.up.train2?1:0); }
 
 /* ============================== STATE ============================== */
 const G = {
   running:false, over:false, paused:false,
   t:0, clock:SERVICE, closing:false, closeT:0,
   tips:0, covers:0, walkouts:0, waste:0,
-  perfects:0, pulls:0, weeds:false, weedsTime:0,
+  perfects:0, pulls:0, weeds:false, weedsTime:0, sousPulls:0,
   nextSpawn:2.2, ticketNo:0,
-  tickets:[], pans:[],
+  tickets:[], pans:[], mod:null,
   downUntil:{}, downSchedule:[], criticAt:0, criticDone:false,
+  criticAt2:0, criticDone2:true, partyAt:0, partyDone:true,
 };
 
 /* ============================== AUDIO ============================== */
@@ -386,6 +445,7 @@ const SFX = {
   vip(){ [880,1108,1318].forEach((f,i)=>setTimeout(()=>tone(f,.14,'triangle',.13),i*80)); },
   fire(){ noise(.26,.13); tone(160,.16,'sine',.09,110); },
   perfect(){ tone(1320,.13,'triangle',.16); tone(1980,.12,'sine',.08); },
+  sous(){ tone(1046,.08,'triangle',.1); setTimeout(()=>tone(1568,.1,'sine',.07),60); },
   over(){ tone(430,.16,'square',.1,330); },
   raw(){ tone(190,.16,'sine',.15,120); },
   burn(){ tone(120,.5,'sawtooth',.14); noise(.5,.1); },
@@ -401,12 +461,23 @@ const SFX = {
 const $ = s => document.querySelector(s);
 const railEl=$('#rail'), lineEl=$('#line'), overlay=$('#overlay'), card=$('#card'), floats=$('#floats');
 
+function sousFig(big){
+  const s=META.sous; if(!s) return '';
+  return `<span class="sousFig${big?' sousBig':''}">
+    <i class="hat" style="background:${s.hat}"></i>
+    <span class="face">${s.face}</span>
+    <i class="ap" style="background:${s.apron}"></i>
+  </span>`;
+}
+
 function buildLine(){
   lineEl.innerHTML=''; G.pans.length=0;
   let ki=0;
   STATIONS.forEach(st=>{
     const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
-    col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em></div>`;
+    const sousHere = META.sous && META.sous.station===st.id;
+    col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em>
+      ${sousHere?`<span class="sousBadge">${sousFig(false)}<span class="nm">${META.sous.name}</span></span>`:''}</div>`;
     const wrap=document.createElement('div'); wrap.className='pans';
     for(let i=0;i<panCount(st.id);i++){
       const keyLabel=KEYS[ki].toUpperCase();
@@ -417,6 +488,7 @@ function buildLine(){
         <div class="panBig idle">EMPTY</div>
         <div class="cookTrk" style="display:none"><div class="cookFill"></div><div class="zone"></div></div>`;
       const pan={ st:st.id, key:keyLabel, el, item:null, ticket:null, t:0, cookNeed:0, winLen:0,
+        dead:false, sousDecided:false, sousSkip:false,
         fill:el.querySelector('.cookFill'), zone:el.querySelector('.zone'),
         trk:el.querySelector('.cookTrk'), emo:el.querySelector('.panEmo'), fx:el.querySelector('.panFx'),
         dish:el.querySelector('.panDish'), tk:el.querySelector('.panTicket'),
@@ -445,9 +517,11 @@ function difficulty(){ return Math.min(1, G.t/195); }
 function spawnTicket(opts={}){
   const p=difficulty(), nm=nightMult();
   let count=1;
-  if(Math.random() < (.25+p*.65)*Math.min(1.25,nm)) count++;
-  if(Math.random() < p*.55*Math.min(1.25,nm)) count++;
+  if(Math.random() < (.25+p*.65)*Math.min(1.35,nm)) count++;
+  if(Math.random() < p*.55*Math.min(1.35,nm)) count++;
+  if(META.night>=7 && Math.random()<.12*(nm-1)) count++;   // deep nights: 4-tops appear
   if(opts.critic) count=3;
+  if(opts.big) count=opts.big;
   const items=[], used=[];
   for(let i=0;i<count;i++){
     let m, guard=0;
@@ -455,26 +529,30 @@ function spawnTicket(opts={}){
     used.push(m.n);
     items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null});
   }
-  const vip = !opts.critic && META.night>=2 && Math.random()<.12;
+  let vipChance = META.night>=2 ? .12 : 0;
+  if(G.mod && G.mod.id==='vipnight') vipChance=.36;
+  const vip = !opts.critic && !opts.big && Math.random()<vipChance;
   const tk={
     id:++G.ticketNo,
-    table: opts.critic?'CRITIC★' : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
+    table: opts.critic?'CRITIC★' : opts.big?'PARTY×'+count : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
     items, born:G.t, el:null, dead:false,
-    vip, critic:!!opts.critic,
-    limit:(78-32*p)*(META.up.regs?1.15:1),
+    vip, critic:!!opts.critic, party:!!opts.big,
+    limit:(78-32*p)*(META.up.regs?1.15:1)*patienceFactor(),
   };
   if(vip) tk.limit*=.62;
   if(tk.critic) tk.limit=Math.max(tk.limit,62);
+  if(tk.party) tk.limit*=1.45;
   tk.left=tk.limit;
   G.tickets.push(tk); buildChit(tk);
   if(tk.critic){ toast('THE CRITIC IS IN THE ROOM','#c084fc'); SFX.vip(); }
+  else if(tk.party){ toast('THE BIG PARTY IS HERE — '+count+' PLATES, ONE WINDOW','#22d3ee'); SFX.vip(); }
   else if(vip){ toast('VIP SAT AT '+tk.table+' — DOUBLE TIPS','var(--gold)'); SFX.vip(); }
   else SFX.ticket();
 }
 
 function buildChit(tk){
   const el=document.createElement('div');
-  el.className='chit'+(tk.vip?' vip':'')+(tk.critic?' critic':'');
+  el.className='chit'+(tk.vip?' vip':'')+(tk.critic?' critic':'')+(tk.party?' party':'');
   el.innerHTML=`<div class="chHead"><span>#${String(tk.id).padStart(3,'0')}</span><span class="tbl">${tk.table}</span></div>
     <div class="timerTrk"><div class="timerBar"></div></div><div class="items"></div>`;
   const box=el.querySelector('.items');
@@ -498,7 +576,7 @@ function buildChit(tk){
 }
 
 /* ============================== ACTIONS ============================== */
-function freePan(stId){ return G.pans.find(p=>p.st===stId && !p.item); }
+function freePan(stId){ return G.pans.find(p=>p.st===stId && !p.item && !p.dead); }
 function stationDown(stId){ return (G.downUntil[stId]||0) > G.t; }
 
 function fire(tk,idx){
@@ -510,7 +588,7 @@ function fire(tk,idx){
   const pan=freePan(it.m.st);
   if(!pan){ toast('NO OPEN PAN ON '+st.name,'var(--bad)'); return; }
   it.state='cooking'; it.pan=pan;
-  pan.item=it; pan.ticket=tk; pan.t=0;
+  pan.item=it; pan.ticket=tk; pan.t=0; pan.sousDecided=false; pan.sousSkip=false;
   pan.cookNeed=cookTime(it.m); pan.winLen=winTime(it.m);
   pan.el.classList.remove('empty'); pan.el.classList.add('live');
   pan.big.className='panBig'; pan.trk.style.display='';
@@ -533,7 +611,7 @@ function fireOldest(){
   toast('NOTHING TO FIRE');
 }
 
-function pull(pan){
+function pull(pan, bySous=false){
   if(!G.running||G.paused||!pan.item) return;
   const it=pan.item, tk=pan.ticket, m=it.m;
   G.pulls++;
@@ -546,16 +624,20 @@ function pull(pan){
     it.el.className='item ready'; it.tagEl.className='tag '+(over?'ov':'pf'); it.tagEl.textContent=over?'OVER':'PERF';
     it.miniEl.className='mini heat'; it.miniEl.style.display=''; it.barEl.style.background='';
     if(over){ floatText(pan.el,'OVER','#facc15'); SFX.over(); }
-    else { G.perfects++; floatText(pan.el,it.m.e+' PERFECT','#41d67f'); SFX.perfect(); }
+    else {
+      G.perfects++;
+      if(bySous){ G.sousPulls++; floatText(pan.el,META.sous.face+' '+META.sous.name,'#5ad1e6'); SFX.sous(); }
+      else { floatText(pan.el,it.m.e+' PERFECT','#41d67f'); SFX.perfect(); }
+    }
   }
   clearPan(pan);
   refreshTicket(tk);
 }
 
 function clearPan(pan){
-  pan.item=null; pan.ticket=null; pan.t=0;
-  pan.el.className='pan empty'; pan.trk.style.display='none';
-  pan.big.className='panBig idle'; pan.big.textContent='EMPTY'; pan.big.style.color='';
+  pan.item=null; pan.ticket=null; pan.t=0; pan.sousDecided=false; pan.sousSkip=false;
+  pan.el.className='pan '+(pan.dead?'dead':'empty'); pan.trk.style.display='none';
+  pan.big.className='panBig idle'; pan.big.textContent=pan.dead?'OUT':'EMPTY'; pan.big.style.color='';
   pan.dish.textContent=''; pan.tk.textContent=''; pan.fill.style.width='0%';
   pan.emo.textContent=''; pan.fx.textContent='';
 }
@@ -582,10 +664,12 @@ function plate(tk){
     minHeat=Math.min(minHeat,heatOf(it));
   });
   qual/=tk.items.length;
+  if(META.up.menu) base*=1.1;
   const age=G.t-tk.born;
   const speed = age<25?1.2 : age<45?1.05 : age<65?.92 : .8;
   let tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
   if(tk.vip) tip*=2;
+  if(tk.party) tip=Math.round(tip*1.3);
   G.tips+=tip; G.covers++;
   floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
   if(tk.critic){
@@ -617,7 +701,10 @@ function killTicket(tk,cls){
 }
 
 function walkout(tk){
-  G.walkouts++; G.tips=Math.max(0,G.tips-(tk.vip?16:8));
+  G.walkouts++;
+  let pen=(tk.vip?14:7)+Math.min(12,META.night);
+  if(META.up.valet) pen=Math.round(pen/2);
+  G.tips=Math.max(0,G.tips-pen);
   toast('WALKOUT — '+tk.table+' LEFT'+(tk.critic?' — THE REVIEW WILL HURT':''),'var(--bad)'); SFX.walk();
   killTicket(tk,'walkout');
 }
@@ -626,6 +713,25 @@ function refreshTicket(tk){
   const r=ready(tk);
   tk.btn.style.display=r?'':'none';
   tk.el.classList.toggle('done',r);
+}
+
+/* ============================== SOUS CHEF AI ============================== */
+function sousStep(){
+  const s=META.sous; if(!s) return;
+  if(stationDown(s.station)) return;
+  const skill=sousSkill();
+  const react=.55-.16*skill;              // seconds into the window before they move
+  const spaceOut=[.18,.09,.03][skill];    // chance they blank on a pan entirely
+  for(const pan of G.pans){
+    if(pan.st!==s.station || !pan.item || pan.sousSkip) continue;
+    const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
+    if(!inWin) continue;
+    if(!pan.sousDecided){
+      pan.sousDecided=true;
+      if(Math.random()<spaceOut){ pan.sousSkip=true; continue; }   // your job now
+    }
+    if(pan.t >= pan.cookNeed+Math.min(react, pan.winLen*.8)) pull(pan,true);
+  }
 }
 
 /* ============================== LOOP ============================== */
@@ -663,9 +769,17 @@ function step(dt){
     if(col) col.classList.toggle('down', stationDown(st.id));
   }
 
-  // critic (night 5+)
+  // critic (night 5+; CRITICS' TABLE brings two)
   if(G.criticAt && !G.criticDone && G.t>=G.criticAt && !G.closing && G.tickets.length<MAX_RAIL){
     G.criticDone=true; spawnTicket({critic:true});
+  }
+  if(G.criticAt2 && !G.criticDone2 && G.t>=G.criticAt2 && !G.closing && G.tickets.length<MAX_RAIL){
+    G.criticDone2=true; spawnTicket({critic:true});
+  }
+
+  // big party (mod)
+  if(G.partyAt && !G.partyDone && G.t>=G.partyAt && !G.closing && G.tickets.length<MAX_RAIL-1){
+    G.partyDone=true; spawnTicket({big:5});
   }
 
   // spawn
@@ -673,8 +787,8 @@ function step(dt){
     G.nextSpawn-=dt;
     if(G.nextSpawn<=0){
       const p=difficulty(), nm=nightMult();
-      // bus tour (night 3+): a wave hits all at once
-      if(META.night>=3 && Math.random()<.08 && G.tickets.length<=MAX_RAIL-3){
+      const busChance = (G.mod&&G.mod.id==='rush') ? .16 : (META.night>=3 ? .08 : 0);
+      if(Math.random()<busChance && G.tickets.length<=MAX_RAIL-3){
         toast('A BUS JUST PULLED UP — 3 TOPS AT ONCE','var(--hot)');
         for(let i=0;i<3;i++) spawnTicket();
       } else if(G.tickets.length<MAX_RAIL) spawnTicket();
@@ -688,6 +802,9 @@ function step(dt){
     pan.t+=dt;
     if(pan.t > pan.cookNeed+pan.winLen+BURN_GRACE) burnPan(pan);
   }
+
+  // the sous works their station
+  sousStep();
 
   // weeds
   const live=G.tickets.length;
@@ -752,32 +869,82 @@ function render(){
 }
 
 /* ============================== SHOP ============================== */
+function upgAvailable(u){
+  if(u.req && !META.up[u.req] && !(u.req==='sous'&&META.sous)) return false;
+  return true;
+}
+
 function renderShop(container){
+  container.innerHTML='';
   const box=document.createElement('div');
   box.innerHTML=`<div id="shopHead"><span>THE BACK OFFICE — SPEND YOUR BANK</span><span style="color:var(--gold)">$${META.bank}</span></div>`;
   const grid=document.createElement('div'); grid.id='shop';
   UPGRADES.forEach(u=>{
-    const owned=!!META.up[u.id];
-    const d=document.createElement('div'); d.className='upg'+(owned?' owned':'');
-    d.innerHTML=`<b>${u.e} ${u.n}</b><small>${u.d}</small>`;
-    const b=document.createElement('button');
-    b.textContent=owned?'ON THE LINE':'BUY — $'+u.cost;
-    b.disabled=owned||META.bank<u.cost;
-    b.addEventListener('click',()=>{
-      if(META.up[u.id]||META.bank<u.cost) return;
-      META.bank-=u.cost; META.up[u.id]=true; saveMeta(); SFX.buy();
-      container.innerHTML=''; renderShop(container);
-    });
-    d.appendChild(b); grid.appendChild(d);
+    const isSous=u.special==='sous';
+    const owned=isSous?!!META.sous:!!META.up[u.id];
+    const avail=upgAvailable(u);
+    const d=document.createElement('div'); d.className='upg'+(owned?' owned':'')+(isSous&&META.sous?' sousCard owned':'');
+    d.innerHTML=`<b>${u.e} ${u.n}</b><small>${u.d}${!avail&&u.req?' <em style="color:var(--warn)">(needs '+(u.req==='sous'?'a sous chef':'previous training')+')</em>':''}</small>`;
+    if(isSous&&META.sous){
+      d.innerHTML=`<b>${sousFig(false)} ${META.sous.name.toUpperCase()} — YOUR SOUS</b>
+        <small>Working ${STATIONS.find(s=>s.id===META.sous.station).name} · trained ${sousSkill()}/2</small>`;
+      const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
+      b.addEventListener('click',()=>{ renderSousCfg(grid); });
+      d.appendChild(b);
+    } else {
+      const b=document.createElement('button');
+      b.textContent=owned?'ON THE LINE':'BUY — $'+u.cost;
+      b.disabled=owned||META.bank<u.cost||!avail;
+      b.addEventListener('click',()=>{
+        if(owned||META.bank<u.cost||!avail) return;
+        META.bank-=u.cost; SFX.buy();
+        if(isSous){
+          META.sous={name:'REMY',face:FACES[0],hat:'#f4f4f4',apron:'#c0392b',station:'grill'};
+          saveMeta(); renderShop(container); renderSousCfg(container.querySelector('#shop'));
+          return;
+        }
+        META.up[u.id]=true; saveMeta();
+        renderShop(container);
+      });
+      d.appendChild(b);
+    }
+    grid.appendChild(d);
   });
   box.appendChild(grid); container.appendChild(box);
+}
+
+function renderSousCfg(grid){
+  const old=grid.querySelector('#sousCfg'); if(old){ old.remove(); return; }
+  const s=META.sous; if(!s) return;
+  const cfg=document.createElement('div'); cfg.id='sousCfg';
+  cfg.innerHTML=`
+    <div class="row"><label>NAME</label><input type="text" maxlength="10" value="${s.name}" id="sN"></div>
+    <div class="row"><label>FACE</label><span id="sF"></span></div>
+    <div class="row"><label>HAT</label><input type="color" value="${s.hat}" id="sH">
+      <label style="min-width:0">APRON</label><input type="color" value="${s.apron}" id="sA"></div>
+    <div class="row"><label>STATION</label><select id="sS">${STATIONS.map(st=>`<option value="${st.id}"${st.id===s.station?' selected':''}>${st.emo} ${st.name}</option>`).join('')}</select>
+      <span style="margin-left:auto" id="sPrev">${sousFig(true)}</span></div>`;
+  const faceBox=cfg.querySelector('#sF');
+  FACES.forEach(f=>{
+    const b=document.createElement('button'); b.className='faceBtn'+(f===s.face?' sel':''); b.textContent=f;
+    b.addEventListener('click',()=>{ s.face=f; sync(); faceBox.querySelectorAll('.faceBtn').forEach(x=>x.classList.toggle('sel',x.textContent===f)); });
+    faceBox.appendChild(b);
+  });
+  const sync=()=>{ saveMeta(); cfg.querySelector('#sPrev').innerHTML=sousFig(true); };
+  cfg.querySelector('#sN').addEventListener('input',e=>{ s.name=(e.target.value||'SOUS').toUpperCase(); sync(); });
+  cfg.querySelector('#sH').addEventListener('input',e=>{ s.hat=e.target.value; sync(); });
+  cfg.querySelector('#sA').addEventListener('input',e=>{ s.apron=e.target.value; sync(); });
+  cfg.querySelector('#sS').addEventListener('change',e=>{ s.station=e.target.value; sync(); });
+  grid.appendChild(cfg);
 }
 
 /* ============================== FLOW ============================== */
 function start(){
   Object.assign(G,{running:true,over:false,paused:false,t:0,clock:SERVICE,closing:false,closeT:0,
-    tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,
-    nextSpawn:2.2,ticketNo:0,tickets:[],downUntil:{},downSchedule:[],criticAt:0,criticDone:false});
+    tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,sousPulls:0,
+    nextSpawn:2.2,ticketNo:0,tickets:[],mod:modFor(META.night),
+    downUntil:{},downSchedule:[],criticAt:0,criticDone:false,
+    criticAt2:0,criticDone2:true,partyAt:0,partyDone:true});
   document.body.classList.remove('weeds');
   // night events
   if(META.night>=4){
@@ -785,9 +952,17 @@ function start(){
     for(let i=0;i<n;i++) G.downSchedule.push({at:45+Math.random()*150, dur:10+Math.random()*5, fired:false});
   }
   if(META.night>=5) G.criticAt=85+Math.random()*60;
+  if(G.mod&&G.mod.id==='critic2'){ G.criticAt=G.criticAt||100; G.criticAt2=G.criticAt+45; G.criticDone2=false; }
+  if(G.mod&&G.mod.id==='party'){ G.partyAt=95+Math.random()*45; G.partyDone=false; }
   railEl.innerHTML='<div id="railEmpty">RAIL CLEAR</div>';
   buildLine();
+  if(G.mod&&G.mod.id==='short'){
+    const alive=G.pans.filter(p=>!p.dead);
+    const pick=alive[(Math.random()*alive.length)|0];
+    pick.dead=true; pick.el.className='pan dead'; pick.big.textContent='OUT';
+  }
   overlay.classList.add('hide');
+  if(G.mod) setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),600);
   ac(); last=performance.now();
 }
 
@@ -811,6 +986,7 @@ function finish(){
   META.night++;
   saveMeta();
 
+  const nextMod=modFor(META.night);
   card.innerHTML=`<h1><small>NIGHT ${closedNight} — SERVICE CLOSED</small>${G.walkouts===0&&G.covers>0?'CLEAN NIGHT':'THAT WAS A NIGHT'}</h1>
     <div id="grade" style="color:${col}">${grade}</div>
     <div id="scores">
@@ -819,7 +995,7 @@ function finish(){
       <div><b style="color:var(--bad)">${G.walkouts}</b><span>WALKOUTS</span></div>
       <div><b>${acc}%</b><span>PERFECT PULLS</span></div>
       <div><b>${G.waste}</b><span>BURNT / WASTED</span></div>
-      <div><b>${Math.round(G.weedsTime)}s</b><span>IN THE WEEDS</span></div>
+      <div><b>${META.sous?G.sousPulls:Math.round(G.weedsTime)+'s'}</b><span>${META.sous?META.sous.name+"'S PULLS":'IN THE WEEDS'}</span></div>
     </div>
     <p>${grade==='S'?'You never blinked. The room never knew how close it got.'
       : grade==='A'?'Solid service. A couple of plates went out cooler than you\'d like.'
@@ -827,7 +1003,8 @@ function finish(){
       : grade==='C'?'Rough push. Too many refires, too much on the rail.'
       : 'The rail buried you. Fire earlier, pull tighter, plate faster.'}</p>
     <div id="shopBox"></div>
-    <p style="font-size:11px">${nightPreview(META.night)}</p>
+    <div class="modLine"><b>NIGHT ${META.night} — ${Math.round((nightMult()-1)*100)}% HARDER</b><br>
+      <span>${nextMod?nextMod.n+': '+nextMod.d:nightBits(META.night)}</span></div>
     <button id="start">OPEN NIGHT ${META.night} ▸</button>
     <div id="best">BEST TIPS · $${best}</div>`;
   renderShop(card.querySelector('#shopBox'));
@@ -836,14 +1013,13 @@ function finish(){
   SFX.end();
 }
 
-function nightPreview(n){
+function nightBits(n){
   const bits=[];
-  if(n>=2) bits.push('VIP tables (double tips, short fuses)');
+  if(n>=2) bits.push('VIPs');
   if(n>=3) bits.push('bus tours');
-  if(n>=4) bits.push("stations going 86'd");
+  if(n>=4) bits.push("86'd stations");
   if(n>=5) bits.push('the critic');
-  const pace=Math.round((nightMult()-1)*100);
-  return `NIGHT ${n}: tickets land ${pace}% harder`+(bits.length?` · in play: ${bits.join(' · ')}`:'')+'.';
+  return bits.length?'In play: '+bits.join(' · ')+'.':'A quiet one. Enjoy it.';
 }
 
 /* ============================== INPUT ============================== */
@@ -867,8 +1043,10 @@ overlay.querySelector('#start').addEventListener('click',start);
   try{ const b=+(localStorage.getItem('pass_best')||0); if(b) $('#best').textContent='BEST TIPS · $'+b; }catch(e){}
   $('#introNight').textContent='NIGHT '+META.night;
   $('#introBank').textContent='BANK $'+META.bank;
+  const im=$('#introMod'), mod=modFor(META.night);
+  if(mod) im.innerHTML=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   const box=$('#shopBoxIntro');
-  if(META.bank>0 || Object.keys(META.up).length) renderShop(box);
+  if(META.bank>0 || Object.keys(META.up).length || META.sous) renderShop(box);
 })();
 
 buildLine();
