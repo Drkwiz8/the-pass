@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>THE PASS — Dinner Rush</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -208,6 +208,54 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 @keyframes sizzleHot{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.07)}}
 @keyframes steamUp{0%{transform:translateY(4px);opacity:0}35%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
 @keyframes flameUp{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.18)}}
+
+/* ---------- endless + achievements ---------- */
+#modeBtns{display:flex;gap:8px;margin-top:16px}
+#modeBtns button{flex:1;border:0;border-radius:3px;font-family:var(--mono);font-weight:700;font-size:14px;
+  letter-spacing:2px;padding:13px 0;cursor:pointer}
+#start{background:var(--hot);color:#150c05}
+#start:hover{background:#ff8038}
+#startEndless{background:transparent;color:var(--cold);border:2px solid var(--cold)!important}
+#startEndless:hover{background:rgba(90,209,230,.12)}
+.achHead{font-size:11px;letter-spacing:3px;color:var(--good);margin:14px 0 8px;display:flex;justify-content:space-between}
+.achGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.ach{background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:7px 8px}
+.ach b{font-size:10.5px;letter-spacing:.5px;display:block}
+.ach small{font-size:9.5px;color:var(--dim);line-height:1.35;display:block}
+.ach.locked{opacity:.38;filter:grayscale(1)}
+.ach.unlocked{border-color:var(--good)}
+#shareBtn{margin-top:10px;width:100%;background:transparent;border:1px solid var(--cold);color:var(--cold);
+  font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:2px;padding:8px 0;border-radius:3px;cursor:pointer}
+#shareBtn:hover{background:rgba(90,209,230,.12)}
+
+/* ---------- mobile ---------- */
+body{touch-action:manipulation}
+@media (max-width:900px){
+  #app{min-width:0}
+  body{font-size:12px}
+  .stat{min-width:0;padding:4px 7px}
+  .stat b{font-size:13px}
+  .stat span{font-size:7px;letter-spacing:.8px}
+  #phaseName{font-size:10px}
+  #weedsTag{font-size:11px;letter-spacing:1.5px;padding:0 8px}
+  #line{flex-wrap:wrap;overflow-y:auto}
+  .station{flex:1 1 46%;min-height:170px}
+  .pans{padding:5px;gap:5px}
+  .pan{padding:6px 7px}
+  .panBig{font-size:19px}
+  .panBig.callout{font-size:14px;letter-spacing:1px}
+  .panEmo{font-size:22px;bottom:22px}
+  .panKey{display:none}
+  .panDish{font-size:11px}
+  #keysHelp{display:none}
+  #crewDock .nm{display:none}
+  #rail{min-height:130px}
+  .chit{width:146px}
+  #card{padding:16px 14px;max-height:94vh}
+  #card h1{font-size:22px}
+  #scores b{font-size:15px}
+  .wardGrid,.achGrid{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -256,7 +304,11 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
       <div><em>STARS —</em> money can't buy style. Earn <span style="color:var(--star)">⭐ service stars</span> with clean nights, S-grades, and flooring the critic — spend them in the wardrobe.</div>
     </div>
     <div id="shopBoxIntro"></div>
-    <button id="start">START SERVICE</button>
+    <div id="achBoxIntro"></div>
+    <div id="modeBtns">
+      <button id="start">CAREER ▸</button>
+      <button id="startEndless">ENDLESS RUSH ∞</button>
+    </div>
     <div id="best"></div>
   </div>
 </div>
@@ -328,6 +380,47 @@ const QUIRKS = [
 function rollQuirk(){ return QUIRKS[(Math.random()*QUIRKS.length)|0].id; }
 function quirkOf(m){ return QUIRKS.find(q=>q.id===m.quirk); }
 
+/* ============================== ACHIEVEMENTS (in-game goals; each pays +1 star) ============================== */
+const ACHS = [
+  {id:'first',    n:'FIRST SERVICE',    d:'Close out any service with at least one cover.', test:c=>G.covers>0},
+  {id:'clean',    n:'CLEAN NIGHT',      d:'A career night with zero walkouts.', test:c=>c.mode==='career'&&G.walkouts===0&&G.covers>0},
+  {id:'sgrade',   n:'S-TIER',           d:'Earn an S-grade service.', test:c=>c.grade==='S'},
+  {id:'n500',     n:'$500 NIGHT',       d:'Bank $500 in tips in one career night.', test:c=>c.mode==='career'&&G.tips>=500},
+  {id:'n1000',    n:'$1,000 NIGHT',     d:'Bank $1,000 in tips in one career night.', test:c=>c.mode==='career'&&G.tips>=1000},
+  {id:'brigade5', n:'FULL HOUSE',       d:'Have 5 crew on staff (3 cooks, expo, host).', test:c=>META.crew.length>=5},
+  {id:'dressed',  n:'DRESSED TO KILL',  d:'Fully gear one crew member (all 4 slots).', test:c=>META.crew.some(m=>m.gear&&SLOTS.every(s=>m.gear[s]))},
+  {id:'critic',   n:'FLOOR THE CRITIC', d:'A perfect, hot plate for the critic.', test:c=>G.criticFloored},
+  {id:'party',    n:'FEED THE BUS',     d:'Plate the big party ticket.', test:c=>G.partyPlated},
+  {id:'night10',  n:'TEN DEEP',         d:'Reach night 10 in career.', test:c=>META.night>=10},
+  {id:'covers25', n:'TURN AND BURN',    d:'Serve 25 covers in one service.', test:c=>G.covers>=25},
+  {id:'perfect',  n:'UNTOUCHABLE',      d:'100% perfect pulls in a service (15+ pulls).', test:c=>G.pulls>=15&&G.perfects===G.pulls},
+  {id:'spotless', n:'SPOTLESS',         d:'Survive a health inspection with zero fines.', test:c=>c.mode==='career'&&G.mod&&G.mod.id==='inspector'&&G.inspUntil>0&&G.fines===0},
+  {id:'e300',     n:'RUSH $300',        d:'Score $300 in one Endless Rush run.', test:c=>c.mode==='endless'&&G.tips>=300},
+  {id:'e5min',    n:'SURVIVOR',         d:'Last 5 minutes in Endless Rush.', test:c=>c.mode==='endless'&&G.t>=300},
+];
+function checkAchs(ctx){
+  const fresh=[];
+  ACHS.forEach(a=>{
+    if(META.ach[a.id]) return;
+    let hit=false; try{ hit=a.test(ctx); }catch(e){}
+    if(hit){ META.ach[a.id]=true; META.stars+=1; fresh.push(a); }
+  });
+  if(fresh.length) saveMeta();
+  return fresh;
+}
+function renderAchs(container){
+  const done=ACHS.filter(a=>META.ach[a.id]).length;
+  const box=document.createElement('div');
+  box.innerHTML=`<div class="achHead"><span>GOALS — ${done}/${ACHS.length} (each pays ⭐1)</span></div>`;
+  const grid=document.createElement('div'); grid.className='achGrid';
+  ACHS.forEach(a=>{
+    const d=document.createElement('div'); d.className='ach '+(META.ach[a.id]?'unlocked':'locked');
+    d.innerHTML=`<b>${META.ach[a.id]?'✅':'🔒'} ${a.n}</b><small>${a.d}</small>`;
+    grid.appendChild(d);
+  });
+  box.appendChild(grid); container.appendChild(box);
+}
+
 /* ============================== WARDROBE (star store) ============================== */
 const WARDROBE = [
   {id:'crown',   n:'CROWN',            slot:'hat', stars:5, hatRows:['............','..G..G..G...','..GGGJJGGG..','..GGGGGGGG..'], pal:{G:'#d4af37',J:'#e11d48'}, d:'For the king or queen of the pass.'},
@@ -373,7 +466,7 @@ const REPEATS = [
 ];
 function repCost(r){ const lvl=META.up[r.id]||0; return Math.round(r.base*Math.pow(r.growth,lvl)); }
 
-let META = {night:1, bank:0, stars:0, up:{}, crew:[], ward:{}};
+let META = {night:1, bank:0, stars:0, up:{}, crew:[], ward:{}, ach:{}};
 function loadMeta(){
   try{
     const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
@@ -382,6 +475,7 @@ function loadMeta(){
       if(!Array.isArray(META.crew)) META.crew=[];
       if(typeof META.stars!=='number') META.stars=0;
       if(!META.ward) META.ward={};
+      if(!META.ach) META.ach={};
       if(m.sous && !META.crew.length){
         META.crew.push({role:'cook', name:m.sous.name, hat:m.sous.hat,
           apron:m.sous.apron, station:m.sous.station, quirk:rollQuirk()});
@@ -404,8 +498,10 @@ function expo(){ return META.crew.find(m=>m.role==='expo'); }
 function host(){ return META.crew.find(m=>m.role==='host'); }
 function crewWith(qid){ return META.crew.filter(m=>m.quirk===qid).length; }
 
-function panCount(stId){ return 2 + (META.up['pan_'+stId]?1:0); }
+/* Endless Rush is the FAIR kitchen: no upgrades, no crew, everyone identical. */
+function panCount(stId){ if(G.endless) return 2; return 2 + (META.up['pan_'+stId]?1:0); }
 function cookTime(m){
+  if(G.endless) return m.cook;
   let c=m.cook;
   if(META.up.prep) c*=.92;
   if(META.up.knives && m.st==='cold') c*=.85;
@@ -413,21 +509,23 @@ function cookTime(m){
   return c;
 }
 function winTime(m, stId){
+  if(G.endless) return m.win;
   let w=m.win*(META.up.expo?1.2:1);
   if(META.up.goldpans) w*=1.1;
   if(G.mod && G.mod.id==='fragile') w*=.75;
   if(cooks().some(c=>c.station===stId&&c.quirk==='loud')) w*=1.1;
   return w;
 }
-function burnGrace(){ return BURN_GRACE+(META.up.walkin?.5:0); }
-function holdTime(){ return HOLD*(META.up.lamps?1.5:1); }
+function burnGrace(){ if(G.endless) return BURN_GRACE; return BURN_GRACE+(META.up.walkin?.5:0); }
+function holdTime(){ if(G.endless) return HOLD; return HOLD*(META.up.lamps?1.5:1); }
+function endlessMult(){ return 1+Math.min(2.5, G.t/160); }
 function nightMult(){ return Math.min(2.8, 1+(META.night-1)*.15); }
 function patienceFactor(){ return Math.max(.68, 1-(META.night-1)*.035); }
 function cookSkill(){ return (META.up.train1?1:0)+(META.up.train2?1:0); }
 
 /* ============================== STATE ============================== */
 const G = {
-  running:false, over:false, paused:false,
+  running:false, over:false, paused:false, endless:false,
   t:0, clock:SERVICE, closing:false, closeT:0,
   tips:0, covers:0, walkouts:0, waste:0,
   perfects:0, pulls:0, weeds:false, weedsTime:0, crewPulls:0, expoPlates:0, hostSaves:0,
@@ -545,7 +643,7 @@ function buildLine(){
   let ki=0;
   STATIONS.forEach(st=>{
     const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
-    const here=cooks().filter(c=>c.station===st.id);
+    const here=G.endless?[]:cooks().filter(c=>c.station===st.id);
     col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em>
       ${here.map(c=>`<span class="sousBadge">${memberFig(c)}<span class="nm">${c.name}</span></span>`).join('')}</div>`;
     const wrap=document.createElement('div'); wrap.className='pans';
@@ -569,9 +667,11 @@ function buildLine(){
     col.appendChild(wrap); lineEl.appendChild(col);
   });
   const dock=$('#crewDock'); dock.innerHTML='';
-  const e=expo(), h=host();
-  if(e) dock.innerHTML+=`<span class="dockM">📣${memberFig(e)}<span class="nm">${e.name} · EXPO</span></span>`;
-  if(h) dock.innerHTML+=`<span class="dockM">🎩${memberFig(h)}<span class="nm">${h.name} · HOST</span></span>`;
+  if(!G.endless){
+    const e=expo(), h=host();
+    if(e) dock.innerHTML+=`<span class="dockM">📣${memberFig(e)}<span class="nm">${e.name} · EXPO</span></span>`;
+    if(h) dock.innerHTML+=`<span class="dockM">🎩${memberFig(h)}<span class="nm">${h.name} · HOST</span></span>`;
+  }
 }
 
 function toast(msg,color='var(--warn)'){
@@ -589,11 +689,12 @@ function floatText(el,txt,color){
 function difficulty(){ return Math.min(1, G.t/195); }
 
 function spawnTicket(opts={}){
-  const p=difficulty(), nm=nightMult();
+  const p=difficulty(), nm=G.endless?endlessMult():nightMult();
   let count=1;
-  if(Math.random() < (.25+p*.65)*Math.min(1.35,nm)) count++;
-  if(Math.random() < p*.55*Math.min(1.35,nm)) count++;
-  if(META.night>=7 && Math.random()<.12*(nm-1)) count++;
+  if(Math.random() < (.25+p*.65)*Math.min(G.endless?1.6:1.35,nm)) count++;
+  if(Math.random() < p*.55*Math.min(G.endless?1.6:1.35,nm)) count++;
+  if(!G.endless && META.night>=7 && Math.random()<.12*(nm-1)) count++;
+  if(G.endless && G.t>200 && Math.random()<.15) count++;
   if(opts.critic) count=3;
   if(opts.big) count=opts.big;
   const items=[], used=[];
@@ -603,15 +704,18 @@ function spawnTicket(opts={}){
     used.push(m.n);
     items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null});
   }
-  let vipChance = META.night>=2 ? .12 : 0;
+  let vipChance = G.endless ? (G.t>60?.1:0) : (META.night>=2 ? .12 : 0);
   if(G.mod && G.mod.id==='vipnight') vipChance=.36;
   const vip = !opts.critic && !opts.big && Math.random()<vipChance;
+  const baseLimit = G.endless
+    ? (78-32*p)*Math.max(.6, 1-G.t/700*.4)
+    : (78-32*p)*(META.up.regs?1.15:1)*patienceFactor()*(host()?1.08:1);
   const tk={
     id:++G.ticketNo,
     table: opts.critic?'CRITIC★' : opts.big?'PARTY×'+count : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
     items, born:G.t, el:null, dead:false, readyAt:0, saved:false,
     vip, critic:!!opts.critic, party:!!opts.big,
-    limit:(78-32*p)*(META.up.regs?1.15:1)*patienceFactor()*(host()?1.08:1),
+    limit:baseLimit,
   };
   if(vip) tk.limit*=.62;
   if(tk.critic) tk.limit=Math.max(tk.limit,62);
@@ -748,14 +852,14 @@ function plate(tk, byExpo=false){
     minHeat=Math.min(minHeat,heatOf(it));
   });
   qual/=tk.items.length;
-  if(META.up.menu) base*=1.1;
-  base*=(1+.04*(META.up.menuDev||0));
+  if(!G.endless&&META.up.menu) base*=1.1;
+  if(!G.endless) base*=(1+.04*(META.up.menuDev||0));
   const age=G.t-tk.born;
   const speed = age<25?1.2 : age<45?1.05 : age<65?.92 : .8;
   let tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
   if(tk.vip) tip*=2;
   if(tk.party) tip=Math.round(tip*1.3);
-  tip=Math.round(tip*(1+.03*crewWith('fav')));
+  if(!G.endless) tip=Math.round(tip*(1+.03*crewWith('fav')));
   G.tips+=tip; G.covers++;
   if(byExpo){ G.expoPlates++; floatText(tk.el,'📣 +$'+tip,'#5ad1e6'); }
   else floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
@@ -790,10 +894,10 @@ function killTicket(tk,cls){
 
 function walkout(tk){
   G.walkouts++;
-  let pen=(tk.vip?14:7)+Math.min(12,META.night);
-  if(META.up.valet) pen=Math.round(pen/2);
+  let pen=G.endless?10:(tk.vip?14:7)+Math.min(12,META.night);
+  if(!G.endless&&META.up.valet) pen=Math.round(pen/2);
   G.tips=Math.max(0,G.tips-pen);
-  toast('WALKOUT — '+tk.table+' LEFT'+(tk.critic?' — THE REVIEW WILL HURT':''),'var(--bad)'); SFX.walk();
+  toast('WALKOUT — '+tk.table+' LEFT'+(G.endless?' ('+G.walkouts+'/3)':tk.critic?' — THE REVIEW WILL HURT':''),'var(--bad)'); SFX.walk();
   killTicket(tk,'walkout');
 }
 
@@ -807,6 +911,7 @@ function refreshTicket(tk){
 
 /* ============================== BRIGADE AI ============================== */
 function crewStep(){
+  if(G.endless) return;   // endless = just you, chef
   const skill=cookSkill();
   for(const c of cooks()){
     if(stationDown(c.station)) continue;
@@ -858,7 +963,9 @@ function frame(now){
 function step(dt){
   G.t+=dt;
 
-  if(!G.closing){
+  if(G.endless){
+    if(G.walkouts>=3){ finishEndless(); return; }
+  } else if(!G.closing){
     G.clock-=dt;
     if(G.clock<=0){ G.clock=0; G.closing=true; toast('LAST CALL — CLEAR THE RAIL','var(--hot)'); }
   } else {
@@ -898,8 +1005,9 @@ function step(dt){
   if(!G.closing){
     G.nextSpawn-=dt;
     if(G.nextSpawn<=0){
-      const p=difficulty(), nm=nightMult();
-      const busChance = (G.mod&&G.mod.id==='rush') ? .16 : (META.night>=3 ? .08 : 0);
+      const p=difficulty(), nm=G.endless?endlessMult():nightMult();
+      const busChance = G.endless ? (G.t>90?.08:0)
+        : (G.mod&&G.mod.id==='rush') ? .16 : (META.night>=3 ? .08 : 0);
       if(Math.random()<busChance && G.tickets.length<=G.railCap-3){
         toast('A BUS JUST PULLED UP — 3 TOPS AT ONCE','var(--hot)');
         for(let i=0;i<3;i++) spawnTicket();
@@ -923,8 +1031,8 @@ function step(dt){
   else if(G.weeds && live<=WEEDS_OUT){ G.weeds=false; document.body.classList.remove('weeds'); toast('DUG OUT — BREATHE','var(--good)'); }
   if(G.weeds) G.weedsTime+=dt;
 
-  let drain = G.weeds?(META.up.skin?1.2:1.35):1;
-  if(host()) drain*=.92;
+  let drain = G.weeds?((!G.endless&&META.up.skin)?1.2:1.35):1;
+  if(!G.endless&&host()) drain*=.92;
   for(const tk of G.tickets.slice()){
     tk.left-=dt*drain;
     if(tk.left<=0) walkout(tk);
@@ -932,17 +1040,27 @@ function step(dt){
 }
 
 function render(){
-  const m=Math.floor(G.clock/60), s=Math.floor(G.clock%60);
-  $('#clock b').textContent=G.closing?'CLOSE':`${m}:${String(s).padStart(2,'0')}`;
-  $('#clock').classList.toggle('low',!G.closing&&G.clock<30);
+  if(G.endless){
+    const em=Math.floor(G.t/60), es=Math.floor(G.t%60);
+    $('#clock b').textContent=`${em}:${String(es).padStart(2,'0')}`;
+    $('#clock').classList.remove('low');
+    $('#night b').textContent='∞';
+    $('#walk b').textContent=G.walkouts+'/3';
+  } else {
+    const m=Math.floor(G.clock/60), s=Math.floor(G.clock%60);
+    $('#clock b').textContent=G.closing?'CLOSE':`${m}:${String(s).padStart(2,'0')}`;
+    $('#clock').classList.toggle('low',!G.closing&&G.clock<30);
+    $('#night b').textContent=META.night;
+    $('#walk b').textContent=G.walkouts;
+  }
   $('#tips b').textContent='$'+G.tips;
   $('#bank b').textContent='$'+META.bank;
   $('#stars b').textContent=META.stars;
-  $('#night b').textContent=META.night;
   $('#covers b').textContent=G.covers;
-  $('#walk b').textContent=G.walkouts;
   const p=difficulty();
-  $('#phaseName').textContent = G.closing?'CLOSING':inspecting()?'INSPECTION':(p<.3?'DOORS OPEN':p<.7?'THE PUSH':'PEAK RUSH');
+  $('#phaseName').textContent = G.endless
+    ? (inspecting()?'INSPECTION':G.t<60?'WARMING UP':G.t<180?'THE RUSH':G.t<300?'DEEP WATER':'LEGEND HOURS')
+    : G.closing?'CLOSING':inspecting()?'INSPECTION':(p<.3?'DOORS OPEN':p<.7?'THE PUSH':'PEAK RUSH');
 
   for(const pan of G.pans){
     if(!pan.item) continue;
@@ -1173,24 +1291,26 @@ function renderMemberCfg(grid,m,container){
 }
 
 /* ============================== FLOW ============================== */
-function start(){
-  Object.assign(G,{running:true,over:false,paused:false,t:0,clock:SERVICE,closing:false,closeT:0,
+function start(endless=false){
+  Object.assign(G,{running:true,over:false,paused:false,endless,t:0,clock:SERVICE,closing:false,closeT:0,
     tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,
     crewPulls:0,expoPlates:0,hostSaves:0,hostCd:0,criticFloored:false,partyPlated:false,fines:0,
-    nextSpawn:2.2,ticketNo:0,tickets:[],mod:modFor(META.night),railCap:MAX_RAIL,
+    nextSpawn:2.2,ticketNo:0,tickets:[],mod:endless?null:modFor(META.night),railCap:MAX_RAIL,
     inspAt:0,inspUntil:0,
     downUntil:{},downSchedule:[],criticAt:0,criticDone:false,
     criticAt2:0,criticDone2:true,partyAt:0,partyDone:true});
   document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
-  if(META.night>=4){
-    const n = META.night>=6?2:1;
-    for(let i=0;i<n;i++) G.downSchedule.push({at:45+Math.random()*150, dur:10+Math.random()*5, fired:false});
+  if(!endless){
+    if(META.night>=4){
+      const n = META.night>=6?2:1;
+      for(let i=0;i<n;i++) G.downSchedule.push({at:45+Math.random()*150, dur:10+Math.random()*5, fired:false});
+    }
+    if(META.night>=5) G.criticAt=85+Math.random()*60;
+    if(G.mod&&G.mod.id==='critic2'){ G.criticAt=G.criticAt||100; G.criticAt2=G.criticAt+45; G.criticDone2=false; }
+    if(G.mod&&G.mod.id==='party'){ G.partyAt=95+Math.random()*45; G.partyDone=false; }
+    if(G.mod&&G.mod.id==='inspector'){ G.inspAt=90+Math.random()*60; }
+    if(G.mod&&G.mod.id==='overbook'){ G.railCap=13; }
   }
-  if(META.night>=5) G.criticAt=85+Math.random()*60;
-  if(G.mod&&G.mod.id==='critic2'){ G.criticAt=G.criticAt||100; G.criticAt2=G.criticAt+45; G.criticDone2=false; }
-  if(G.mod&&G.mod.id==='party'){ G.partyAt=95+Math.random()*45; G.partyDone=false; }
-  if(G.mod&&G.mod.id==='inspector'){ G.inspAt=90+Math.random()*60; }
-  if(G.mod&&G.mod.id==='overbook'){ G.railCap=13; }
   railEl.innerHTML='<div id="railEmpty">RAIL CLEAR</div>';
   buildLine();
   if(G.mod&&G.mod.id==='short'){
@@ -1199,8 +1319,51 @@ function start(){
     pick.dead=true; pick.el.className='pan dead'; pick.big.textContent='OUT';
   }
   overlay.classList.add('hide');
-  if(G.mod) setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),600);
+  if(endless) setTimeout(()=>toast('ENDLESS RUSH — 3 WALKOUTS AND THE NIGHT IS OVER','var(--cold)'),600);
+  else if(G.mod) setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),600);
   ac(); last=performance.now();
+}
+
+function finishEndless(){
+  G.running=false; G.over=true;
+  document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
+  const mins=Math.floor(G.t/60), secs=Math.floor(G.t%60);
+  const timeStr=`${mins}:${String(secs).padStart(2,'0')}`;
+  let eb={best:0,runs:[]};
+  try{ eb=JSON.parse(localStorage.getItem('pass_endless')||'{"best":0,"runs":[]}'); }catch(e){}
+  const isBest=G.tips>eb.best;
+  if(isBest) eb.best=G.tips;
+  eb.runs.unshift({score:G.tips,time:timeStr,covers:G.covers});
+  eb.runs=eb.runs.slice(0,5);
+  try{ localStorage.setItem('pass_endless',JSON.stringify(eb)); }catch(e){}
+  const fresh=checkAchs({mode:'endless'});
+  saveMeta();
+  const shareText=`I made $${G.tips} in THE PASS — Endless Rush (${timeStr} before the rail buried me). Beat me: https://drkwiz8.github.io/the-pass`;
+  card.innerHTML=`<h1><small>ENDLESS RUSH — RUN OVER</small>${isBest?'NEW BEST':'THE RAIL WINS'}</h1>
+    <div id="grade" style="color:${isBest?'#ffd84d':'var(--cold)'}">$${G.tips}</div>
+    <div id="scores">
+      <div><b>${timeStr}</b><span>SURVIVED</span></div>
+      <div><b>${G.covers}</b><span>COVERS</span></div>
+      <div><b>${G.pulls?Math.round(G.perfects/G.pulls*100):0}%</b><span>PERFECT PULLS</span></div>
+      <div><b style="color:var(--cold)">$${eb.best}</b><span>BEST RUN</span></div>
+      <div style="grid-column:span 2"><b style="font-size:11px;line-height:1.5">${eb.runs.map(r=>'$'+r.score+' ('+r.time+')').join(' · ')}</b><span>LAST RUNS</span></div>
+    </div>
+    ${fresh.length?`<div class="starLine"><b style="color:var(--star)">GOALS HIT:</b> ${fresh.map(a=>a.n+' (+1⭐)').join(' · ')}</div>`:''}
+    <button id="shareBtn">COPY SCORE — CHALLENGE YOUR FRIENDS</button>
+    <div id="achBox2"></div>
+    <div id="modeBtns">
+      <button id="start">CAREER ▸</button>
+      <button id="startEndless">RUN IT AGAIN ∞</button>
+    </div>`;
+  renderAchs(card.querySelector('#achBox2'));
+  card.querySelector('#shareBtn').addEventListener('click',e=>{
+    try{ navigator.clipboard.writeText(shareText); e.target.textContent='COPIED — GO PASTE IT'; }
+    catch(err){ prompt('Copy your score:',shareText); }
+  });
+  card.querySelector('#start').addEventListener('click',()=>start(false));
+  card.querySelector('#startEndless').addEventListener('click',()=>start(true));
+  overlay.classList.remove('hide');
+  SFX.end();
 }
 
 function starHaul(grade){
@@ -1237,8 +1400,9 @@ function finish(){
   META.bank+=G.tips;
   const closedNight=META.night;
   META.night++;
+  const freshAchs=checkAchs({mode:'career',grade});
   saveMeta();
-  if(earned) SFX.star();
+  if(earned||freshAchs.length) SFX.star();
 
   const crewLine = META.crew.length
     ? `${G.crewPulls} crew pulls · ${G.expoPlates} expo plates · ${G.hostSaves} saves`
@@ -1256,19 +1420,26 @@ function finish(){
     </div>
     ${earned?`<div class="starLine"><b style="color:var(--star)">+${earned} ⭐</b> — ${earns.map(e=>e[1]+' (+'+e[0]+')').join(' · ')}</div>`
       :`<div class="starLine" style="border-left-color:var(--line2);color:var(--dim)">No stars tonight — B-grade or better, zero walkouts, or big moments earn them.</div>`}
+    ${freshAchs.length?`<div class="starLine"><b style="color:var(--good)">GOALS HIT:</b> ${freshAchs.map(a=>a.n+' (+1⭐)').join(' · ')}</div>`:''}
     <p>${grade==='S'?'You never blinked. The room never knew how close it got.'
       : grade==='A'?'Solid service. A couple of plates went out cooler than you\'d like.'
       : grade==='B'?'You held the line, mostly. The weeds got you for a stretch.'
       : grade==='C'?'Rough push. Too many refires, too much on the rail.'
       : 'The rail buried you. Fire earlier, pull tighter, plate faster.'}</p>
     <div id="shopBox"></div>
+    <div id="achBox3"></div>
     <div class="modLine"><b>NIGHT ${META.night} — ${Math.round((nightMult()-1)*100)}% HARDER</b><br>
       <span>${nextMod?nextMod.n+': '+nextMod.d:nightBits(META.night)}</span></div>
-    <button id="start">OPEN NIGHT ${META.night} ▸</button>
+    <div id="modeBtns">
+      <button id="start">OPEN NIGHT ${META.night} ▸</button>
+      <button id="startEndless">ENDLESS RUSH ∞</button>
+    </div>
     <div id="best">BEST TIPS · $${best}</div>`;
   renderShop(card.querySelector('#shopBox'));
+  renderAchs(card.querySelector('#achBox3'));
   overlay.classList.remove('hide');
-  card.querySelector('#start').addEventListener('click',start);
+  card.querySelector('#start').addEventListener('click',()=>start(false));
+  card.querySelector('#startEndless').addEventListener('click',()=>start(true));
   SFX.end();
 }
 
@@ -1296,8 +1467,9 @@ document.addEventListener('keydown',e=>{
   }
 });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&G.running){G.paused=true; toast('PAUSED','var(--hot)');} last=performance.now(); });
-$('#quit').addEventListener('click',()=>{ if(G.running) finish(); });
-overlay.querySelector('#start').addEventListener('click',start);
+$('#quit').addEventListener('click',()=>{ if(G.running){ G.endless?finishEndless():finish(); } });
+overlay.querySelector('#start').addEventListener('click',()=>start(false));
+overlay.querySelector('#startEndless').addEventListener('click',()=>start(true));
 (function(){
   try{ const b=+(localStorage.getItem('pass_best')||0); if(b) $('#best').textContent='BEST TIPS · $'+b; }catch(e){}
   $('#introNight').textContent='NIGHT '+META.night;
@@ -1307,6 +1479,7 @@ overlay.querySelector('#start').addEventListener('click',start);
   if(mod) im.innerHTML=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   const box=$('#shopBoxIntro');
   if(META.bank>0 || Object.keys(META.up).length || META.crew.length || META.stars>0) renderShop(box);
+  renderAchs($('#achBoxIntro'));
 })();
 
 buildLine();
