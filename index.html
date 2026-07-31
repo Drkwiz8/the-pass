@@ -11,7 +11,7 @@
   --bg:#0a0c0e; --panel:#14181c; --panel2:#1b2126; --line:#2b333a; --line2:#3d474f;
   --txt:#e8eef2; --dim:#8996a1;
   --hot:#ff6a1a; --grill:#ff5330; --saute:#ffa41f; --fry:#ffd84d; --cold:#5ad1e6;
-  --good:#41d67f; --warn:#facc15; --bad:#ef4444; --paper:#efe2c4;
+  --good:#41d67f; --warn:#facc15; --bad:#ef4444; --paper:#efe2c4; --gold:#d4af37;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 html,body{height:100%}
@@ -34,6 +34,7 @@ body{
 .stat.wide{flex:1}
 #clock b{color:var(--txt)} #clock.low b{color:var(--bad);animation:blink .8s steps(2,end) infinite}
 #tips b{color:var(--good)} #walk b{color:var(--bad)}
+#night b{color:var(--hot)} #bank b{color:var(--gold)}
 #phase{justify-content:center;align-items:flex-start}
 #phaseName{font-size:12px;letter-spacing:2px;color:var(--hot)}
 #toast{font-size:11px;letter-spacing:1px;color:var(--warn);height:14px;margin-top:3px;opacity:0;transition:opacity .12s}
@@ -56,7 +57,7 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 #railEmpty{color:var(--dim);font-size:11px;letter-spacing:2px;padding:52px 12px}
 
 .chit{
-  background:var(--paper);color:#1a1512;width:146px;flex:0 0 auto;border-radius:2px;
+  background:var(--paper);color:#1a1512;width:150px;flex:0 0 auto;border-radius:2px;
   padding:6px 7px 7px;position:relative;box-shadow:0 3px 0 rgba(0,0,0,.45),0 8px 18px rgba(0,0,0,.35);
   border-top:3px solid #c0392b;animation:chitIn .22s cubic-bezier(.2,1.4,.4,1);
 }
@@ -64,6 +65,8 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .chit.walkout{animation:chitWalk .4s ease-in forwards;pointer-events:none}
 .chit.done{border-top-color:var(--good)}
 .chit.urgent{border-top-color:#000;animation:shake .35s infinite}
+.chit.vip{background:#f2e2ac;border-top-color:var(--gold);box-shadow:0 3px 0 rgba(90,70,0,.5),0 8px 22px rgba(212,175,55,.28)}
+.chit.critic{background:#e8d8f0;border-top-color:#7c3aed}
 .chHead{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.5px;color:#5b4b3f}
 .chHead .tbl{color:#1a1512}
 .timerTrk{height:4px;background:#cbbb9b;margin:4px 0 6px;border-radius:2px;overflow:hidden}
@@ -76,6 +79,7 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .item.todo:hover{background:#1a1512;color:var(--paper)}
 .iRow{display:flex;justify-content:space-between;align-items:center;gap:5px}
 .iName{font-size:11px;font-weight:700;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iEmo{font-size:12px;margin-right:3px}
 .st{font-size:8px;letter-spacing:.8px;color:#6b5a4c;font-weight:700;flex:0 0 auto}
 .tag{font-size:8px;font-weight:700;letter-spacing:.8px;padding:0 3px;border-radius:2px;flex:0 0 auto}
 .tag.ck{background:#1a1512;color:var(--fry)}
@@ -93,12 +97,18 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 
 /* ---------- line ---------- */
 #line{flex:1;display:flex;gap:1px;background:var(--line);min-height:0}
-.station{flex:1;background:var(--panel);display:flex;flex-direction:column;min-width:0}
+.station{flex:1;background:var(--panel);display:flex;flex-direction:column;min-width:0;position:relative}
 .stHead{
   padding:6px 10px;font-size:11px;font-weight:700;letter-spacing:2.5px;
   border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;
 }
 .stHead em{font-style:normal;font-size:9px;color:var(--dim);letter-spacing:1px}
+.station.down .stHead{color:var(--bad)!important;animation:blink .5s steps(2,end) infinite}
+.station.down::after{
+  content:'86\'D';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(120,10,10,.32);color:var(--bad);font-size:26px;font-weight:700;letter-spacing:6px;
+  z-index:5;pointer-events:none;text-shadow:0 2px 8px #000;
+}
 .pans{flex:1;display:flex;flex-direction:column;gap:8px;padding:9px;min-height:0}
 .pan{
   flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:3px;
@@ -124,6 +134,19 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 }
 .panBig.idle{font-size:10px;letter-spacing:3px;color:#4a555e;font-weight:400}
 .panBig.callout{font-size:22px;letter-spacing:2px}
+.panEmo{
+  position:absolute;left:8px;bottom:26px;font-size:34px;line-height:1;opacity:.92;
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.6));display:none;z-index:2;
+}
+.pan.live .panEmo{display:block;animation:sizzle 1.1s ease-in-out infinite}
+.pan.perfect .panEmo{animation:sizzleHot .45s ease-in-out infinite}
+.pan.burning .panEmo{animation:sizzleHot .22s ease-in-out infinite}
+.panFx{
+  position:absolute;right:8px;bottom:28px;font-size:19px;display:none;z-index:2;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));
+}
+.pan.perfect .panFx{display:block;content:'';animation:steamUp 1s ease-out infinite}
+.pan.burning .panFx{display:block;animation:flameUp .5s ease-in-out infinite}
 .cookTrk{height:10px;background:#0c1013;border-radius:2px;position:relative;overflow:hidden;flex:0 0 auto}
 .cookFill{height:100%;width:0;background:linear-gradient(90deg,#8a3a12,var(--hot));transition:background .15s}
 .zone{position:absolute;top:0;bottom:0;background:rgba(65,214,127,.28);border-left:1px solid var(--good);border-right:1px solid var(--good)}
@@ -151,7 +174,7 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 #overlay{position:fixed;inset:0;z-index:50;background:rgba(5,7,9,.93);display:flex;align-items:center;justify-content:center;padding:20px}
 #overlay.hide{display:none}
 #card{
-  background:var(--panel);border:1px solid var(--line2);border-radius:4px;max-width:640px;width:100%;
+  background:var(--panel);border:1px solid var(--line2);border-radius:4px;max-width:680px;width:100%;
   padding:26px 30px;box-shadow:0 24px 70px rgba(0,0,0,.7);max-height:92vh;overflow:auto;
 }
 #card h1{font-size:30px;letter-spacing:-.5px;line-height:1;margin-bottom:2px}
@@ -160,6 +183,12 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 #card .rules{border-left:2px solid var(--hot);padding-left:12px;margin:14px 0}
 #card .rules div{margin:5px 0;font-size:12.5px;color:var(--txt)}
 #card .rules em{font-style:normal;color:var(--dim)}
+.nightLine{
+  display:flex;justify-content:space-between;align-items:center;margin:10px 0 2px;
+  font-size:12px;letter-spacing:1px;color:var(--dim);
+}
+.nightLine b{color:var(--hot);font-size:14px;letter-spacing:2px}
+.nightLine .bankB{color:var(--gold)}
 #start{
   margin-top:16px;width:100%;background:var(--hot);border:0;border-radius:3px;color:#150c05;
   font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:3px;padding:13px 0;cursor:pointer;
@@ -172,6 +201,21 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 #scores span{font-size:9px;letter-spacing:1.4px;color:var(--dim)}
 #best{font-size:11px;color:var(--dim);letter-spacing:1px;text-align:center;margin-top:10px}
 
+/* ---------- shop ---------- */
+#shopHead{font-size:11px;letter-spacing:3px;color:var(--gold);margin:16px 0 8px;display:flex;justify-content:space-between}
+#shop{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.upg{background:var(--panel2);border:1px solid var(--line);padding:9px 10px;border-radius:3px;display:flex;flex-direction:column;gap:3px}
+.upg b{font-size:12px;letter-spacing:.5px}
+.upg small{font-size:10.5px;color:var(--dim);line-height:1.45}
+.upg button{
+  margin-top:5px;background:var(--gold);border:0;border-radius:3px;color:#1a1200;
+  font-family:var(--mono);font-weight:700;font-size:10.5px;letter-spacing:1px;padding:5px 0;cursor:pointer;
+}
+.upg button:hover{background:#e6c65a}
+.upg button:disabled{background:var(--line2);color:var(--dim);cursor:default}
+.upg.owned{border-color:var(--good);opacity:.6}
+.upg.owned button{background:transparent;color:var(--good);border:1px solid var(--good)}
+
 @keyframes blink{50%{opacity:.25}}
 @keyframes chitIn{from{transform:translateY(-42px) rotate(-4deg);opacity:0}}
 @keyframes chitOut{to{transform:translateY(38px) scale(.9);opacity:0}}
@@ -181,14 +225,20 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 @keyframes pulseRed{to{background:#ff6b6b}}
 @keyframes vigPulse{to{box-shadow:inset 0 0 170px 34px rgba(210,25,25,.72)}}
 @keyframes floatUp{to{transform:translateY(-46px);opacity:0}}
+@keyframes sizzle{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2px) rotate(2deg)}}
+@keyframes sizzleHot{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.07)}}
+@keyframes steamUp{0%{transform:translateY(4px);opacity:0}35%{opacity:.9}100%{transform:translateY(-10px);opacity:0}}
+@keyframes flameUp{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.18)}}
 </style>
 </head>
 <body>
 <div id="app">
 
   <header id="hud">
+    <div class="stat" id="night"><b>1</b><span>NIGHT</span></div>
     <div class="stat" id="clock"><b>4:00</b><span>SERVICE</span></div>
     <div class="stat" id="tips"><b>$0</b><span>TIPS</span></div>
+    <div class="stat" id="bank"><b>$0</b><span>BANK</span></div>
     <div class="stat" id="covers"><b>0</b><span>COVERS</span></div>
     <div class="stat" id="walk"><b>0</b><span>WALKOUTS</span></div>
     <div class="stat wide" id="phase"><b id="phaseName">PREP</b><span id="toast"></span></div>
@@ -200,8 +250,8 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
   <section id="line"></section>
 
   <footer id="ctl">
-    <div>
-      <kbd>click ticket item</kbd> fire &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>8</kbd> pull pan &nbsp;·&nbsp;
+    <div id="keysHelp">
+      <kbd>click ticket item</kbd> fire &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>9</kbd>/<kbd>0</kbd>/<kbd>Q</kbd>/<kbd>W</kbd> pull pan &nbsp;·&nbsp;
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <button id="quit">END SERVICE</button>
@@ -213,15 +263,17 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 
 <div id="overlay">
   <div id="card">
-    <h1><small>SPIKE-1</small>THE PASS</h1>
-    <p>Friday night. Four stations, eight pans, and a printer that will not stop. You are the whole line.</p>
+    <h1><small>THE PASS</small>DINNER RUSH</h1>
+    <div class="nightLine"><b id="introNight">NIGHT 1</b><span class="bankB" id="introBank">BANK $0</span></div>
+    <p>Four stations, a printer that will not stop, and a career one service long — until you survive it. You are the whole line.</p>
     <div class="rules">
       <div><em>FIRE —</em> click an item on a ticket to drop it in a pan on its station.</div>
-      <div><em>PULL —</em> hit the pan's number key inside the <span style="color:var(--good)">green window</span>. Early is raw, late is burnt. Both cost you a re-fire.</div>
-      <div><em>PLATE —</em> a ticket only goes out when every item is pulled. Items go cold on the pass — the plate scores on its <span style="color:var(--hot)">coldest</span> component, so time your pulls together.</div>
-      <div><em>WEEDS —</em> six tickets on the rail and the room turns on you: patience drains faster until you dig out to three.</div>
+      <div><em>PULL —</em> hit the pan's key inside the <span style="color:var(--good)">green window</span>. Early is raw, late is burnt. Both cost you a re-fire.</div>
+      <div><em>PLATE —</em> a ticket goes out when every item is pulled. Plates score on their <span style="color:var(--hot)">coldest</span> component — time your pulls together.</div>
+      <div><em>WEEDS —</em> six tickets on the rail and the room turns on you until you dig out.</div>
+      <div><em>CAREER —</em> tips bank between nights. Spend the bank on the line: more pans, heat lamps, a prep cook. Deeper nights hit harder: VIPs, bus tours, stations going 86'd, and the critic.</div>
     </div>
-    <p style="font-size:11.5px">Tickets get bigger and land harder as the night goes. Serve the room, don't burn the ribeye.</p>
+    <div id="shopBoxIntro"></div>
     <button id="start">START SERVICE</button>
     <div id="best"></div>
   </div>
@@ -232,39 +284,69 @@ body.weeds #vig{opacity:1;animation:vigPulse 1.5s ease-in-out infinite alternate
 /* ============================== CONFIG ============================== */
 const SERVICE   = 240;   // seconds of ticket flow
 const CLOSE_CAP = 50;    // grace after last call to clear the rail
-const HOLD      = 13;    // seconds for a pulled item to go stone cold
+const HOLD      = 13;    // base seconds for a pulled item to go stone cold
 const HEAT_FLOOR= .30;
 const BURN_GRACE= 1.6;   // seconds past the window before it's trash
 const WEEDS_IN  = 6, WEEDS_OUT = 3;
 const MAX_RAIL  = 10;   // the board is finite — host holds the door when it fills
+const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w'];
 
 const STATIONS = [
-  {id:'grill', name:'GRILL', tag:'GRL', color:'#ff5330'},
-  {id:'saute', name:'SAUTÉ', tag:'SAU', color:'#ffa41f'},
-  {id:'fry',   name:'FRY',   tag:'FRY', color:'#ffd84d'},
-  {id:'cold',  name:'GARDE', tag:'GDM', color:'#5ad1e6'},
+  {id:'grill', name:'GRILL', tag:'GRL', emo:'🔥', color:'#ff5330'},
+  {id:'saute', name:'SAUTÉ', tag:'SAU', emo:'🍳', color:'#ffa41f'},
+  {id:'fry',   name:'FRY',   tag:'FRY', emo:'🧺', color:'#ffd84d'},
+  {id:'cold',  name:'GARDE', tag:'GDM', emo:'❄️', color:'#5ad1e6'},
 ];
-const PANS_PER = 2;
 
 const MENU = [
-  {n:'RIBEYE',      st:'grill', cook:9.5, win:1.20, price:34},
-  {n:'BURGER',      st:'grill', cook:6.2, win:1.60, price:19},
-  {n:'PORK CHOP',   st:'grill', cook:8.0, win:1.36, price:26},
-  {n:'OCTOPUS',     st:'grill', cook:5.0, win:1.12, price:22},
-  {n:'SCALLOPS',    st:'saute', cook:4.6, win:1.04, price:28},
-  {n:'SALMON',      st:'saute', cook:7.0, win:1.44, price:27},
-  {n:'SHROOMS',     st:'saute', cook:5.4, win:1.76, price:12},
-  {n:'RISOTTO',     st:'saute', cook:8.6, win:1.60, price:21},
-  {n:'FRIES',       st:'fry',   cook:5.0, win:1.92, price:9},
-  {n:'CALAMARI',    st:'fry',   cook:4.2, win:1.20, price:16},
-  {n:'CHX KATSU',   st:'fry',   cook:7.4, win:1.44, price:23},
-  {n:'BEIGNETS',    st:'fry',   cook:6.0, win:1.28, price:11},
-  {n:'CAESAR',      st:'cold',  cook:3.4, win:2.08, price:13},
-  {n:'CRUDO',       st:'cold',  cook:4.4, win:1.28, price:24},
-  {n:'BEETS',       st:'cold',  cook:3.8, win:1.76, price:14},
-  {n:'OYSTERS',     st:'cold',  cook:5.2, win:1.52, price:20},
+  {n:'RIBEYE',      e:'🥩', st:'grill', cook:9.5, win:1.20, price:34},
+  {n:'BURGER',      e:'🍔', st:'grill', cook:6.2, win:1.60, price:19},
+  {n:'PORK CHOP',   e:'🍖', st:'grill', cook:8.0, win:1.36, price:26},
+  {n:'OCTOPUS',     e:'🐙', st:'grill', cook:5.0, win:1.12, price:22},
+  {n:'SCALLOPS',    e:'🍥', st:'saute', cook:4.6, win:1.04, price:28},
+  {n:'SALMON',      e:'🐟', st:'saute', cook:7.0, win:1.44, price:27},
+  {n:'SHROOMS',     e:'🍄', st:'saute', cook:5.4, win:1.76, price:12},
+  {n:'RISOTTO',     e:'🍚', st:'saute', cook:8.6, win:1.60, price:21},
+  {n:'FRIES',       e:'🍟', st:'fry',   cook:5.0, win:1.92, price:9},
+  {n:'CALAMARI',    e:'🦑', st:'fry',   cook:4.2, win:1.20, price:16},
+  {n:'CHX KATSU',   e:'🍗', st:'fry',   cook:7.4, win:1.44, price:23},
+  {n:'BEIGNETS',    e:'🍩', st:'fry',   cook:6.0, win:1.28, price:11},
+  {n:'CAESAR',      e:'🥗', st:'cold',  cook:3.4, win:2.08, price:13},
+  {n:'CRUDO',       e:'🍣', st:'cold',  cook:4.4, win:1.28, price:24},
+  {n:'BEETS',       e:'🍠', st:'cold',  cook:3.8, win:1.76, price:14},
+  {n:'OYSTERS',     e:'🦪', st:'cold',  cook:5.2, win:1.52, price:20},
 ];
 const TABLES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T12','T14','BAR1','BAR2','BAR3','PAT1','PAT2','CHEF'];
+
+/* ============================== CAREER / UPGRADES ============================== */
+const UPGRADES = [
+  {id:'pan_grill', n:'3RD GRILL PAN',  e:'🍳', cost:220, d:'One more pan on the grill. Ribeyes stop queueing.'},
+  {id:'pan_saute', n:'3RD SAUTÉ PAN',  e:'🍳', cost:220, d:'One more burner on sauté.'},
+  {id:'pan_fry',   n:'3RD FRY BASKET', e:'🧺', cost:200, d:'A third basket in the fryer.'},
+  {id:'pan_cold',  n:'3RD GARDE BOARD',e:'🔪', cost:180, d:'More board space on garde manger.'},
+  {id:'prep',      n:'PREP COOK',      e:'👨‍🍳', cost:350, d:'Mise is dialed — everything cooks 8% faster.'},
+  {id:'expo',      n:'EXPO CALLER',    e:'📣', cost:300, d:'Someone calls your windows — pull windows 20% wider.'},
+  {id:'lamps',     n:'HEAT LAMPS',     e:'💡', cost:260, d:'Plates hold heat on the pass 50% longer.'},
+  {id:'knives',    n:'SHARPER KNIVES', e:'🔪', cost:240, d:'Garde manger works 15% faster.'},
+  {id:'regs',      n:'REGULARS',       e:'💛', cost:280, d:'The room loves you — all tables 15% more patient.'},
+  {id:'skin',      n:'THICK SKIN',     e:'🧊', cost:320, d:'Weeds pressure drains patience 40% slower.'},
+];
+
+let META = {night:1, bank:0, up:{}};
+function loadMeta(){ try{ const m=JSON.parse(localStorage.getItem('pass_meta')||'null'); if(m&&m.up) META=m; }catch(e){} }
+function saveMeta(){ try{ localStorage.setItem('pass_meta',JSON.stringify(META)); }catch(e){} }
+loadMeta();
+
+function panCount(stId){ return 2 + (META.up['pan_'+stId]?1:0); }
+function cookTime(m){
+  let c=m.cook;
+  if(META.up.prep) c*=.92;
+  if(META.up.knives && m.st==='cold') c*=.85;
+  return c;
+}
+function winTime(m){ return m.win*(META.up.expo?1.2:1); }
+function holdTime(){ return HOLD*(META.up.lamps?1.5:1); }
+function nightMult(){ return Math.min(1.9, 1+(META.night-1)*.13); }
 
 /* ============================== STATE ============================== */
 const G = {
@@ -274,6 +356,7 @@ const G = {
   perfects:0, pulls:0, weeds:false, weedsTime:0,
   nextSpawn:2.2, ticketNo:0,
   tickets:[], pans:[],
+  downUntil:{}, downSchedule:[], criticAt:0, criticDone:false,
 };
 
 /* ============================== AUDIO ============================== */
@@ -300,6 +383,7 @@ function noise(dur=.22, vol=.1){
 }
 const SFX = {
   ticket(){ tone(1050,.05,'square',.09); setTimeout(()=>tone(820,.06,'square',.09),70); },
+  vip(){ [880,1108,1318].forEach((f,i)=>setTimeout(()=>tone(f,.14,'triangle',.13),i*80)); },
   fire(){ noise(.26,.13); tone(160,.16,'sine',.09,110); },
   perfect(){ tone(1320,.13,'triangle',.16); tone(1980,.12,'sine',.08); },
   over(){ tone(430,.16,'square',.1,330); },
@@ -308,6 +392,8 @@ const SFX = {
   serve(){ tone(1568,.16,'triangle',.17); setTimeout(()=>tone(2093,.3,'triangle',.15),95); },
   walk(){ tone(500,.5,'sawtooth',.13,150); },
   weeds(){ tone(90,.7,'sawtooth',.1); },
+  down(){ tone(220,.4,'square',.13,90); noise(.35,.12); },
+  buy(){ tone(988,.09,'triangle',.14); setTimeout(()=>tone(1318,.16,'triangle',.14),80); },
   end(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.34,'triangle',.15),i*130)); },
 };
 
@@ -317,24 +403,26 @@ const railEl=$('#rail'), lineEl=$('#line'), overlay=$('#overlay'), card=$('#card
 
 function buildLine(){
   lineEl.innerHTML=''; G.pans.length=0;
-  let key=1;
+  let ki=0;
   STATIONS.forEach(st=>{
-    const col=document.createElement('div'); col.className='station';
-    col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.name}<em>${st.tag}</em></div>`;
+    const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
+    col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em></div>`;
     const wrap=document.createElement('div'); wrap.className='pans';
-    for(let i=0;i<PANS_PER;i++){
+    for(let i=0;i<panCount(st.id);i++){
+      const keyLabel=KEYS[ki].toUpperCase();
       const el=document.createElement('div'); el.className='pan empty';
-      el.innerHTML=`<span class="panKey">${key}</span>
+      el.innerHTML=`<span class="panKey">${keyLabel}</span>
         <div class="panTop"><div class="panDish"></div><div class="panTicket"></div></div>
+        <span class="panEmo"></span><span class="panFx"></span>
         <div class="panBig idle">EMPTY</div>
         <div class="cookTrk" style="display:none"><div class="cookFill"></div><div class="zone"></div></div>`;
-      const pan={ st:st.id, key, el, item:null, ticket:null, t:0,
+      const pan={ st:st.id, key:keyLabel, el, item:null, ticket:null, t:0, cookNeed:0, winLen:0,
         fill:el.querySelector('.cookFill'), zone:el.querySelector('.zone'),
-        trk:el.querySelector('.cookTrk'),
+        trk:el.querySelector('.cookTrk'), emo:el.querySelector('.panEmo'), fx:el.querySelector('.panFx'),
         dish:el.querySelector('.panDish'), tk:el.querySelector('.panTicket'),
         big:el.querySelector('.panBig') };
       el.addEventListener('click',()=>pull(pan));
-      G.pans.push(pan); wrap.appendChild(el); key++;
+      G.pans.push(pan); wrap.appendChild(el); ki++;
     }
     col.appendChild(wrap); lineEl.appendChild(col);
   });
@@ -354,11 +442,12 @@ function floatText(el,txt,color){
 /* ============================== TICKETS ============================== */
 function difficulty(){ return Math.min(1, G.t/195); }
 
-function spawnTicket(){
-  const p=difficulty();
+function spawnTicket(opts={}){
+  const p=difficulty(), nm=nightMult();
   let count=1;
-  if(Math.random() < .25+p*.65) count++;
-  if(Math.random() < p*.55) count++;
+  if(Math.random() < (.25+p*.65)*Math.min(1.25,nm)) count++;
+  if(Math.random() < p*.55*Math.min(1.25,nm)) count++;
+  if(opts.critic) count=3;
   const items=[], used=[];
   for(let i=0;i<count;i++){
     let m, guard=0;
@@ -366,16 +455,26 @@ function spawnTicket(){
     used.push(m.n);
     items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null});
   }
+  const vip = !opts.critic && META.night>=2 && Math.random()<.12;
   const tk={
-    id:++G.ticketNo, table:TABLES[(Math.random()*TABLES.length)|0],
-    items, born:G.t, limit:78-32*p, left:0, el:null, dead:false,
+    id:++G.ticketNo,
+    table: opts.critic?'CRITIC★' : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
+    items, born:G.t, el:null, dead:false,
+    vip, critic:!!opts.critic,
+    limit:(78-32*p)*(META.up.regs?1.15:1),
   };
+  if(vip) tk.limit*=.62;
+  if(tk.critic) tk.limit=Math.max(tk.limit,62);
   tk.left=tk.limit;
-  G.tickets.push(tk); buildChit(tk); SFX.ticket();
+  G.tickets.push(tk); buildChit(tk);
+  if(tk.critic){ toast('THE CRITIC IS IN THE ROOM','#c084fc'); SFX.vip(); }
+  else if(vip){ toast('VIP SAT AT '+tk.table+' — DOUBLE TIPS','var(--gold)'); SFX.vip(); }
+  else SFX.ticket();
 }
 
 function buildChit(tk){
-  const el=document.createElement('div'); el.className='chit';
+  const el=document.createElement('div');
+  el.className='chit'+(tk.vip?' vip':'')+(tk.critic?' critic':'');
   el.innerHTML=`<div class="chHead"><span>#${String(tk.id).padStart(3,'0')}</span><span class="tbl">${tk.table}</span></div>
     <div class="timerTrk"><div class="timerBar"></div></div><div class="items"></div>`;
   const box=el.querySelector('.items');
@@ -383,7 +482,7 @@ function buildChit(tk){
     const st=STATIONS.find(s=>s.id===it.m.st);
     const d=document.createElement('div'); d.className='item todo';
     d.style.borderLeft='3px solid '+st.color;   // station reads as colour, not text
-    d.innerHTML=`<div class="iRow"><span class="iName">${it.m.n}</span>
+    d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${it.m.e}</span>${it.m.n}</span>
         <span class="tag" style="display:none"></span></div>
       <div class="mini" style="display:none"><i></i></div>`;
     d.addEventListener('click',()=>fire(tk,i));
@@ -400,22 +499,27 @@ function buildChit(tk){
 
 /* ============================== ACTIONS ============================== */
 function freePan(stId){ return G.pans.find(p=>p.st===stId && !p.item); }
+function stationDown(stId){ return (G.downUntil[stId]||0) > G.t; }
 
 function fire(tk,idx){
   if(!G.running||G.paused||tk.dead) return;
   const it=tk.items[idx];
   if(it.state!=='todo') return;
+  const st=STATIONS.find(s=>s.id===it.m.st);
+  if(stationDown(it.m.st)){ toast(st.name+" IS 86'D — WAIT IT OUT",'var(--bad)'); return; }
   const pan=freePan(it.m.st);
-  if(!pan){ toast('NO OPEN PAN ON '+STATIONS.find(s=>s.id===it.m.st).name,'var(--bad)'); return; }
+  if(!pan){ toast('NO OPEN PAN ON '+st.name,'var(--bad)'); return; }
   it.state='cooking'; it.pan=pan;
   pan.item=it; pan.ticket=tk; pan.t=0;
+  pan.cookNeed=cookTime(it.m); pan.winLen=winTime(it.m);
   pan.el.classList.remove('empty'); pan.el.classList.add('live');
   pan.big.className='panBig'; pan.trk.style.display='';
   pan.dish.textContent=it.m.n; pan.tk.textContent=`#${String(tk.id).padStart(3,'0')} · ${tk.table}`;
-  const total=it.m.cook+it.m.win+BURN_GRACE;
-  pan.zone.style.left=(it.m.cook/total*100)+'%';
-  pan.zone.style.width=(it.m.win/total*100)+'%';
-  it.el.className='item cooking'; it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent='P'+pan.key;
+  pan.emo.textContent=it.m.e;
+  const total=pan.cookNeed+pan.winLen+BURN_GRACE;
+  pan.zone.style.left=(pan.cookNeed/total*100)+'%';
+  pan.zone.style.width=(pan.winLen/total*100)+'%';
+  it.el.className='item cooking'; it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent=pan.key;
   it.miniEl.style.display=''; it.barEl.style.background='#1a1512';
   SFX.fire();
 }
@@ -423,7 +527,7 @@ function fire(tk,idx){
 function fireOldest(){
   for(const tk of G.tickets){
     for(let i=0;i<tk.items.length;i++){
-      if(tk.items[i].state==='todo' && freePan(tk.items[i].m.st)){ fire(tk,i); return; }
+      if(tk.items[i].state==='todo' && !stationDown(tk.items[i].m.st) && freePan(tk.items[i].m.st)){ fire(tk,i); return; }
     }
   }
   toast('NOTHING TO FIRE');
@@ -433,16 +537,16 @@ function pull(pan){
   if(!G.running||G.paused||!pan.item) return;
   const it=pan.item, tk=pan.ticket, m=it.m;
   G.pulls++;
-  if(pan.t < m.cook){                       // raw
+  if(pan.t < pan.cookNeed){                       // raw
     it.state='todo'; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
     toast('RAW — REFIRE '+m.n,'var(--bad)'); floatText(pan.el,'RAW','#ef4444'); SFX.raw();
   } else {
-    const over = pan.t > m.cook+m.win;
+    const over = pan.t > pan.cookNeed+pan.winLen;
     it.state='pass'; it.quality = over?'over':'perfect'; it.pulledAt=G.t;
     it.el.className='item ready'; it.tagEl.className='tag '+(over?'ov':'pf'); it.tagEl.textContent=over?'OVER':'PERF';
     it.miniEl.className='mini heat'; it.miniEl.style.display=''; it.barEl.style.background='';
     if(over){ floatText(pan.el,'OVER','#facc15'); SFX.over(); }
-    else { G.perfects++; floatText(pan.el,'PERFECT','#41d67f'); SFX.perfect(); }
+    else { G.perfects++; floatText(pan.el,it.m.e+' PERFECT','#41d67f'); SFX.perfect(); }
   }
   clearPan(pan);
   refreshTicket(tk);
@@ -453,35 +557,46 @@ function clearPan(pan){
   pan.el.className='pan empty'; pan.trk.style.display='none';
   pan.big.className='panBig idle'; pan.big.textContent='EMPTY'; pan.big.style.color='';
   pan.dish.textContent=''; pan.tk.textContent=''; pan.fill.style.width='0%';
+  pan.emo.textContent=''; pan.fx.textContent='';
 }
 
 function burnPan(pan){
   const it=pan.item, tk=pan.ticket;
   it.state='todo'; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
   G.waste++; G.tips=Math.max(0,G.tips-Math.round(it.m.price*.4));
-  toast('BURNT — '+it.m.n+' IN THE BIN','var(--bad)'); floatText(pan.el,'BURNT','#ef4444'); SFX.burn();
+  toast('BURNT — '+it.m.n+' IN THE BIN','var(--bad)'); floatText(pan.el,'🔥 BURNT','#ef4444'); SFX.burn();
   clearPan(pan); refreshTicket(tk);
 }
 
 function ready(tk){ return tk.items.every(i=>i.state==='pass'); }
 
-function heatOf(it){ return Math.max(HEAT_FLOOR, 1-(G.t-it.pulledAt)/HOLD*(1-HEAT_FLOOR)); }
+function heatOf(it){ return Math.max(HEAT_FLOOR, 1-(G.t-it.pulledAt)/holdTime()*(1-HEAT_FLOOR)); }
 
 function plate(tk){
   if(!G.running||G.paused||tk.dead||!ready(tk)) return;
-  let base=0, qual=0, minHeat=1;
+  let base=0, qual=0, minHeat=1, allPerfect=true;
   tk.items.forEach(it=>{
     base+=it.m.price;
     qual+= it.quality==='perfect'?1.15:.6;
+    if(it.quality!=='perfect') allPerfect=false;
     minHeat=Math.min(minHeat,heatOf(it));
   });
   qual/=tk.items.length;
   const age=G.t-tk.born;
   const speed = age<25?1.2 : age<45?1.05 : age<65?.92 : .8;
-  const tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
+  let tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
+  if(tk.vip) tip*=2;
   G.tips+=tip; G.covers++;
   floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
-  if(minHeat<.6) toast('SENT COLD — TABLE NOTICED','var(--warn)');
+  if(tk.critic){
+    if(allPerfect && minHeat>.7){
+      G.tips+=150;
+      toast('THE CRITIC IS FLOORED — +$150 AND A REVIEW','#c084fc');
+      floatText(tk.el,'★★★ +$150','#c084fc');
+    } else {
+      toast('CRITIC UNIMPRESSED — "uneven execution"','var(--warn)');
+    }
+  } else if(minHeat<.6) toast('SENT COLD — TABLE NOTICED','var(--warn)');
   SFX.serve();
   killTicket(tk,'dying');
 }
@@ -502,8 +617,8 @@ function killTicket(tk,cls){
 }
 
 function walkout(tk){
-  G.walkouts++; G.tips=Math.max(0,G.tips-8);
-  toast('WALKOUT — '+tk.table+' LEFT','var(--bad)'); SFX.walk();
+  G.walkouts++; G.tips=Math.max(0,G.tips-(tk.vip?16:8));
+  toast('WALKOUT — '+tk.table+' LEFT'+(tk.critic?' — THE REVIEW WILL HURT':''),'var(--bad)'); SFX.walk();
   killTicket(tk,'walkout');
 }
 
@@ -534,13 +649,36 @@ function step(dt){
     if(!G.tickets.length || G.closeT>CLOSE_CAP){ finish(); return; }
   }
 
+  // 86'd station events (night 4+)
+  for(const ev of G.downSchedule){
+    if(!ev.fired && G.t>=ev.at){
+      ev.fired=true;
+      const st=STATIONS[(Math.random()*STATIONS.length)|0];
+      G.downUntil[st.id]=G.t+ev.dur;
+      toast("86 — "+st.name+" IS DOWN "+Math.round(ev.dur)+"s",'var(--bad)'); SFX.down();
+    }
+  }
+  for(const st of STATIONS){
+    const col=lineEl.querySelector(`[data-st="${st.id}"]`);
+    if(col) col.classList.toggle('down', stationDown(st.id));
+  }
+
+  // critic (night 5+)
+  if(G.criticAt && !G.criticDone && G.t>=G.criticAt && !G.closing && G.tickets.length<MAX_RAIL){
+    G.criticDone=true; spawnTicket({critic:true});
+  }
+
   // spawn
   if(!G.closing){
     G.nextSpawn-=dt;
     if(G.nextSpawn<=0){
-      if(G.tickets.length<MAX_RAIL) spawnTicket();
-      const p=difficulty();
-      G.nextSpawn=(7.6-5.6*p)*(0.8+Math.random()*0.45);
+      const p=difficulty(), nm=nightMult();
+      // bus tour (night 3+): a wave hits all at once
+      if(META.night>=3 && Math.random()<.08 && G.tickets.length<=MAX_RAIL-3){
+        toast('A BUS JUST PULLED UP — 3 TOPS AT ONCE','var(--hot)');
+        for(let i=0;i<3;i++) spawnTicket();
+      } else if(G.tickets.length<MAX_RAIL) spawnTicket();
+      G.nextSpawn=((7.6-5.6*p)/nm)*(0.8+Math.random()*0.45);
     }
   }
 
@@ -548,7 +686,7 @@ function step(dt){
   for(const pan of G.pans){
     if(!pan.item) continue;
     pan.t+=dt;
-    if(pan.t > pan.item.m.cook+pan.item.m.win+BURN_GRACE) burnPan(pan);
+    if(pan.t > pan.cookNeed+pan.winLen+BURN_GRACE) burnPan(pan);
   }
 
   // weeds
@@ -558,7 +696,7 @@ function step(dt){
   if(G.weeds) G.weedsTime+=dt;
 
   // ticket patience
-  const drain = G.weeds?1.35:1;
+  const drain = G.weeds?(META.up.skin?1.2:1.35):1;
   for(const tk of G.tickets.slice()){
     tk.left-=dt*drain;
     if(tk.left<=0) walkout(tk);
@@ -570,6 +708,8 @@ function render(){
   $('#clock b').textContent=G.closing?'CLOSE':`${m}:${String(s).padStart(2,'0')}`;
   $('#clock').classList.toggle('low',!G.closing&&G.clock<30);
   $('#tips b').textContent='$'+G.tips;
+  $('#bank b').textContent='$'+META.bank;
+  $('#night b').textContent=META.night;
   $('#covers b').textContent=G.covers;
   $('#walk b').textContent=G.walkouts;
   const p=difficulty();
@@ -577,19 +717,20 @@ function render(){
 
   for(const pan of G.pans){
     if(!pan.item) continue;
-    const m2=pan.item.m, total=m2.cook+m2.win+BURN_GRACE;
+    const total=pan.cookNeed+pan.winLen+BURN_GRACE;
     pan.fill.style.width=Math.min(100,pan.t/total*100)+'%';
-    const inWin = pan.t>=m2.cook && pan.t<=m2.cook+m2.win;
-    const over  = pan.t>m2.cook+m2.win;
+    const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
+    const over  = pan.t>pan.cookNeed+pan.winLen;
     pan.el.classList.toggle('perfect',inWin);
-    pan.el.classList.toggle('over',over && pan.t<m2.cook+m2.win+1.5);
-    pan.el.classList.toggle('burning',pan.t>=m2.cook+m2.win+1.5);
+    pan.el.classList.toggle('over',over && pan.t<pan.cookNeed+pan.winLen+1.5);
+    pan.el.classList.toggle('burning',pan.t>=pan.cookNeed+pan.winLen+1.5);
     pan.big.className = 'panBig'+(inWin||over?' callout':'');
-    pan.big.textContent = inWin?'PULL NOW' : over?'BURNING!' : (m2.cook-pan.t).toFixed(1);
+    pan.big.textContent = inWin?'PULL NOW' : over?'BURNING!' : (pan.cookNeed-pan.t).toFixed(1);
     pan.big.style.color = inWin?'var(--good)' : over?'var(--bad)'
-      : (m2.cook-pan.t)<1.5?'var(--warn)':'var(--txt)';
+      : (pan.cookNeed-pan.t)<1.5?'var(--warn)':'var(--txt)';
     pan.fill.style.background = over?'linear-gradient(90deg,#7a1414,#ef4444)'
       : inWin?'linear-gradient(90deg,#1c7a45,#41d67f)' : 'linear-gradient(90deg,#8a3a12,#ff6a1a)';
+    pan.fx.textContent = pan.el.classList.contains('burning')?'🔥' : inWin?'♨️' : '';
   }
 
   for(const tk of G.tickets){
@@ -599,7 +740,7 @@ function render(){
     tk.el.classList.toggle('urgent',f<.18);
     for(const it of tk.items){
       if(it.state==='cooking'&&it.pan){
-        const t2=it.m.cook+it.m.win+BURN_GRACE;
+        const t2=it.pan.cookNeed+it.pan.winLen+BURN_GRACE;
         it.barEl.style.width=Math.min(100,it.pan.t/t2*100)+'%';
       } else if(it.state==='pass'){
         const h=heatOf(it);
@@ -610,12 +751,40 @@ function render(){
   }
 }
 
+/* ============================== SHOP ============================== */
+function renderShop(container){
+  const box=document.createElement('div');
+  box.innerHTML=`<div id="shopHead"><span>THE BACK OFFICE — SPEND YOUR BANK</span><span style="color:var(--gold)">$${META.bank}</span></div>`;
+  const grid=document.createElement('div'); grid.id='shop';
+  UPGRADES.forEach(u=>{
+    const owned=!!META.up[u.id];
+    const d=document.createElement('div'); d.className='upg'+(owned?' owned':'');
+    d.innerHTML=`<b>${u.e} ${u.n}</b><small>${u.d}</small>`;
+    const b=document.createElement('button');
+    b.textContent=owned?'ON THE LINE':'BUY — $'+u.cost;
+    b.disabled=owned||META.bank<u.cost;
+    b.addEventListener('click',()=>{
+      if(META.up[u.id]||META.bank<u.cost) return;
+      META.bank-=u.cost; META.up[u.id]=true; saveMeta(); SFX.buy();
+      container.innerHTML=''; renderShop(container);
+    });
+    d.appendChild(b); grid.appendChild(d);
+  });
+  box.appendChild(grid); container.appendChild(box);
+}
+
 /* ============================== FLOW ============================== */
 function start(){
   Object.assign(G,{running:true,over:false,paused:false,t:0,clock:SERVICE,closing:false,closeT:0,
     tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,
-    nextSpawn:2.2,ticketNo:0,tickets:[]});
+    nextSpawn:2.2,ticketNo:0,tickets:[],downUntil:{},downSchedule:[],criticAt:0,criticDone:false});
   document.body.classList.remove('weeds');
+  // night events
+  if(META.night>=4){
+    const n = META.night>=6?2:1;
+    for(let i=0;i<n;i++) G.downSchedule.push({at:45+Math.random()*150, dur:10+Math.random()*5, fired:false});
+  }
+  if(META.night>=5) G.criticAt=85+Math.random()*60;
   railEl.innerHTML='<div id="railEmpty">RAIL CLEAR</div>';
   buildLine();
   overlay.classList.add('hide');
@@ -637,10 +806,15 @@ function finish(){
   else if(sc>=250){grade='C';col='var(--warn)'}
   let best=0; try{ best=+(localStorage.getItem('pass_best')||0); if(G.tips>best){best=G.tips; localStorage.setItem('pass_best',best);} }catch(e){}
 
-  card.innerHTML=`<h1><small>SERVICE CLOSED</small>${G.walkouts===0&&G.covers>0?'CLEAN NIGHT':'THAT WAS A NIGHT'}</h1>
+  META.bank+=G.tips;
+  const closedNight=META.night;
+  META.night++;
+  saveMeta();
+
+  card.innerHTML=`<h1><small>NIGHT ${closedNight} — SERVICE CLOSED</small>${G.walkouts===0&&G.covers>0?'CLEAN NIGHT':'THAT WAS A NIGHT'}</h1>
     <div id="grade" style="color:${col}">${grade}</div>
     <div id="scores">
-      <div><b style="color:var(--good)">$${G.tips}</b><span>TIPS</span></div>
+      <div><b style="color:var(--good)">$${G.tips}</b><span>TIPS → BANK</span></div>
       <div><b>${G.covers}</b><span>COVERS SERVED</span></div>
       <div><b style="color:var(--bad)">${G.walkouts}</b><span>WALKOUTS</span></div>
       <div><b>${acc}%</b><span>PERFECT PULLS</span></div>
@@ -652,18 +826,32 @@ function finish(){
       : grade==='B'?'You held the line, mostly. The weeds got you for a stretch.'
       : grade==='C'?'Rough push. Too many refires, too much on the rail.'
       : 'The rail buried you. Fire earlier, pull tighter, plate faster.'}</p>
-    <button id="start">RUN IT AGAIN</button>
+    <div id="shopBox"></div>
+    <p style="font-size:11px">${nightPreview(META.night)}</p>
+    <button id="start">OPEN NIGHT ${META.night} ▸</button>
     <div id="best">BEST TIPS · $${best}</div>`;
+  renderShop(card.querySelector('#shopBox'));
   overlay.classList.remove('hide');
   card.querySelector('#start').addEventListener('click',start);
   SFX.end();
+}
+
+function nightPreview(n){
+  const bits=[];
+  if(n>=2) bits.push('VIP tables (double tips, short fuses)');
+  if(n>=3) bits.push('bus tours');
+  if(n>=4) bits.push("stations going 86'd");
+  if(n>=5) bits.push('the critic');
+  const pace=Math.round((nightMult()-1)*100);
+  return `NIGHT ${n}: tickets land ${pace}% harder`+(bits.length?` · in play: ${bits.join(' · ')}`:'')+'.';
 }
 
 /* ============================== INPUT ============================== */
 document.addEventListener('keydown',e=>{
   if(e.repeat) return;
   const k=e.key.toLowerCase();
-  if(k>='1'&&k<='8'){ const p=G.pans[+k-1]; if(p) pull(p); e.preventDefault(); return; }
+  const ki=KEYS.indexOf(k);
+  if(ki>=0 && ki<G.pans.length){ pull(G.pans[ki]); e.preventDefault(); return; }
   if(k===' '||e.code==='Space'){ plateBest(); e.preventDefault(); return; }
   if(k==='f'){ fireOldest(); return; }
   if(k==='p'||k==='escape'){
@@ -675,7 +863,13 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&G.running){G.paused=true; toast('PAUSED','var(--hot)');} last=performance.now(); });
 $('#quit').addEventListener('click',()=>{ if(G.running) finish(); });
 overlay.querySelector('#start').addEventListener('click',start);
-(function(){ try{ const b=+(localStorage.getItem('pass_best')||0); if(b) $('#best').textContent='BEST TIPS · $'+b; }catch(e){} })();
+(function(){
+  try{ const b=+(localStorage.getItem('pass_best')||0); if(b) $('#best').textContent='BEST TIPS · $'+b; }catch(e){}
+  $('#introNight').textContent='NIGHT '+META.night;
+  $('#introBank').textContent='BANK $'+META.bank;
+  const box=$('#shopBoxIntro');
+  if(META.bank>0 || Object.keys(META.up).length) renderShop(box);
+})();
 
 buildLine();
 requestAnimationFrame(frame);
