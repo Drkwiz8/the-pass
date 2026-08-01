@@ -45,25 +45,28 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 #rail{display:flex;gap:8px;align-items:flex-start;min-height:148px}
 #railEmpty{color:var(--dim);font-size:11px;letter-spacing:2px;padding:58px 12px}
 
-.chit{background:var(--paper);color:#1a1512;width:160px;flex:0 0 auto;border-radius:2px;padding:6px 7px 7px;position:relative;
-  box-shadow:0 3px 0 rgba(0,0,0,.45),0 8px 18px rgba(0,0,0,.35);border-top:3px solid #c0392b;animation:chitIn .22s cubic-bezier(.2,1.4,.4,1)}
+.chit{background:var(--paper);color:#1a1512;width:172px;flex:0 0 auto;border-radius:2px;padding:6px 7px 7px;position:relative;
+  box-shadow:0 3px 0 rgba(0,0,0,.45),0 8px 18px rgba(0,0,0,.35);border-top:3px solid #c0392b;animation:chitIn .22s cubic-bezier(.2,1.4,.4,1);
+  transition:width .25s ease,padding .25s ease,opacity .25s ease}
+.chit.gone{width:0!important;padding:0!important;overflow:hidden;opacity:0}
 .chit.dying{animation:chitOut .3s ease-in forwards;pointer-events:none}
 .chit.walkout{animation:chitWalk .4s ease-in forwards;pointer-events:none}
 .chit.done{border-top-color:var(--good)}
-.chit.urgent{border-top-color:#000;animation:shake .35s infinite}
+.chit.urgent{border-top-color:#000;animation:urgentGlow .45s ease-in-out infinite alternate}
 .chit.vip{background:#f2e2ac;border-top-color:var(--gold);box-shadow:0 3px 0 rgba(90,70,0,.5),0 8px 22px rgba(212,175,55,.28)}
 .chit.critic{background:#e8d8f0;border-top-color:#7c3aed}
-.chit.party{background:#d8ecf0;border-top-color:#0e7490;width:180px}
+.chit.party{background:#d8ecf0;border-top-color:#0e7490;width:192px}
 .chHead{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.5px;color:#5b4b3f}
 .chHead .tbl{color:#1a1512}
 .timerTrk{height:4px;background:#cbbb9b;margin:4px 0 6px;border-radius:2px;overflow:hidden}
 .timerBar{height:100%;background:#2f7d4e;transition:background .2s;width:100%}
-.item{display:flex;flex-direction:column;gap:2px;padding:6px 6px;margin-bottom:4px;border-radius:3px;background:rgba(0,0,0,.055)}
-.item.todo{cursor:pointer;background:rgba(0,0,0,.1);outline:1px dashed rgba(0,0,0,.28)}
-.item.todo:hover{background:#1a1512;color:var(--paper)}
+.item{display:flex;flex-direction:column;gap:2px;padding:8px 7px;margin-bottom:5px;border-radius:3px;background:rgba(0,0,0,.055)}
+.item.todo{cursor:pointer;background:rgba(0,0,0,.08);outline:1px dashed rgba(0,0,0,.22);opacity:.55}
+.item.todo.canfire{opacity:1;background:rgba(23,105,47,.16);outline:2px solid #1c7a45}
+.item.todo.canfire:hover{background:#1a1512;color:var(--paper)}
 .iRow{display:flex;justify-content:space-between;align-items:center;gap:5px}
-.iName{font-size:12.5px;font-weight:700;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.iEmo{font-size:14px;margin-right:4px}
+.iName{font-size:13.5px;font-weight:700;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iEmo{font-size:15px;margin-right:4px}
 .tag{font-size:8px;font-weight:700;letter-spacing:.8px;padding:0 3px;border-radius:2px;flex:0 0 auto}
 .tag.ck{background:#1a1512;color:var(--fry)}
 .tag.pf{background:#1c6b3f;color:#fff}
@@ -206,7 +209,7 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 @keyframes chitIn{from{transform:translateY(-42px) rotate(-4deg);opacity:0}}
 @keyframes chitOut{to{transform:translateY(38px) scale(.9);opacity:0}}
 @keyframes chitWalk{to{transform:translateY(-40px) rotate(6deg);opacity:0;filter:grayscale(1)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-1.5px)}75%{transform:translateX(1.5px)}}
+@keyframes urgentGlow{to{box-shadow:0 3px 0 rgba(0,0,0,.45),0 0 20px 4px rgba(239,68,68,.75)}}
 @keyframes burn{to{box-shadow:inset 0 0 0 1px var(--bad),0 0 22px rgba(239,68,68,.4)}}
 @keyframes pulseRed{to{background:#ff6b6b}}
 @keyframes vigPulse{to{box-shadow:inset 0 0 170px 34px rgba(210,25,25,.72)}}
@@ -407,6 +410,8 @@ const ACHS = [
   {id:'e5min',    n:'SURVIVOR',         d:'Last 5 minutes in Endless Rush.', test:c=>c.mode==='endless'&&G.t>=300},
   {id:'flip10',   n:'FLIP MASTER',      d:'Land 10 flips in one service.', test:c=>G.flips>=10},
   {id:'heat15',   n:'HEAT x15',         d:'Build a 15-pull perfect combo.', test:c=>G.comboMax>=15},
+  {id:'renov',    n:'NEW PAINT',        d:'Renovate the restaurant for the first time.', test:c=>(META.tier||0)>=1},
+  {id:'michelin', n:'THE ROOM',         d:'Reach the Michelin Room (tier 5).', test:c=>(META.tier||0)>=5},
 ];
 function checkAchs(ctx){
   const fresh=[];
@@ -476,7 +481,21 @@ const REPEATS = [
 ];
 function repCost(r){ const lvl=META.up[r.id]||0; return Math.round(r.base*Math.pow(r.growth,lvl)); }
 
-let META = {night:1, bank:0, stars:0, up:{}, crew:[], ward:{}, ach:{}};
+/* The renovation ladder — the endgame money sink. Each tier is a whole new
+   room: permanent +12% prices, a star, and a name worth grinding for. */
+const TIERS = [
+  {n:'THE PASS — LATE-NIGHT WINDOW', cost:0},
+  {n:'THE PASS — DINER',            cost:4000},
+  {n:'THE PASS — BISTRO',           cost:10000},
+  {n:'THE PASS — BRASSERIE',        cost:24000},
+  {n:'THE PASS — FINE DINING',      cost:60000},
+  {n:'THE PASS — THE MICHELIN ROOM',cost:150000},
+  {n:'THE PASS — LEGEND',           cost:400000},
+];
+function tierName(){ return TIERS[Math.min(META.tier||0,TIERS.length-1)].n; }
+function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)+1] : null; }
+
+let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}};
 function loadMeta(){
   try{
     const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
@@ -486,6 +505,7 @@ function loadMeta(){
       if(typeof META.stars!=='number') META.stars=0;
       if(!META.ward) META.ward={};
       if(!META.ach) META.ach={};
+      if(typeof META.tier!=='number') META.tier=0;
       if(m.sous && !META.crew.length){
         META.crew.push({role:'cook', name:m.sous.name, hat:m.sous.hat,
           apron:m.sous.apron, station:m.sous.station, quirk:rollQuirk()});
@@ -616,37 +636,54 @@ const CHEF_BODY = [
   '..PP....PP..',
   '.OO......OO.',
 ];
+function shade(hex,f){
+  const n=parseInt(hex.slice(1),16), r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  const mm=c=>Math.max(0,Math.min(255,Math.round(c*(1+f))));
+  return '#'+((1<<24)+(mm(r)<<16)+(mm(g)<<8)+mm(b)).toString(16).slice(1);
+}
 function chefURL(m,px=3){
   const gearHat = m.gear&&m.gear.hat ? WARDROBE.find(w=>w.id===m.gear.hat) : null;
   const hatRows = gearHat ? gearHat.hatRows : CHEF_HATS[m.hatStyle||'toque'];
   const rows=[...hatRows,...CHEF_BODY];
+  const W=12, H=rows.length;
   const cv=document.createElement('canvas');
-  cv.width=12*px; cv.height=rows.length*px;
+  cv.width=(W+2)*px; cv.height=(H+2)*px;    // 1-cell margin for the outline
   const x=cv.getContext('2d');
   const pal={H:m.hat,R:m.hair||'#3b2a1a',S:m.skin||SKINS[0],E:'#14100c',
              C:m.coat||'#f4f4f4',A:m.apron,P:'#232a31',O:'#0d0f11',W:'#ffffff'};
   if(gearHat&&gearHat.pal) Object.entries(gearHat.pal).forEach(([k,v])=>{ pal[k]= v==='HATC'?m.hat:v; });
-  rows.forEach((row,ry)=>{
-    [...row].forEach((ch,rx)=>{
-      if(ch==='.') return;
-      x.fillStyle=pal[ch]||'#f0f';
-      x.fillRect(rx*px,ry*px,px,px);
-    });
-  });
+  // gear overlay participates in silhouette, outline, and shading
+  const overlay={};
   if(m.gear){
     ['face','body','hand'].forEach(slot=>{
       const p=m.gear[slot]&&WARDROBE.find(w=>w.id===m.gear[slot]);
-      if(p&&p.px) p.px.forEach(([gx,gy,c])=>{
-        x.fillStyle= c==='HAIR'?(m.hair||'#3b2a1a'):c;
-        x.fillRect(gx*px,(gy+4)*px,px,px);   // gear coords are body-relative (y0 = brow row)
-      });
+      if(p&&p.px) p.px.forEach(([gx,gy,c])=>{ overlay[gx+','+(gy+4)]= c==='HAIR'?(m.hair||'#3b2a1a'):c; });
     });
+  }
+  const colorAt=(cx,cy)=>{
+    const o=overlay[cx+','+cy]; if(o) return o;
+    if(cx<0||cy<0||cx>=W||cy>=H) return null;
+    const ch=rows[cy][cx]; return ch==='.'?null:(pal[ch]||'#f0f');
+  };
+  // outline pass: dark rim around the whole silhouette
+  x.fillStyle='#0a0c0f';
+  for(let cy=-1;cy<=H;cy++) for(let cx=-1;cx<=W;cx++){
+    if(colorAt(cx,cy)) continue;
+    if(colorAt(cx+1,cy)||colorAt(cx-1,cy)||colorAt(cx,cy+1)||colorAt(cx,cy-1))
+      x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  // fill pass with right/bottom edge shading for form
+  for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
+    const c=colorAt(cx,cy); if(!c) continue;
+    const edge = !colorAt(cx+1,cy) || !colorAt(cx,cy+1);
+    x.fillStyle= edge&&c!=='#14100c' ? shade(c,-.22) : c;
+    x.fillRect((cx+1)*px,(cy+1)*px,px,px);
   }
   return cv.toDataURL();
 }
 function memberFig(m,big){
   if(!m) return '';
-  const px=big?4:2;
+  const px=big?5:2;
   return `<img class="chefImg" src="${chefURL(m,px)}" alt="${m.name}">`;
 }
 
@@ -883,6 +920,7 @@ function plate(tk, byExpo=false){
   qual/=tk.items.length;
   if(!G.endless&&META.up.menu) base*=1.1;
   if(!G.endless) base*=(1+.04*(META.up.menuDev||0));
+  if(!G.endless) base*=(1+.12*(META.tier||0));   // renovated rooms charge renovated prices
   const age=G.t-tk.born;
   const speed = age<25?1.2 : age<45?1.05 : age<65?.92 : .8;
   let tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
@@ -917,7 +955,9 @@ function killTicket(tk,cls){
   tk.dead=true;
   tk.items.forEach(it=>{ if(it.state==='cooking'&&it.pan) clearPan(it.pan); });
   tk.el.classList.add(cls);
-  setTimeout(()=>tk.el.remove(),400);
+  // collapse width smoothly before removal so neighboring chits glide (not jump)
+  setTimeout(()=>tk.el.classList.add('gone'),380);
+  setTimeout(()=>tk.el.remove(),660);
   G.tickets=G.tickets.filter(t=>t!==tk);
   railEl.querySelector('#railEmpty').style.display = G.tickets.length?'none':'';
 }
@@ -1128,7 +1168,9 @@ function render(){
       tk.el.classList.toggle('urgent',f<.18);
     }
     for(const it of tk.items){
-      if(it.state==='cooking'&&it.pan){
+      if(it.state==='todo'){
+        it.el.classList.toggle('canfire', !stationDown(it.m.st) && !!freePan(it.m.st));
+      } else if(it.state==='cooking'&&it.pan){
         const t2=it.pan.cookNeed+it.pan.winLen+it.pan.grace;
         it.barEl.style.width=Math.min(100,it.pan.t/t2*100)+'%';
       } else if(it.state==='pass'){
@@ -1173,6 +1215,29 @@ function renderShop(container){
   container.innerHTML='';
   const box=document.createElement('div');
   box.innerHTML=`<div id="shopHead"><span>THE BACK OFFICE</span><span style="color:var(--gold)">$${META.bank} · <span style="color:var(--star)">⭐${META.stars}</span></span></div>`;
+
+  /* ----- renovation ----- */
+  const nt=nextTier();
+  const rHead=document.createElement('div'); rHead.className='crewHead'; rHead.style.color='var(--hot)';
+  rHead.innerHTML=`<span>THE ROOM — ${tierName()}</span>`;
+  box.appendChild(rHead);
+  const rCard=document.createElement('div'); rCard.className='upg'; rCard.style.borderColor='var(--hot)';
+  if(nt){
+    rCard.innerHTML=`<b>🏗️ RENOVATE → ${nt.n.replace('THE PASS — ','')}</b>
+      <small>Close for a night of construction, open something greater. Permanent +12% menu prices per tier, +1⭐, and a room worth the grind. This is the ladder that never ends.</small>`;
+    const b=document.createElement('button'); b.textContent='RENOVATE — $'+nt.cost.toLocaleString();
+    b.disabled=META.bank<nt.cost;
+    b.addEventListener('click',()=>{
+      if(META.bank<nt.cost) return;
+      META.bank-=nt.cost; META.tier=(META.tier||0)+1; META.stars+=1; saveMeta(); SFX.star();
+      toast('GRAND REOPENING — '+tierName(),'var(--hot)');
+      renderShop(container);
+    });
+    rCard.appendChild(b);
+  } else {
+    rCard.innerHTML=`<b>🏆 ${tierName()}</b><small>There is nothing above this. They write books about this room.</small>`;
+  }
+  box.appendChild(rCard);
 
   const bHead=document.createElement('div'); bHead.className='crewHead'; bHead.innerHTML=`<span>YOUR BRIGADE — ${META.crew.length?META.crew.length+' ON STAFF':'NOBODY YET. IT\'S JUST YOU.'}</span>`;
   box.appendChild(bHead);
@@ -1508,7 +1573,7 @@ overlay.querySelector('#start').addEventListener('click',()=>start(false));
 overlay.querySelector('#startEndless').addEventListener('click',()=>start(true));
 (function(){
   try{ const b=+(localStorage.getItem('pass_best')||0); if(b) $('#best').textContent='BEST TIPS · $'+b; }catch(e){}
-  $('#introNight').textContent='NIGHT '+META.night;
+  $('#introNight').textContent='NIGHT '+META.night+' · '+tierName().replace('THE PASS — ','');
   $('#introBank').textContent='BANK $'+META.bank;
   $('#introStars').textContent='⭐ '+META.stars;
   const im=$('#introMod'), mod=modFor(META.night);
