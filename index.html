@@ -225,7 +225,7 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .upg.crewCard button{background:var(--cold);color:#03181d}
 .upg.wardCard{border-color:var(--line2)}
 .upg.wardCard button{background:var(--star);color:#1a1200}
-.upg.wardCard.owned{border-color:var(--star);opacity:.65}
+.upg.wardCard.owned{border-color:var(--star)}   /* v14.7: owned pieces show off, not fade out */
 
 @keyframes blink{50%{opacity:.25}}
 @keyframes chitIn{from{transform:translateY(-42px) rotate(-4deg);opacity:0}}
@@ -274,6 +274,13 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .shopTab:hover{color:var(--txt)}
 .shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
 .shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
+.wardPrev{position:relative;display:flex;align-items:flex-end;justify-content:center;
+  background:linear-gradient(180deg,#0f151a,#141c22);border:1px solid var(--line);border-radius:3px;
+  padding:6px 0 4px;margin-bottom:7px;min-height:78px}
+.wardPrev img{image-rendering:pixelated;height:70px;width:auto;display:block}
+.wOwned{position:absolute;top:3px;right:4px;font-size:10px;color:var(--good)}
+.lockedWard .wardPrev img{filter:grayscale(1) brightness(.62)}
+.lockedWard b,.lockedWard small{opacity:.62}
 .progTag{display:inline-block;background:rgba(90,209,230,.14);border:1px solid #5ad1e6;color:#5ad1e6;
   border-radius:2px;font-size:8.5px;letter-spacing:.8px;padding:1px 5px;margin:2px 3px 0 0}
 .stageMenu{grid-column:1/-1;background:#0f151a;border:1px solid #5ad1e6;border-radius:4px;padding:11px 12px;margin:2px 0 8px}
@@ -378,7 +385,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.6</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.7</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -767,14 +774,20 @@ function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,fli
    locker room, first name on the door. Some gear only the chef can wear. */
 function freshChef(){ return {role:'chef', name:'CHEF', skin:SKINS[1], hair:HAIRS[1],
   hatStyle:'toque', hat:'#f4f4f4', coat:'#f4f4f4', apron:'#1e293b', gear:{}}; }
-/* ==================== v14.6: THE STAGE, REWORKED ====================
-   Jaxon: "i wanna rework the stage training thing again" + "the other cooks
-   dont season." Old stages were a faceless +7% reaction — you paid $500 and
-   a number moved. Now a stage TEACHES A NAMED SKILL that you pick, and the
-   skills are answers to real complaints about the brigade. A cook can learn
-   up to three. FLIP and THE FINISH are never taught: those stay the chef's
-   own work (the v12.1 rule), so a trained brigade frees your hands for the
-   windows instead of replacing you at them. */
+/* ==================== THE STAGE ====================
+   v14.6: a stage teaches a NAMED SKILL the player picks (not a faceless
+   +7%), and the skills answer real complaints about the brigade. Up to three
+   per cook. FLIP and THE FINISH are never taught — those stay the chef's own
+   work (the v12.1 rule), so a trained brigade frees your hands for the
+   windows instead of replacing you at them.
+
+   v14.7, from Jaxon (who cooks for a living): "a chef shouldnt miss a
+   service when they stage." Correct — a stage is unpaid morning work on your
+   DAYS OFF. You go in at 7am, you learn something, and you are still on your
+   own line at service that night. So the cost was never absence: it is that
+   they are cooking your service on four hours of sleep. A staging cook stays
+   on the line and works it TIRED — slower hands, more slips — for three
+   services, then keeps the skill forever. */
 const STAGE_PROGRAMS=[
   {id:'mise',  at:'NOMA',           n:'MISE EN PLACE', cost:600,
    d:'Seasons every dish before pulling it. Your crew stops handing you bare product.'},
@@ -791,7 +804,7 @@ function progCount(m){ return m.progs?Object.keys(m.progs).length:0; }
    destination off it. Kept as two calls so the close cards can order them. */
 function stageLine(m,tail){
   const p=STAGE_PROGRAMS.find(x=>x.id===(m.stage&&m.stage.prog));
-  return `<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage?m.stage.at:'STAGE'}</b>${p?` — they learned <b style="color:#5ad1e6">${p.n}</b>. ${p.d}`:''} ${tail||''}</div>`;
+  return `<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} FINISHED THEIR STAGE AT ${m.stage?m.stage.at:'STAGE'}</b>${p?` — <b style="color:#5ad1e6">${p.n}</b> is theirs now. ${p.d}`:''} They can finally sleep. ${tail||''}</div>`;
 }
 function stageGraduate(m){
   if(!m.stage) return;
@@ -887,7 +900,9 @@ function saveMeta(){ try{ localStorage.setItem('pass_meta',JSON.stringify(META))
 loadMeta();
 
 function cooks(){ return META.crew.filter(m=>m.role==='cook'); }
-function activeCooks(){ return cooks().filter(m=>!m.stage); }   // v14: staged cooks are away learning
+/* v14.7: staging cooks still work the line — they staged this MORNING. They
+   are on it, just running on fumes (see the tired penalties in crewStep). */
+function activeCooks(){ return cooks(); }
 function expo(){ return META.crew.find(m=>m.role==='expo'); }
 function host(){ return META.crew.find(m=>m.role==='host'); }
 function crewWith(qid){ return META.crew.filter(m=>m.quirk===qid&&!m.stage).length; }
@@ -1845,13 +1860,16 @@ function crewStep(){
     if(c.quirk==='steady') spaceOut*=.5;
     if(composed) spaceOut*=.5;
     if(progOf(c,'prec')) spaceOut=0;               // PRECISION: they never drop one
+    /* v14.7: they staged this morning and came straight to service. They are
+       here — they are just cooked. This is the real price of a stage. */
+    if(c.stage){ react*=1.55; spaceOut=Math.min(.5, spaceOut*2.2+.06); }
     for(const pan of G.pans){
       if(pan.st!==c.station || !pan.item || pan.sousSkip) continue;
       /* v12.1: the finish pass and the Cook-Off are chef's work — the brigade stands back */
       if(pan.item.stage===1 || (pan.ticket&&pan.ticket.duel)) continue;
       /* v14.6 MISE EN PLACE: a trained cook seasons their own product instead
          of handing you bare dishes. Only SEASON — the flip is still yours. */
-      if(progOf(c,'mise') && mechOn('season') && !pan.item.seasoned && !pan.item.flipped){
+      if(progOf(c,'mise') && !c.stage && mechOn('season') && !pan.item.seasoned && !pan.item.flipped){
         const [ss,se]=seasonWin(pan);
         if(pan.t>=ss && pan.t<=se){
           pan.item.seasoned=true; pan.item.byCrewSeason=true;
@@ -2277,8 +2295,15 @@ function renderShop(container){
     if(m.stage){
       const pr=STAGE_PROGRAMS.find(p=>p.id===m.stage.prog);
       const sb=document.createElement('button'); sb.disabled=true;
-      sb.textContent='AT '+m.stage.at+' LEARNING '+(pr?pr.n:'')+' — '+m.stage.left+(m.stage.left>1?' SERVICES':' SERVICE');
+      sb.style.borderColor='var(--warn)'; sb.style.color='var(--warn)';
+      sb.textContent='😵 MORNINGS AT '+m.stage.at+' — '+(pr?pr.n:'')+' IN '+m.stage.left+(m.stage.left>1?' SERVICES':' SERVICE');
       d.appendChild(sb);
+      const note=document.createElement('small'); note.style.color='var(--warn)'; note.style.marginTop='3px';
+      note.textContent='On the line tonight, running on no sleep — slower hands until they finish.';
+      d.appendChild(note);
+      const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸'; b.style.marginTop='4px';
+      b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container,d));
+      d.appendChild(b);
     } else {
       const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
       b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container,d));
@@ -2290,7 +2315,7 @@ function renderShop(container){
         sb.textContent='SEND ON STAGE ▸';
         sb.addEventListener('click',()=>{
           const menu=document.createElement('div'); menu.className='stageMenu';
-          menu.innerHTML=`<div class="stgHead">WHERE DOES ${m.name} GO? <small>3 services away — the line runs short while they're gone</small></div>`;
+          menu.innerHTML=`<div class="stgHead">WHERE DOES ${m.name} STAGE? <small>Unpaid mornings on their days off. They still work your line every night — but wrecked, for three services. Then the skill is theirs for good.</small></div>`;
           open.forEach(p=>{
             const o=document.createElement('div'); o.className='stgOpt';
             o.innerHTML=`<b>${p.n} <em>— ${p.at}</em></b><small>${p.d}</small>`;
@@ -2301,7 +2326,7 @@ function renderShop(container){
               META.bank-=p.cost;
               m.stage={left:3, at:p.at, prog:p.id};
               saveMeta(); SFX.buy();
-              toast(m.name+' LEFT FOR '+p.at+' — LEARNING '+p.n,'#5ad1e6');
+              toast(m.name+' STARTS MORNINGS AT '+p.at+' — TIRED FOR 3 SERVICES','#5ad1e6');
               renderShop(container);
             });
             o.appendChild(ob); menu.appendChild(o);
@@ -2392,13 +2417,28 @@ function renderShop(container){
   container.appendChild(box);
 }
 
+/* v14.7 (Jaxon): "i want previews of all the cosmetic items." Buying blind
+   across 45+ pieces was guesswork. Every wardrobe card now renders the piece
+   ON A CHEF — the real sprite pipeline, same outline and shading as service,
+   so what you see is exactly what you get. Locked pieces preview too: you
+   should know what you are working toward. */
+function previewURL(w,px=4){
+  const base={role:'chef', skin:META.chef.skin, hair:META.chef.hair,
+    hatStyle:META.chef.hatStyle||'toque', hat:META.chef.hat, coat:META.chef.coat,
+    apron:META.chef.apron, gear:{}};
+  base.gear[w.slot]=w.id;
+  try{ return chefURL(base,px); }catch(e){ return ''; }
+}
+
 function wardCard(w,rerender){
   const owned=!!META.ward[w.id];
   let reqOk=true;
   if(w.req){ try{ reqOk=!!w.req.test(); }catch(e){ reqOk=false; } }
   const d=document.createElement('div'); d.className='upg wardCard'+(owned?' owned':'');
-  if(!owned&&!reqOk) d.style.opacity=.55;
-  d.innerHTML=`<b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}${w.chefOnly?' · <span style="color:var(--gold)">CHEF ONLY</span>':''}</em>${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
+  if(!owned&&!reqOk) d.classList.add('lockedWard');
+  const src=previewURL(w);
+  d.innerHTML=`<div class="wardPrev"><img src="${src}" alt="${w.n}">${owned?'<span class="wOwned">✓</span>':''}</div>
+    <b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}${w.chefOnly?' · <span style="color:var(--gold)">CHEF ONLY</span>':''}</em>${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
   const b=document.createElement('button');
   b.textContent=owned?'UNLOCKED':'⭐'+w.stars;
   b.disabled=owned||META.stars<w.stars||!reqOk;
@@ -2716,7 +2756,7 @@ function concedeNight(){
   const closed=META.night;
   if(META.wk && weekdayFor(closed)) META.wk.g.push(0);       // a D on the week
   META.life.services++;
-  META.crew.forEach(m=>{ if(!m.stage) m.services=(m.services||0)+1; });
+  META.crew.forEach(m=>{ m.services=(m.services||0)+1; });   // v14.7: staging cooks still work the line
   META.night++;
   META.mercy=0;
   if(META.buff&&META.night>META.buff.until) META.buff=null;
@@ -2824,7 +2864,7 @@ function finish(){
   if(G.covers>0&&G.waste===0) L.zeroWaste=true;
   if(G.downSchedule.some(ev=>ev.fired)) L.survived86=true;
   if(clean){ L.cleanNights++; L.cleanStreak++; } else L.cleanStreak=0;
-  META.crew.forEach(m=>{ if(!m.stage) m.services=(m.services||0)+1; });
+  META.crew.forEach(m=>{ m.services=(m.services||0)+1; });   // v14.7: staging cooks still work the line
 
   /* v11: Deacon's habit — plate him inside 60s, six nights running */
   let weekLine='';
