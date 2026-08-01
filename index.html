@@ -294,6 +294,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v7.2</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -657,7 +658,8 @@ function chefURL(m,px=3){
   if(m.gear){
     ['face','body','hand'].forEach(slot=>{
       const p=m.gear[slot]&&WARDROBE.find(w=>w.id===m.gear[slot]);
-      if(p&&p.px) p.px.forEach(([gx,gy,c])=>{ overlay[gx+','+(gy+4)]= c==='HAIR'?(m.hair||'#3b2a1a'):c; });
+      // gear px coords are ABSOLUTE grid rows (hats occupy rows 0-3, eyes row 5)
+      if(p&&p.px) p.px.forEach(([gx,gy,c])=>{ overlay[gx+','+gy]= c==='HAIR'?(m.hair||'#3b2a1a'):c; });
     });
   }
   const colorAt=(cx,cy)=>{
