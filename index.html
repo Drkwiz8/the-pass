@@ -444,6 +444,18 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .restBtn.locked{opacity:.5;cursor:not-allowed}
 .restBtn.locked:hover{border-color:var(--line2)}
 @media (max-width:900px){ .restBtn{min-width:100%} }
+/* v20: wardrobe progress + filters */
+.wpTrk{height:4px;background:#0d1216;border:1px solid var(--line);border-radius:2px;overflow:hidden;margin:4px 0 2px}
+.wpTrk i{display:block;height:100%;background:linear-gradient(90deg,var(--hot),var(--star));transition:width .4s ease}
+.wpNum{font-size:8.5px;color:var(--star);letter-spacing:.6px;display:block}
+#wardFilters{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 10px}
+.wardFilt{background:var(--panel2);border:1px solid var(--line2);border-radius:3px;color:var(--dim);
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.8px;padding:5px 8px;cursor:pointer;white-space:nowrap}
+.wardFilt:hover{color:var(--txt)}
+.wardFilt.sel{color:var(--txt);border-color:var(--star);background:rgba(250,204,21,.09)}
+.wardFilt em{font-style:normal;color:var(--dim);margin-left:3px}
+.wardFilt.sel em{color:var(--star)}
+@media (max-width:900px){ .wardFilt{font-size:9.5px;padding:7px 9px} }
 .wardPrev{position:relative;display:flex;align-items:flex-end;justify-content:center;
   background:linear-gradient(180deg,#0f151a,#141c22);border:1px solid var(--line);border-radius:3px;
   padding:6px 0 4px;margin-bottom:7px;min-height:78px}
@@ -574,7 +586,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v19.2</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v20</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -1226,40 +1238,40 @@ const WARDROBE = [
   {id:'knife',   n:'CHEF\'S KNIFE',    slot:'hand', stars:3, px:[[11,8,'#f1f5f9'],[11,9,'#e2e8f0'],[11,10,'#78350f'],[10,8,'#f1f5f9']], d:'Sharpened. Named. Loved.'},
   /* --- v9: earned gear. req = unlock condition (visible while locked) --- */
   {id:'hairnet', n:'HAIRNET',          slot:'hat', stars:1, hatRows:['............','..RRRRRRRR..','.NRNRNRNRNR.','.RNRNRNRNRN.'], pal:{N:'#c7cdd4'}, d:'The inspector\'s favorite look. Wear it and mean it.', req:{label:'Survive an inspection with zero fines', test:()=>!!META.ach.spotless}},
-  {id:'dorag',   n:'DO-RAG',           slot:'hat', stars:2, hatRows:['............','..KKKKKKKK..','.KKKKKKKKKK.','..KKKKKKKKK.'], pal:{K:'HATC'}, d:'Tied once, at 4pm, and forgotten about.', req:{label:'Close 20 career services', test:()=>META.life.services>=20}},
+  {id:'dorag',   n:'DO-RAG',           slot:'hat', stars:2, hatRows:['............','..KKKKKKKK..','.KKKKKKKKKK.','..KKKKKKKKK.'], pal:{K:'HATC'}, d:'Tied once, at 4pm, and forgotten about.', req:{label:'Close 20 career services', test:()=>META.life.services>=20, prog:()=>[META.life.services,20]}},
   {id:'flatcap', n:'FLAT CAP',         slot:'hat', stars:3, hatRows:['............','............','.KKKKKKKKK..','..KKKKKKKKKK'], pal:{K:'HATC'}, d:'Owner energy. You have people now.', req:{label:'Have 5 crew on staff', test:()=>!!META.ach.brigade5}},
   {id:'bucket',  n:'BUCKET HAT',       slot:'hat', stars:3, hatRows:['............','...KKKKKK...','..KKKKKKKK..','.KKKKKKKKKK.'], pal:{K:'HATC'}, d:'Ridiculous. Undefeated.', req:{label:'A clean night on THE PUSH (Friday)', test:()=>!!META.life.friClean}},
-  {id:'burnttq', n:'THE BURNT TOQUE',  slot:'hat', stars:4, hatRows:['..TTTTTTBB..','.TTTTTTTBBB.','.TTTTTTTTBB.','..TTTTTTTT..'], pal:{T:'#f4f4f4',B:'#4a3a2c'}, d:'Scorched up one side. You\'ve earned the right to be honest about it.', req:{label:'Waste 100 dishes lifetime', test:()=>META.life.waste>=100}},
-  {id:'viking',  n:'VIKING HELM',      slot:'hat', stars:5, hatRows:['.VV......VV.','.MMMMMMMMMM.','.MMMMMMMMMM.','..MMMMMMMM..'], pal:{V:'#e6d8b8',M:'#8a8f98'}, d:'Horns fit in four rows. Barely. So did you.', req:{label:'Build a 30-pull perfect combo', test:()=>META.life.bestCombo>=30}},
+  {id:'burnttq', n:'THE BURNT TOQUE',  slot:'hat', stars:4, hatRows:['..TTTTTTBB..','.TTTTTTTBBB.','.TTTTTTTTBB.','..TTTTTTTT..'], pal:{T:'#f4f4f4',B:'#4a3a2c'}, d:'Scorched up one side. You\'ve earned the right to be honest about it.', req:{label:'Waste 100 dishes lifetime', test:()=>META.life.waste>=100, prog:()=>[META.life.waste,100]}},
+  {id:'viking',  n:'VIKING HELM',      slot:'hat', stars:5, hatRows:['.VV......VV.','.MMMMMMMMMM.','.MMMMMMMMMM.','..MMMMMMMM..'], pal:{V:'#e6d8b8',M:'#8a8f98'}, d:'Horns fit in four rows. Barely. So did you.', req:{label:'Build a 30-pull perfect combo', test:()=>META.life.bestCombo>=30, prog:()=>[META.life.bestCombo,30]}},
   {id:'sweat',   n:'SWEAT',            slot:'face', stars:1, px:[[2,5,'#bfe3f2'],[9,6,'#bfe3f2']], d:'Cosmetic honesty.', req:{label:'Spend 60s in the weeds in one service', test:()=>!!META.life.weeds60}},
-  {id:'eyebags', n:'EYE BAGS',         slot:'face', stars:2, px:[[3,6,'#7d6a5a'],[8,6,'#7d6a5a']], d:'Twenty-five services deep. It shows.', req:{label:'Reach night 25', test:()=>META.night>=25}},
+  {id:'eyebags', n:'EYE BAGS',         slot:'face', stars:2, px:[[3,6,'#7d6a5a'],[8,6,'#7d6a5a']], d:'Twenty-five services deep. It shows.', req:{label:'Reach night 25', test:()=>META.night>=25, prog:()=>[META.night,25]}},
   {id:'goatee',  n:'GOATEE',           slot:'face', stars:2, px:[[5,7,'HAIR'],[6,7,'HAIR']], d:'The third option you unlock by owning the first two.', req:{label:'Own MUSTACHE and FULL BEARD', test:()=>!!(META.ward.stache&&META.ward.beard)}},
-  {id:'goggles', n:'SAFETY GOGGLES',   slot:'face', stars:3, px:[[2,5,'#f2c94c'],[3,5,'#3a3f45'],[4,5,'#f2c94c'],[7,5,'#f2c94c'],[8,5,'#3a3f45'],[9,5,'#f2c94c']], d:'Because the fry basket has opinions.', req:{label:'200 lifetime pulls off the FRY station', test:()=>(META.life.byStation.fry||0)>=200}},
-  {id:'monocle', n:'MONOCLE',          slot:'face', stars:4, px:[[8,5,'#d8dee5'],[9,6,'#c9a227'],[9,7,'#c9a227']], d:'Insufferable. Deserved.', req:{label:'Floor the critic 3 times', test:()=>META.life.criticFloors>=3}},
-  {id:'goldtooth',n:'GOLD TOOTH',      slot:'face', stars:6, px:[[5,6,'#d4af37']], d:'Six stars for one pixel — and it\'s the pixel they\'ll notice.', req:{label:'Bank $50,000 lifetime', test:()=>META.life.banked>=50000}},
+  {id:'goggles', n:'SAFETY GOGGLES',   slot:'face', stars:3, px:[[2,5,'#f2c94c'],[3,5,'#3a3f45'],[4,5,'#f2c94c'],[7,5,'#f2c94c'],[8,5,'#3a3f45'],[9,5,'#f2c94c']], d:'Because the fry basket has opinions.', req:{label:'200 lifetime pulls off the FRY station', test:()=>(META.life.byStation.fry||0)>=200, prog:()=>[(META.life.byStation.fry||0),200]}},
+  {id:'monocle', n:'MONOCLE',          slot:'face', stars:4, px:[[8,5,'#d8dee5'],[9,6,'#c9a227'],[9,7,'#c9a227']], d:'Insufferable. Deserved.', req:{label:'Floor the critic 3 times', test:()=>META.life.criticFloors>=3, prog:()=>[META.life.criticFloors,3]}},
+  {id:'goldtooth',n:'GOLD TOOTH',      slot:'face', stars:6, px:[[5,6,'#d4af37']], d:'Six stars for one pixel — and it\'s the pixel they\'ll notice.', req:{label:'Bank $50,000 lifetime', test:()=>META.life.banked>=50000, prog:()=>[META.life.banked,50000]}},
   {id:'stained', n:'STAINED APRON',    slot:'body', stars:1, px:[[4,12,'#8a6a4a'],[6,13,'#7a5a3a'],[5,10,'#8a6a4a']], d:'Earned by the person wearing it.', req:{label:'A crew member with 10 services worked', test:()=>META.crew.some(m=>(m.services||0)>=10)}},
   {id:'thermals',n:'THERMAL BLUES',    slot:'body', stars:2, px:[[3,8,'#2563eb'],[4,8,'#2563eb'],[7,8,'#2563eb'],[8,8,'#2563eb']], d:'The line-cook tee under the coat.', req:{label:'Serve 25 covers in one service', test:()=>!!META.ach.covers25}},
-  {id:'dblbreast',n:'DOUBLE-BREASTED WHITES', slot:'body', stars:3, px:[[4,9,'#d1d5db'],[7,9,'#d1d5db'],[4,11,'#d1d5db'],[7,11,'#d1d5db'],[4,13,'#d1d5db'],[7,13,'#d1d5db']], d:'Two button columns. Zero excuses.', req:{label:'Reach tier 2 — THE BISTRO', test:()=>(META.tier||0)>=2}},
+  {id:'dblbreast',n:'DOUBLE-BREASTED WHITES', slot:'body', stars:3, px:[[4,9,'#d1d5db'],[7,9,'#d1d5db'],[4,11,'#d1d5db'],[7,11,'#d1d5db'],[4,13,'#d1d5db'],[7,13,'#d1d5db']], d:'Two button columns. Zero excuses.', req:{label:'Reach tier 2 — THE BISTRO', test:()=>(META.tier||0)>=2, prog:()=>[(META.tier||0),2]}},
   {id:'embroider',n:'THE EMBROIDERED COAT', slot:'body', stars:4, px:[[3,9,'#c9a227'],[3,10,'#c9a227']], d:'Their name on the chest. The gear you give someone who stayed.', req:{label:'A crew member with 20 services worked', test:()=>META.crew.some(m=>(m.services||0)>=20)}},
-  {id:'tongs',   n:'TONGS',            slot:'hand', stars:1, px:[[10,8,'#c7cdd4'],[11,8,'#c7cdd4'],[11,9,'#9aa4ad'],[11,10,'#c7cdd4']], d:'The universal remote.', req:{label:'100 lifetime pulls', test:()=>META.life.pulls>=100}},
-  {id:'cleaver', n:'THE CLEAVER',      slot:'hand', stars:3, px:[[10,8,'#d8dee5'],[11,8,'#d8dee5'],[10,9,'#d8dee5'],[11,9,'#d8dee5'],[11,10,'#78350f']], d:'Heavy. Honest.', req:{label:'200 lifetime GRILL pulls', test:()=>(META.life.byStation.grill||0)>=200}},
-  {id:'spike',   n:'TICKET SPIKE',     slot:'hand', stars:4, px:[[11,9,'#9aa4ad'],[11,10,'#efe2c4'],[11,11,'#8a8f98']], d:'Every one of these was a person.', req:{label:'500 lifetime covers', test:()=>META.life.covers>=500}},
+  {id:'tongs',   n:'TONGS',            slot:'hand', stars:1, px:[[10,8,'#c7cdd4'],[11,8,'#c7cdd4'],[11,9,'#9aa4ad'],[11,10,'#c7cdd4']], d:'The universal remote.', req:{label:'100 lifetime pulls', test:()=>META.life.pulls>=100, prog:()=>[META.life.pulls,100]}},
+  {id:'cleaver', n:'THE CLEAVER',      slot:'hand', stars:3, px:[[10,8,'#d8dee5'],[11,8,'#d8dee5'],[10,9,'#d8dee5'],[11,9,'#d8dee5'],[11,10,'#78350f']], d:'Heavy. Honest.', req:{label:'200 lifetime GRILL pulls', test:()=>(META.life.byStation.grill||0)>=200, prog:()=>[(META.life.byStation.grill||0),200]}},
+  {id:'spike',   n:'TICKET SPIKE',     slot:'hand', stars:4, px:[[11,9,'#9aa4ad'],[11,10,'#efe2c4'],[11,11,'#8a8f98']], d:'Every one of these was a person.', req:{label:'500 lifetime covers', test:()=>META.life.covers>=500, prog:()=>[META.life.covers,500]}},
   {id:'torch',   n:'BLOWTORCH',        slot:'hand', stars:5, px:[[11,8,'#38bdf8'],[11,9,'#3a3f45'],[11,10,'#3a3f45']], d:'For the brûlée. Officially.', req:{label:'Own the SALAMANDER upgrade', test:()=>!!META.up.salamander}},
-  {id:'clogs',   n:'CLOGS',            slot:'shoes', stars:1, px:[[1,16,'#a5673f'],[2,16,'#a5673f'],[9,16,'#a5673f'],[10,16,'#a5673f']], d:'The uniform of people who stand for eleven hours.', req:{label:'Close 5 career services', test:()=>META.life.services>=5}},
+  {id:'clogs',   n:'CLOGS',            slot:'shoes', stars:1, px:[[1,16,'#a5673f'],[2,16,'#a5673f'],[9,16,'#a5673f'],[10,16,'#a5673f']], d:'The uniform of people who stand for eleven hours.', req:{label:'Close 5 career services', test:()=>META.life.services>=5, prog:()=>[META.life.services,5]}},
   {id:'steeltoe',n:'STEEL TOES',       slot:'shoes', stars:2, px:[[1,16,'#9aa4ad'],[2,16,'#3a3f45'],[9,16,'#3a3f45'],[10,16,'#9aa4ad']], d:'Grey cap on the toe. You know why.', req:{label:'Finish a night where a station went 86\'d', test:()=>!!META.life.survived86}},
   {id:'whites',  n:'WHITE SNEAKERS',   slot:'shoes', stars:3, px:[[1,16,'#f8fafc'],[2,16,'#f8fafc'],[9,16,'#f8fafc'],[10,16,'#f8fafc'],[1,15,'#e2e8f0'],[10,15,'#e2e8f0']], d:'Pristine. And the joke is they stay pristine forever.', req:{label:'A night with zero waste', test:()=>!!META.life.zeroWaste}},
-  {id:'dress',   n:'DRESS SHOES',      slot:'shoes', stars:5, px:[[1,16,'#1a1512'],[2,16,'#1a1512'],[9,16,'#1a1512'],[10,16,'#1a1512']], d:'You don\'t cook in these. You OWN in these.', req:{label:'Reach tier 4 — FINE DINING', test:()=>(META.tier||0)>=4}},
-  {id:'crocs',   n:'GOLD CROCS',       slot:'shoes', stars:6, px:[[1,16,'#d4af37'],[2,16,'#d4af37'],[9,16,'#d4af37'],[10,16,'#d4af37'],[1,15,'#b8912a']], d:'Sport mode. Non-negotiable.', req:{label:'Bank $25,000 lifetime', test:()=>META.life.banked>=25000}},
-  {id:'tatknife',n:'THE KNIFE',        slot:'tattoo', stars:3, px:[[10,10,'#334155'],[10,11,'#334155']], d:'The first tattoo everyone on a line gets.', req:{label:'500 lifetime perfect pulls', test:()=>META.life.perfects>=500}},
+  {id:'dress',   n:'DRESS SHOES',      slot:'shoes', stars:5, px:[[1,16,'#1a1512'],[2,16,'#1a1512'],[9,16,'#1a1512'],[10,16,'#1a1512']], d:'You don\'t cook in these. You OWN in these.', req:{label:'Reach tier 4 — FINE DINING', test:()=>(META.tier||0)>=4, prog:()=>[(META.tier||0),4]}},
+  {id:'crocs',   n:'GOLD CROCS',       slot:'shoes', stars:6, px:[[1,16,'#d4af37'],[2,16,'#d4af37'],[9,16,'#d4af37'],[10,16,'#d4af37'],[1,15,'#b8912a']], d:'Sport mode. Non-negotiable.', req:{label:'Bank $25,000 lifetime', test:()=>META.life.banked>=25000, prog:()=>[META.life.banked,25000]}},
+  {id:'tatknife',n:'THE KNIFE',        slot:'tattoo', stars:3, px:[[10,10,'#334155'],[10,11,'#334155']], d:'The first tattoo everyone on a line gets.', req:{label:'500 lifetime perfect pulls', test:()=>META.life.perfects>=500, prog:()=>[META.life.perfects,500]}},
   {id:'tatscript',n:'KITCHEN SCRIPT',  slot:'tattoo', stars:4, px:[[1,10,'#334155'],[10,11,'#334155']], d:'It says something. You know what it says.', req:{label:'Serve every dish on the menu', test:()=>MENU.every(d=>META.life.dishes[d.n])}},
-  {id:'tatflame',n:'FLAME SLEEVE',     slot:'tattoo', stars:5, px:[[1,10,'#e25822'],[1,11,'#f2a13c'],[10,10,'#e25822'],[10,11,'#f2a13c']], d:'Both forearms. Zero regrets.', req:{label:'Land 50 lifetime flips', test:()=>META.life.flips>=50}},
-  {id:'cig',     n:'CIGARETTE BEHIND THE EAR', slot:'accessory', stars:2, px:[[9,4,'#f8fafc'],[10,4,'#e25822']], d:'Never lit during service.', req:{label:'10 lifetime clean nights (zero walkouts)', test:()=>META.life.cleanNights>=10}},
-  {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, chefOnly:true, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6}},
+  {id:'tatflame',n:'FLAME SLEEVE',     slot:'tattoo', stars:5, px:[[1,10,'#e25822'],[1,11,'#f2a13c'],[10,10,'#e25822'],[10,11,'#f2a13c']], d:'Both forearms. Zero regrets.', req:{label:'Land 50 lifetime flips', test:()=>META.life.flips>=50, prog:()=>[META.life.flips,50]}},
+  {id:'cig',     n:'CIGARETTE BEHIND THE EAR', slot:'accessory', stars:2, px:[[9,4,'#f8fafc'],[10,4,'#e25822']], d:'Never lit during service.', req:{label:'10 lifetime clean nights (zero walkouts)', test:()=>META.life.cleanNights>=10, prog:()=>[META.life.cleanNights,10]}},
+  {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, chefOnly:true, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6, prog:()=>[META.life.cleanStreak,6]}},
   {id:'champjkt',n:'CHAMPION\'S JACKET', slot:'body', stars:5, px:[[2,8,'#d4af37'],[4,8,'#d4af37'],[7,8,'#d4af37'],[9,8,'#d4af37']], d:'Gold on the shoulders. Meridian knows exactly where you got it.', req:{label:'Beat Meridian in the Cook-Off', test:()=>!!(META.rival&&META.rival.beaten)}},
-  {id:'saltcell',n:'THE SALT CELLAR',   slot:'accessory', stars:2, px:[[0,11,'#f5ecd8'],[0,12,'#d8c8a8']], d:'Clipped to the apron. Reach without looking.', req:{label:'Season 150 dishes lifetime', test:()=>(META.life.seasons||0)>=150}},
-  {id:'expotwl', n:"THE EXPO'S TOWEL",  slot:'hand', stars:4, px:[[10,9,'#f4f4f4'],[10,10,'#e2e2dc'],[11,9,'#d8d8d0']], d:'Always over the shoulder. The mark of someone who calls the pass, not just cooks it.', req:{label:'100 tight passes lifetime', test:()=>(META.life.tight||0)>=100}},
+  {id:'saltcell',n:'THE SALT CELLAR',   slot:'accessory', stars:2, px:[[0,11,'#f5ecd8'],[0,12,'#d8c8a8']], d:'Clipped to the apron. Reach without looking.', req:{label:'Season 150 dishes lifetime', test:()=>(META.life.seasons||0)>=150, prog:()=>[(META.life.seasons||0),150]}},
+  {id:'expotwl', n:"THE EXPO'S TOWEL",  slot:'hand', stars:4, px:[[10,9,'#f4f4f4'],[10,10,'#e2e2dc'],[11,9,'#d8d8d0']], d:'Always over the shoulder. The mark of someone who calls the pass, not just cooks it.', req:{label:'100 tight passes lifetime', test:()=>(META.life.tight||0)>=100, prog:()=>[(META.life.tight||0),100]}},
   {id:'ashepin', n:'ASHE\'S PIN',       slot:'accessory', stars:6, px:[[4,8,'#c084fc']], d:'She doesn\'t give these. She leaves them.', req:{label:'Make Vivian Ashe a patron', test:()=>!!(META.vips.ashe&&META.vips.ashe.patron)}},
-  {id:'starredtq',n:'THE STARRED TOQUE', slot:'hat', stars:8, chefOnly:true, hatRows:['..WWWWWWWW..','.WWW*WWWWWW.','.GGGGGGGGGG.','..WWWWWWWW..'], pal:{W:'#fbfbf6','*':'#ffd84d',G:'#d4af37'}, d:'White toque, gold band, one gold star. Status you wear.', req:{label:'Guide rating ≥ 1 star', test:()=>((META.guide&&META.guide.rating)||0)>=1}},
+  {id:'starredtq',n:'THE STARRED TOQUE', slot:'hat', stars:8, chefOnly:true, hatRows:['..WWWWWWWW..','.WWW*WWWWWW.','.GGGGGGGGGG.','..WWWWWWWW..'], pal:{W:'#fbfbf6','*':'#ffd84d',G:'#d4af37'}, d:'White toque, gold band, one gold star. Status you wear.', req:{label:'Guide rating ≥ 1 star', test:()=>((META.guide&&META.guide.rating)||0)>=1, prog:()=>[((META.guide&&META.guide.rating)||0),1]}},
 ];
 const CORE_SLOTS=['hat','face','body','hand'];               // the original 4 — DRESSED TO KILL uses this
 const SLOTS=[...CORE_SLOTS,'shoes','tattoo','accessory'];    // the UI dresses all 7
@@ -3081,6 +3093,7 @@ function hireMember(role, station){
 /* v12.2 (Jaxon mobile note): the back office is TABS now — one concern per
    screen instead of a five-system scroll. Last tab sticks for the session. */
 let SHOP_TAB='room';
+let WARD_FILTER='all';   // v20: which slice of the wardrobe the GEAR tab is showing
 function renderShop(container){
   container.innerHTML='';
   const box=document.createElement('div');
@@ -3290,11 +3303,40 @@ function renderShop(container){
   } /* end CREW tab */
 
   if(SHOP_TAB==='gear'){
+  /* v20: 47 pieces is too many for one undifferentiated wall. State each
+     piece is in, counted honestly, and a filter to stand in each one. */
+  const wState=w=>{
+    if(META.ward[w.id]) return 'owned';
+    let ok=true; if(w.req){ try{ ok=!!w.req.test(); }catch(e){ ok=false; } }
+    if(!ok) return 'locked';
+    return META.stars>=w.stars ? 'ready' : 'short';
+  };
+  const tally={owned:0,ready:0,short:0,locked:0};
+  WARDROBE.forEach(w=>tally[wState(w)]++);
   const wHead=document.createElement('div'); wHead.className='wardHead';
-  wHead.innerHTML=`<span>THE WARDROBE — EARNED, NEVER BOUGHT</span><span>⭐${META.stars}</span>`;
+  wHead.innerHTML=`<span>THE WARDROBE — EARNED, NEVER BOUGHT</span><span>${tally.owned}/${WARDROBE.length} · ⭐${META.stars}</span>`;
   box.appendChild(wHead);
+  const fBar=document.createElement('div'); fBar.id='wardFilters';
+  [['all','ALL',WARDROBE.length],['ready','✓ CAN EARN NOW',tally.ready],['short','⭐ NEED STARS',tally.short],
+   ['locked','🔒 LOCKED',tally.locked],['owned','OWNED',tally.owned]].forEach(([id,label,n])=>{
+    const b=document.createElement('button');
+    b.className='wardFilt'+(WARD_FILTER===id?' sel':'');
+    b.innerHTML=`${label} <em>${n}</em>`;
+    b.addEventListener('click',()=>{ WARD_FILTER=id; renderShop(container); });
+    fBar.appendChild(b);
+  });
+  box.appendChild(fBar);
   const wGrid=document.createElement('div'); wGrid.className='wardGrid';
-  WARDROBE.forEach(w=>wGrid.appendChild(wardCard(w,()=>renderShop(container))));
+  // closest-to-earned first, so the next thing to chase is always at the top
+  const order={ready:0,short:1,locked:2,owned:3};
+  const shown=WARDROBE.filter(w=>WARD_FILTER==='all'||wState(w)===WARD_FILTER)
+    .sort((a,b)=>order[wState(a)]-order[wState(b)]);
+  if(!shown.length){
+    const p=document.createElement('p'); p.style.cssText='color:var(--dim);font-size:11px';
+    p.textContent='Nothing in this category yet.';
+    box.appendChild(p);
+  }
+  shown.forEach(w=>wGrid.appendChild(wardCard(w,()=>renderShop(container))));
   box.appendChild(wGrid);
   } /* end GEAR tab */
 
@@ -3386,10 +3428,24 @@ function wardCard(w,rerender){
   const d=document.createElement('div'); d.className='upg wardCard'+(owned?' owned':'');
   if(!owned&&!reqOk) d.classList.add('lockedWard');
   const src=previewURL(w);
+  /* v20: locked pieces show HOW FAR ALONG you are, not just that they're
+     locked. 21 of the 35 conditions are countable, so they get a real bar and
+     a "147 / 200" readout — the wardrobe becomes the to-do list it was always
+     meant to be instead of a wall of padlocks. */
+  let progBar='';
+  if(w.req&&!owned&&!reqOk&&w.req.prog){
+    try{
+      const [cur,target]=w.req.prog();
+      const pct=Math.max(0,Math.min(100,cur/target*100));
+      const fmt=n=>n>=10000?'$'+Math.round(n).toLocaleString():Math.round(n).toLocaleString();
+      progBar=`<div class="wpTrk"><i style="width:${pct}%"></i></div>
+        <em class="wpNum">${fmt(cur)} / ${fmt(target)}</em>`;
+    }catch(e){}
+  }
   d.innerHTML=`<div class="wardPrev"><img src="${src}" alt="${w.n}">${owned?'<span class="wOwned">✓</span>':''}</div>
     <b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}</em>${
       w.chefOnly?`<br><em style="color:var(--gold)">👑 CHEF ONLY — equip it on YOU in the CREW tab${owned?'':', not on a cook'}</em>`:''
-    }${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
+    }${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>${progBar}`:''}</small>`;
   const b=document.createElement('button');
   b.textContent=owned?'UNLOCKED':'⭐'+w.stars;
   b.disabled=owned||META.stars<w.stars||!reqOk;

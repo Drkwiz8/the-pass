@@ -415,6 +415,33 @@ only ignored — so the fix recovers it.
       pan seated on it, basket in oil, chilled bay, binchotan trough, neta
       case — sitting behind the readout and brightening when the pan is live.
 
+## v20 — THE WARDROBE AS A TO-DO LIST (SHIPPED 2026-08-01)
+Jaxon wants the wardrobe deepened and the visuals finished before going public.
+- [x] PROGRESS on locked pieces: 21 of the 35 unlock conditions are countable,
+      so each now shows a real bar and a "147 / 200" readout instead of just a
+      padlock. Derived automatically from the existing tests, so any future
+      condition of the form `x >= n` reports progress for free.
+- [x] FILTERS in the GEAR tab — ALL / CAN EARN NOW / NEED STARS / LOCKED /
+      OWNED, each with a live count, and pieces sorted closest-to-earned first
+      so the next thing to chase is always at the top. 47 items was too many
+      for one undifferentiated wall.
+- [x] Header counts owned/total.
+
+## ART DIRECTION — the honest state (2026-08-01)
+The game now has two art styles side by side: PixelLab station equipment
+(detailed, properly shaded) and hand-drawn sprites for chefs and food (small,
+blocky). They read fine when EVERYTHING was hand-drawn; good art next to them
+exposes them. Two attempts at redrawing the brigade bigger (v19, v19.1) both
+made it worse and were reverted in v19.2 — scaling a crude sheet up without an
+artist just produces a bigger crude sheet.
+Options on the table, none taken yet:
+1. All-PixelLab — everything matches, but characters become fixed PNGs and the
+   colour customisation + 47-piece overlay wardrobe would need rebuilding on
+   palette-swaps and generated overlays. Real project.
+2. All hand-drawn — pull the PixelLab equipment back out. Consistent, crude.
+3. Leave it mixed and ship — the game underneath is strong.
+Constraint: the PixelLab account is a TRIAL, 40 generations, 12 used.
+
 ## v18 — next on the career
 - [ ] HEAD CHEF loop: cooks take all pulls, PUSH command to drive a station
 - [ ] BUY THE RESTAURANT → passive income, LEGACY entry, bring one cook
