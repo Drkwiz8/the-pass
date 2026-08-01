@@ -244,6 +244,14 @@ work on your days off — you are still on your own line at service that night.
       what you are working toward. Owned pieces no longer render dimmed.
       (The customize panel already live-previewed the assembled chef.)
 
+## v14.8 — STAGE EXPLOIT CLOSED (SHIPPED 2026-08-01)
+Jaxon: "people can bypass stage nights by just ending the service."
+- [x] abandonNight() ticked m.stage.left, so you could open the doors, walk
+      straight out, and burn off a cook's three tired services without ever
+      cooking one — training for free. A stage now only counts when the
+      service is actually worked: finish() and failNight() tick it (both
+      were cooked), walking out does not. The walk-out card says so.
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).

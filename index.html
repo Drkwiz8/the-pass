@@ -385,7 +385,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.7</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.8</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -3050,18 +3050,15 @@ function abandonNight(){
   G.running=false; G.over=true; G.paused=false;
   document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
   hideCoach();
-  /* an abandoned night still passes time for anyone out on stage */
-  let backLine='';
-  META.crew.forEach(m=>{
-    if(m.stage&&--m.stage.left<=0){
-      backLine+=stageLine(m,''); stageGraduate(m);
-      delete m.stage;
-    }
-  });
+  /* v14.8 EXPLOIT FIX (Jaxon): this used to tick down m.stage.left — so you
+     could open the doors, immediately walk out, and burn off a cook's three
+     tired services without ever cooking one of them. Training was free.
+     A stage only counts when the service is actually WORKED: finish(),
+     failNight() (they cooked it, it collapsed) and concedeNight() tick it;
+     walking out does not. */
   saveMeta();
   card.innerHTML=`<h1><small>NIGHT ${META.night}</small>YOU WALKED</h1>
-    <p>You took off your apron in the middle of service. The night doesn't count — no tips banked, no grade, and night ${META.night} is still sitting there waiting for you.</p>
-    ${backLine}
+    <p>You took off your apron in the middle of service. The night doesn't count — no tips banked, no grade, and night ${META.night} is still sitting there waiting for you.${META.crew.some(m=>m.stage)?' Nobody\'s stage moved either — that only counts when the service gets worked.':''}</p>
     <div id="shopBoxAband"></div>
     <div id="modeBtns">
       <button id="start">RUN NIGHT ${META.night} ▸</button>
