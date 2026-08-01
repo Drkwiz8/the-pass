@@ -106,10 +106,19 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
    track at the bottom. It is now boxed into the area ABOVE the bar —
    object-fit:contain letterboxes it inside that box at any pan height, so
    the timing bar always has its own clear strip and never gets covered. */
-.panSurf{position:absolute;left:0;top:2px;width:100%;height:calc(100% - 20px);
-  object-fit:contain;image-rendering:pixelated;opacity:.85;z-index:0;pointer-events:none}
-.pan.live .panSurf{opacity:1}
-.pan.empty .panSurf{opacity:.42}
+/* v18.3: the pan is three explicit bands now — NAME on top, the equipment +
+   food + readout in the middle, and the TIMING BAR alone at the bottom. The
+   art is boxed into the middle band only (object-fit:contain letterboxes it
+   at any pan height), so it can never ride over the name or the bar however
+   many pans are stacked. */
+.panSurf{position:absolute;left:6px;top:22px;
+  width:calc(100% - 12px);height:calc(100% - 46px);min-height:0;
+  object-fit:contain;image-rendering:pixelated;opacity:.8;z-index:0;pointer-events:none}
+.pan.live .panSurf{opacity:.95}
+.pan.empty .panSurf{opacity:.4}
+/* keep the readout legible against detailed art behind it */
+.panBig{text-shadow:0 1px 3px #0b0e11,0 0 8px rgba(11,14,17,.9)}
+.panDish{text-shadow:0 1px 2px #0b0e11}
 .pan.dead .panSurf{opacity:.15;filter:grayscale(1)}
 .pan>*:not(.panSurf){position:relative;z-index:1}
 .station .pans>*{position:relative;z-index:1}
@@ -143,7 +152,15 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .pan.burning{border-color:var(--bad);animation:burn .3s infinite alternate}
 .panKey{position:absolute;top:6px;right:7px;font-size:9px;font-weight:700;color:var(--dim);border:1px solid var(--line2);border-radius:3px;padding:1px 5px}
 .panTop{display:flex;flex-direction:column;gap:2px;min-width:0}
-.panDish{font-size:13px;font-weight:700;letter-spacing:.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:28px}
+/* v18.3 (Jaxon: "the names of the meals at the top arent showing anymore its
+   just..."). This reserved 28px on the right for the key badge and ellipsised
+   anything that did not fit. On a phone the key badge is hidden — so that
+   padding was pure waste — and with four stations a column is only ~90px, so
+   a name like HAMACHI KAMA truncated to literally "...". The reservation now
+   only applies where the badge actually exists, and the name scales down
+   before it ever truncates. */
+.panDish{font-size:13px;font-weight:700;letter-spacing:.4px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;padding-right:28px;min-width:0}
 .panTicket{font-size:9px;color:var(--dim);letter-spacing:1.2px}
 .panBig{margin:auto 0;text-align:center;font-size:30px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1}
 .panBig.idle{font-size:10px;letter-spacing:3px;color:#4a555e;font-weight:400}
@@ -452,6 +469,8 @@ body{touch-action:manipulation}
   .panEmo{font-size:22px;bottom:22px}
   .panEmo .foodImg{width:24px;height:20px}
   .panKey{display:none}
+  /* v18.3: no key badge on mobile, so the name gets the full width back */
+  .panDish{padding-right:0;letter-spacing:0}
   .panDish{font-size:11px}
   #keysHelp{display:none}
   #crewDock .nm{display:none}
@@ -510,7 +529,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.2</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.3</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
