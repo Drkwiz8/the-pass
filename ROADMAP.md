@@ -362,6 +362,24 @@ swap between restaurants" and "acctualy pixelated cooking quipment".
       oil, cold well, binchotan robata, sushi neta case — drawn through the
       same outline + edge-shade pipeline as the chefs and the food.
 
+## v17.1 — SAVE-LOSS BUGFIX + THE CORNER (SHIPPED 2026-08-01)
+Jaxon: "i clicked on kirin and bought upgrades then refreshed the page and all
+my save data is gone." Worst bug of the project. Cause: loadMeta's guard read
+`m.up`, but v17 moved `up` into META.tours behind NON-ENUMERABLE accessors, so
+it stopped appearing in the saved JSON at all. Every v17 save failed the guard
+and the game booted fresh over a live career. The data was never destroyed —
+only ignored — so the fix recovers it.
+- [x] Guard accepts `m.tours` as well as legacy `m.up`; falls back to a backup
+      key if the primary is unreadable
+- [x] saveMeta REFUSES to overwrite a real career with a blank/fresh state,
+      and keeps one generation in `pass_meta_bak` before each write
+- [x] Regression-tested three paths: switch-restaurant→buy→refresh round trip,
+      blank-save-over-real-career refusal, and pre-v17 flat-save migration
+- [x] The first restaurant is THE CORNER, not "THE PASS" — the game is THE
+      PASS. Room ladder reads THE CORNER — DINER / BISTRO / BRASSERIE...,
+      KIRIN reads STANDING BAR / IZAKAYA / COUNTER / KAPPO / OMAKASE. Save id
+      stays 'pass' so nothing breaks.
+
 ## v18 — next on the career
 - [ ] HEAD CHEF loop: cooks take all pulls, PUSH command to drive a station
 - [ ] BUY THE RESTAURANT → passive income, LEGACY entry, bring one cook

@@ -511,7 +511,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v17</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v17.1</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -643,7 +643,12 @@ function rankOf(){ return RANKS[Math.min(META.rank||0, RANKS.length-1)]; }
 function rankPay(grade){ return grade==='S'?2 : grade==='A'?1 : grade==='B'?0 : -1; }
 
 const RESTAURANTS = [
-  {id:'pass',  n:'THE PASS',  sub:'AMERICAN BISTRO', emo:'🍽️',
+  /* v17.1 (Jaxon): "i thought the name of the game was the pass not the name
+     of the first restaurant." Right — THE PASS is the game. The first
+     restaurant is THE CORNER, a name that survives its whole renovation
+     ladder from a late-night window to a Michelin room. The id stays 'pass'
+     so nobody's save breaks. */
+  {id:'pass',  n:'THE CORNER', sub:'AMERICAN BISTRO', emo:'🍽️',
    stations:['grill','saute','cold','fry'],
    d:'Your first kitchen. Four stations, a printer that never stops, and everything to prove.',
    unlock:null},
@@ -1024,11 +1029,11 @@ const TIERS = [
   {n:'THE PASS — THE MICHELIN ROOM',cost:90000},
   {n:'THE PASS — LEGEND',           cost:180000},
 ];
-function tierName(){
-  const i=Math.min(META.tier||0,TIERS.length-1);
+function roomName(i){
   const r=curRest(), rooms=TIER_ROOMS[r.id]||TIER_ROOMS.pass;
-  return r.n+' — '+(rooms[i]||TIERS[i].n);
+  return rooms[Math.min(i,rooms.length-1)] || TIERS[Math.min(i,TIERS.length-1)].n;
 }
+function tierName(){ return curRest().n+' — '+roomName(Math.min(META.tier||0,TIERS.length-1)); }
 function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)+1] : null; }
 
 function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,flips:0,banked:0,seasons:0,mastered:0,
@@ -1091,8 +1096,20 @@ let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}, l
             rival:{won:0,lost:0,beaten:false,wk:null}, rivalUntil:0, tut:{}, chef:freshChef()};
 function loadMeta(){
   try{
-    const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
-    if(m&&m.up){
+    let m=JSON.parse(localStorage.getItem('pass_meta')||'null');
+    /* v17.1 SAVE-LOSS BUGFIX (Jaxon: "i clicked kirin, bought upgrades,
+       refreshed and all my save data is gone"). This guard used to read
+       `m.up` — but v17 moved `up` into META.tours and made the top-level
+       accessors NON-ENUMERABLE, so it stopped appearing in the saved JSON
+       entirely. Every v17 save therefore failed this check and the game
+       booted fresh on top of a perfectly good career. The save was never
+       destroyed, only ignored — so accepting `m.tours` here restores it.
+       If the primary somehow is unreadable, fall back to the backup. */
+    if(!m || (!m.up && !m.tours)){
+      const bak=JSON.parse(localStorage.getItem('pass_meta_bak')||'null');
+      if(bak && (bak.up || bak.tours)) m=bak;
+    }
+    if(m&&(m.up||m.tours)){
       META=m;
       if(!Array.isArray(META.crew)) META.crew=[];
       if(typeof META.stars!=='number') META.stars=0;
@@ -1215,7 +1232,25 @@ function switchRest(id){
   bindTour(); saveMeta();
   return true;
 }
-function saveMeta(){ try{ localStorage.setItem('pass_meta',JSON.stringify(META)); }catch(e){} }
+/* v17.1: never let a fresh/empty state quietly overwrite a real career, and
+   always keep one generation of backup. A save bug should cost a session, not
+   a hundred nights of someone's kitchen. */
+function saveMeta(){
+  try{
+    const json=JSON.stringify(META);
+    const cur=JSON.parse(json);
+    const real = !!(cur.tours && Object.values(cur.tours).some(t=>t && (t.night>1 || (t.crew&&t.crew.length) || Object.keys(t.up||{}).length)))
+              || META.bank>0 || META.stars>0;
+    const prevRaw=localStorage.getItem('pass_meta');
+    if(prevRaw && !real){
+      const prev=JSON.parse(prevRaw);
+      const prevReal = !!(prev && (prev.up || (prev.tours && Object.values(prev.tours).some(t=>t && (t.night>1 || (t.crew&&t.crew.length))))));
+      if(prevReal) return;             // refuse to stomp a real save with a blank one
+    }
+    if(prevRaw && real) localStorage.setItem('pass_meta_bak',prevRaw);
+    localStorage.setItem('pass_meta',json);
+  }catch(e){}
+}
 loadMeta();
 
 function cooks(){ return META.crew.filter(m=>m.role==='cook'); }
@@ -2684,7 +2719,7 @@ function renderShop(container){
   if(nt){
     const voss=META.vips.adrian&&META.vips.adrian.patron;
     const rcost=Math.round(nt.cost*(voss?.8:1));
-    rCard.innerHTML=`<b>🏗️ RENOVATE → ${nt.n.replace('THE PASS — ','')}</b>
+    rCard.innerHTML=`<b>🏗️ RENOVATE → ${roomName((META.tier||0)+1)}</b>
       <small>Close for a night of construction, open something greater. Permanent +12% menu prices per tier, +1⭐, and a room worth the grind. This is the ladder that never ends.${voss?' <em style="color:var(--gold)">VOSS CAPITAL: −20%</em>':''}</small>`;
     const b=document.createElement('button'); b.textContent='RENOVATE — $'+rcost.toLocaleString();
     b.disabled=META.bank<rcost;
