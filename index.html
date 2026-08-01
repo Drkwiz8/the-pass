@@ -245,9 +245,42 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 #crewDock{display:flex;align-items:center;gap:10px}
 #crewDock .dockM{display:flex;align-items:center;gap:4px}
 #crewDock .dockM .nm{font-size:8px;letter-spacing:1px;color:var(--dim)}
-#sousCfg{background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:10px;margin-top:8px;grid-column:1 / -1}
-#sousCfg .row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
+/* v18.6: the customization panel, rebuilt. Big live portrait, controls in a
+   column beside it, and gear chosen from thumbnails rendered on the actual
+   character instead of seven dropdowns full of names. */
+#sousCfg{background:linear-gradient(180deg,#1a2027,#151b21);border:1px solid var(--line2);
+  border-radius:5px;padding:14px;margin-top:8px;grid-column:1 / -1;
+  box-shadow:0 8px 26px rgba(0,0,0,.45)}
+.cfgWrap{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.cfgPrev{background:#0f151a;border:1px solid var(--line);border-radius:4px;padding:10px 14px;text-align:center}
+.cfgPrev .chefImg{height:96px;width:auto;image-rendering:pixelated;display:block;margin:0 auto}
+.cfgName{font-size:10px;letter-spacing:2px;color:var(--gold);margin-top:7px;font-weight:700}
+.cfgCtl{min-width:0}
+.ciLab{font-size:9px;color:var(--dim);letter-spacing:1px}
+#sousCfg .row{display:flex;align-items:center;gap:8px;margin:0 0 9px;flex-wrap:wrap}
 #sousCfg label{font-size:10px;letter-spacing:1.5px;color:var(--dim);min-width:64px}
+/* the gear picker */
+#cfgGear{margin-top:12px;border-top:1px solid var(--line);padding-top:11px}
+.gearRow{display:grid;grid-template-columns:74px 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.gearLab{font-size:9.5px;letter-spacing:1.6px;color:var(--dim);text-align:right}
+.gearNone{font-size:9.5px;color:#4a555e;letter-spacing:.5px;font-style:italic}
+.gearStrip{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px}
+.gearOpt{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line2);border-radius:4px;
+  padding:5px 4px 4px;cursor:pointer;width:60px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.gearOpt img{height:46px;width:auto;image-rendering:pixelated;display:block}
+.gearOpt span{font-size:7.5px;letter-spacing:.4px;color:var(--dim);text-align:center;line-height:1.15;
+  max-width:54px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gearOpt:hover{border-color:var(--txt)}
+.gearOpt.sel{border-color:var(--star);background:rgba(250,204,21,.1)}
+.gearOpt.sel span{color:var(--star)}
+@media (max-width:900px){
+  .cfgWrap{grid-template-columns:1fr}
+  .cfgPrev{display:flex;align-items:center;justify-content:center;gap:14px}
+  .cfgPrev .chefImg{height:72px}
+  .cfgName{margin-top:0}
+  .gearRow{grid-template-columns:1fr;gap:3px}
+  .gearLab{text-align:left}
+}
 #sousCfg input[type=text]{background:var(--panel);border:1px solid var(--line2);border-radius:3px;color:var(--txt);
   font-family:var(--mono);font-size:12px;padding:4px 7px;width:130px}
 #sousCfg input[type=color]{width:34px;height:24px;border:1px solid var(--line2);background:var(--panel);border-radius:3px;padding:1px;cursor:pointer}
@@ -537,7 +570,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.5</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.6</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -3399,25 +3432,71 @@ function renderLocker(){
 function renderMemberCfg(grid,m,container,afterEl){
   const old=grid.querySelector('#sousCfg'); if(old){ old.remove(); if(old._for===m) return; }
   const cfg=document.createElement('div'); cfg.id='sousCfg'; cfg._for=m;
-  const gearSel=slot=>{
-    const owned=WARDROBE.filter(w=>w.slot===slot&&META.ward[w.id]&&(!w.chefOnly||m.role==='chef'));
-    if(!owned.length) return `<span style="font-size:9px;color:var(--dim)">no ${slot} gear unlocked</span>`;
-    return `<select data-slot="${slot}" class="gearSel">
-      <option value="">— no ${slot} gear —</option>
-      ${owned.map(w=>`<option value="${w.id}"${m.gear&&m.gear[slot]===w.id?' selected':''}>${w.n}</option>`).join('')}
-    </select>`;
-  };
+  /* v18.6 (Jaxon: "the customization page of the crew and the gear it looks
+     outdated"). It was seven <select> dropdowns in one wrapped row and 22px
+     swatches — you picked gear by reading names, never seeing it. Now: a big
+     live portrait that updates as you change anything, and every slot is a
+     strip of THUMBNAILS rendered on THIS character, so you choose by looking.
+     Locked-but-owned chef-only pieces are simply absent for cooks, as before. */
   cfg.innerHTML=`
-    <div class="row"><label>NAME</label><input type="text" maxlength="10" value="${m.name}" id="sN">
-      <span style="margin-left:auto" id="sPrev"></span></div>
-    <div class="row"><label>SKIN</label><span id="sSk"></span></div>
-    <div class="row"><label>HAIR</label><span id="sHr"></span></div>
-    <div class="row"><label>HAT</label><span id="sHs"></span><input type="color" value="${m.hat}" id="sH" title="hat color"></div>
-    <div class="row"><label>COAT</label><input type="color" value="${m.coat||'#f4f4f4'}" id="sC">
-      <label style="min-width:0">APRON</label><input type="color" value="${m.apron}" id="sA"></div>
-    <div class="row"><label>GEAR</label>${SLOTS.map(s=>gearSel(s)).join(' ')}</div>
-    ${m.role==='cook'?`<div class="row"><label>STATION</label><select id="sS">${STATIONS.map(st=>`<option value="${st.id}"${st.id===m.station?' selected':''}>${st.emo} ${st.name}</option>`).join('')}</select></div>`:''}`;
-  const sync=()=>{ saveMeta(); cfg.querySelector('#sPrev').innerHTML=memberFig(m,true); };
+    <div class="cfgWrap">
+      <div class="cfgPrev"><div id="sPrev"></div><div class="cfgName">${m.name}</div></div>
+      <div class="cfgCtl">
+        <div class="row"><label>NAME</label><input type="text" maxlength="10" value="${m.name}" id="sN"></div>
+        <div class="row"><label>SKIN</label><span id="sSk"></span></div>
+        <div class="row"><label>HAIR</label><span id="sHr"></span></div>
+        <div class="row"><label>HAT</label><span id="sHs"></span></div>
+        <div class="row"><label>COLOURS</label>
+          <span class="ciLab">hat</span><input type="color" value="${m.hat}" id="sH">
+          <span class="ciLab">coat</span><input type="color" value="${m.coat||'#f4f4f4'}" id="sC">
+          <span class="ciLab">apron</span><input type="color" value="${m.apron}" id="sA"></div>
+        ${m.role==='cook'?`<div class="row"><label>STATION</label><select id="sS">${stationsLive().map(st=>`<option value="${st.id}"${st.id===m.station?' selected':''}>${st.emo} ${st.name}</option>`).join('')}</select></div>`:''}
+      </div>
+    </div>
+    <div id="cfgGear"></div>`;
+  const sync=()=>{ saveMeta();
+    cfg.querySelector('#sPrev').innerHTML=memberFig(m,true);
+    cfg.querySelector('.cfgName').textContent=m.name;
+  };
+
+  /* the gear picker: one strip per slot, every option drawn on this person */
+  const gearBox=cfg.querySelector('#cfgGear');
+  const drawGear=()=>{
+    gearBox.innerHTML='';
+    SLOTS.forEach(slot=>{
+      const owned=WARDROBE.filter(w=>w.slot===slot&&META.ward[w.id]&&(!w.chefOnly||m.role==='chef'));
+      const row=document.createElement('div'); row.className='gearRow';
+      const lab=document.createElement('div'); lab.className='gearLab';
+      lab.textContent=slot.toUpperCase();
+      row.appendChild(lab);
+      if(!owned.length){
+        const none=document.createElement('span'); none.className='gearNone';
+        none.textContent='nothing unlocked for this slot yet';
+        row.appendChild(none); gearBox.appendChild(row); return;
+      }
+      const strip=document.createElement('div'); strip.className='gearStrip';
+      const opt=(w)=>{
+        const on = w ? (m.gear&&m.gear[slot]===w.id) : !(m.gear&&m.gear[slot]);
+        const b=document.createElement('button');
+        b.className='gearOpt'+(on?' sel':'');
+        b.title = w?w.n:'none';
+        // render the option ON this member so you see it as it will look
+        const ghost={...m, gear:{...(m.gear||{})}};
+        if(w) ghost.gear[slot]=w.id; else delete ghost.gear[slot];
+        b.innerHTML=`<img src="${chefURL(ghost,4)}" alt=""><span>${w?w.n:'NONE'}</span>`;
+        b.addEventListener('click',()=>{
+          if(!m.gear) m.gear={};
+          if(w) m.gear[slot]=w.id; else delete m.gear[slot];
+          if(slot==='hat'&&w) m.hatStyle='toque';
+          sync(); drawGear();
+        });
+        return b;
+      };
+      strip.appendChild(opt(null));
+      owned.forEach(w=>strip.appendChild(opt(w)));
+      row.appendChild(strip); gearBox.appendChild(row);
+    });
+  };
   const skBox=cfg.querySelector('#sSk');
   SKINS.forEach(c=>{
     const b=document.createElement('button'); b.className='swatch'+(c===m.skin?' sel':''); b.style.background=c;
@@ -3435,16 +3514,8 @@ function renderMemberCfg(grid,m,container,afterEl){
     const b=document.createElement('button'); b.className='hatBtn'+(h===(m.hatStyle||'toque')?' sel':''); b.textContent=h.toUpperCase();
     b.addEventListener('click',()=>{ m.hatStyle=h; if(m.gear) delete m.gear.hat; sync();
       hsBox.querySelectorAll('.hatBtn').forEach(x=>x.classList.toggle('sel',x===b));
-      cfg.querySelectorAll('.gearSel[data-slot=hat]').forEach(s=>s.value=''); });
+      drawGear(); });   // v18.6: hat gear and hat style are exclusive; redraw the strip
     hsBox.appendChild(b);
-  });
-  cfg.querySelectorAll('.gearSel').forEach(sel=>{
-    sel.addEventListener('change',e=>{
-      if(!m.gear) m.gear={};
-      const slot=e.target.dataset.slot;
-      if(e.target.value) m.gear[slot]=e.target.value; else delete m.gear[slot];
-      sync();
-    });
   });
   cfg.querySelector('#sN').addEventListener('input',e=>{ m.name=(e.target.value||m.role.toUpperCase()).toUpperCase(); sync(); });
   cfg.querySelector('#sH').addEventListener('input',e=>{ m.hat=e.target.value; sync(); });
@@ -3454,6 +3525,7 @@ function renderMemberCfg(grid,m,container,afterEl){
   if(sel) sel.addEventListener('change',e=>{ m.station=e.target.value; sync(); });
   // open right under the card being customized — no scrolling to the bottom
   if(afterEl&&afterEl.parentNode===grid) afterEl.after(cfg); else grid.appendChild(cfg);
+  drawGear();
   cfg.querySelector('#sPrev').innerHTML=memberFig(m,true);
 }
 
