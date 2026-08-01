@@ -188,6 +188,20 @@ Jaxon: "im already stuck on 25 because of the bug and i cant beat it."
       disaster night still ends with tomorrow. Failure still stings without
       ever being terminal.
 
+## v14.5 — DISCOVERABILITY (SHIPPED 2026-08-01)
+Jaxon: "i didnt know i could push f to fire tickets and doing that i was able
+to S rank night 25." Fourteen versions with the strongest verb in the game
+hidden on a keyboard shortcut — and unreachable entirely on mobile.
+- [x] 🔥 FIRE OLDEST is a real button in the footer, styled hot, always
+      visible (mobile had NO way to do this at all before)
+- [x] The coach teaches it: at the end of the guided first service, and again
+      as a one-time callout the first time 4+ tickets are live on the rail
+- [x] "86" the dish-cut button renamed CUT — it collided with 86 meaning a
+      station outage. Two meanings, one label, entirely my fault.
+- [x] GOALS tab renamed ACHIEVEMENTS: bigger two-column rows, unlocked ones
+      lit green instead of locked ones greyed to mud, a progress bar, earned
+      ones sorted first, and every row states its ⭐1 payout out loud
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).

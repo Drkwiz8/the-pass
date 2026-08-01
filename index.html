@@ -159,6 +159,18 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
 #ctl button{background:transparent;border:1px solid var(--line2);color:var(--dim);font-family:var(--mono);font-size:10px;
   letter-spacing:1px;padding:3px 9px;border-radius:3px;cursor:pointer}
 #ctl button:hover{color:var(--txt);border-color:var(--txt)}
+/* v14.5: FIRE OLDEST was keyboard-only (F) — invisible to Jaxon for 14
+   versions and impossible on mobile. It is the strongest button in the game;
+   it gets to look like it. */
+#ctl #fireOldestBtn{color:var(--hot);border-color:var(--hot);font-weight:700;letter-spacing:1px;
+  background:rgba(255,83,48,.09)}
+#ctl #fireOldestBtn:hover{background:rgba(255,83,48,.2);color:#fff}
+#ctl #fireOldestBtn kbd{background:var(--panel2);border:1px solid var(--line2);border-radius:2px;
+  padding:0 3px;font-size:8px;margin-left:3px;color:var(--dim)}
+@media (max-width:900px){
+  #ctl #fireOldestBtn{font-size:11px;padding:9px 12px}
+  #ctl #fireOldestBtn kbd{display:none}
+}
 
 #floats{position:fixed;inset:0;pointer-events:none;z-index:40}
 .float{position:absolute;font-weight:700;font-size:17px;letter-spacing:.5px;text-shadow:0 2px 6px #000;animation:floatUp 1.05s ease-out forwards}
@@ -238,12 +250,18 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 #startEndless{background:transparent;color:var(--cold);border:2px solid var(--cold)!important}
 #startEndless:hover{background:rgba(90,209,230,.12)}
 .achHead{font-size:11px;letter-spacing:3px;color:var(--good);margin:14px 0 8px;display:flex;justify-content:space-between}
-.achGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.ach{background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:7px 8px}
-.ach b{font-size:10.5px;letter-spacing:.5px;display:block}
-.ach small{font-size:9.5px;color:var(--dim);line-height:1.35;display:block}
-.ach.locked{opacity:.38;filter:grayscale(1)}
-.ach.unlocked{border-color:var(--good)}
+.achGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ach{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:11px 12px;
+  display:flex;gap:11px;align-items:flex-start}
+.ach .achIcon{font-size:19px;line-height:1;flex:none;margin-top:1px}
+.ach .achTxt{min-width:0}
+.ach b{font-size:12px;letter-spacing:.6px;display:block;margin-bottom:3px}
+.ach small{font-size:10.5px;color:var(--dim);line-height:1.45;display:block}
+.ach .achPay{font-size:9.5px;color:var(--star);letter-spacing:1px;display:block;margin-top:5px}
+.ach.locked{opacity:.62}
+.ach.locked b{color:var(--dim)}
+.ach.unlocked{border-color:var(--good);background:rgba(65,214,127,.07)}
+.ach.unlocked b{color:var(--good)}
 #shareBtn{margin-top:10px;width:100%;background:transparent;border:1px solid var(--cold);color:var(--cold);
   font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:2px;padding:8px 0;border-radius:3px;cursor:pointer}
 #shareBtn:hover{background:rgba(90,209,230,.12)}
@@ -256,6 +274,8 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .shopTab:hover{color:var(--txt)}
 .shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
 .shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
+.achBarTrk{height:5px;background:var(--panel2);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.achBarFill{height:100%;background:linear-gradient(90deg,var(--good),var(--star));transition:width .4s ease}
 .kill86{background:transparent;border:1px solid var(--line2);color:var(--dim);border-radius:3px;
   font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 5px;margin-left:6px;cursor:pointer;flex:none}
 .kill86:hover{border-color:var(--bad);color:var(--bad);background:rgba(239,68,68,.12)}
@@ -330,11 +350,12 @@ body{touch-action:manipulation}
 
   <footer id="ctl">
     <div id="keysHelp">
-      <kbd>click</kbd> fire &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>9</kbd>/<kbd>0</kbd>/<kbd>Q</kbd>/<kbd>W</kbd> pull &nbsp;·&nbsp;
-      <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
+      <kbd>click</kbd> fire &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>9</kbd>/<kbd>0</kbd>/<kbd>Q</kbd>–<kbd>Y</kbd> pull &nbsp;·&nbsp;
+      <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.4</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.5</span>
+    <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -582,12 +603,23 @@ function checkAchs(ctx){
 }
 function renderAchs(container){
   const done=ACHS.filter(a=>META.ach[a.id]).length;
+  const pct=Math.round(done/ACHS.length*100);
   const box=document.createElement('div');
-  box.innerHTML=`<div class="achHead"><span>GOALS — ${done}/${ACHS.length} (each pays ⭐1)</span></div>`;
+  /* v14.5 (Jaxon): "GOALS" -> ACHIEVEMENTS, and the rows have to say what they
+     actually mean — bigger, unlocked ones lit instead of locked ones greyed
+     into mud, and every row states its ⭐1 payout out loud. */
+  box.innerHTML=`<div class="achHead"><span>ACHIEVEMENTS</span><span style="color:var(--star)">${done}/${ACHS.length} · ⭐${done} EARNED</span></div>
+    <div class="achBarTrk"><div class="achBarFill" style="width:${pct}%"></div></div>
+    <p style="font-size:10px;color:var(--dim);margin:6px 0 10px;letter-spacing:.5px">
+      Each one pays <b style="color:var(--star)">⭐1</b> the moment you do it — stars buy wardrobe in the GEAR tab. They unlock during service, on their own.</p>`;
   const grid=document.createElement('div'); grid.className='achGrid';
-  ACHS.forEach(a=>{
-    const d=document.createElement('div'); d.className='ach '+(META.ach[a.id]?'unlocked':'locked');
-    d.innerHTML=`<b>${META.ach[a.id]?'✅':'🔒'} ${a.n}</b><small>${a.d}</small>`;
+  const sorted=[...ACHS].sort((a,b)=>(!!META.ach[b.id])-(!!META.ach[a.id]));
+  sorted.forEach(a=>{
+    const got=!!META.ach[a.id];
+    const d=document.createElement('div'); d.className='ach '+(got?'unlocked':'locked');
+    d.innerHTML=`<span class="achIcon">${got?'✅':'🔒'}</span>
+      <span class="achTxt"><b>${a.n}</b><small>${a.d}</small>
+      <span class="achPay">${got?'EARNED · ⭐1':'PAYS ⭐1'}</span></span>`;
     grid.appendChild(d);
   });
   box.appendChild(grid); container.appendChild(box);
@@ -1250,7 +1282,7 @@ function tutEvent(ev){
   } else if(ev==='pull'&&G.tutStep===1){ G.tutStep=2;
     coach('<b>PULLED.</b> When every dish on a ticket is pulled, hit <b>PLATE ▸</b> on the chit to send it out. A plate scores on its COLDEST dish — send it hot.');
   } else if(ev==='plate'&&G.tutStep===2){ G.tutStep=3; META.tut.basics=1; saveMeta();
-    coach('<b>SERVICE.</b> That\'s the whole job: fire, pull in the green, plate hot. Tips bank at close — spend them in the back office. Don\'t let the rail bury you, chef.',9000);
+    coach('<b>SERVICE.</b> That\'s the whole job: fire, pull in the green, plate hot.<br><br>One more thing, and it\'s the most useful button in the kitchen: <b>🔥 FIRE OLDEST</b> (bottom right, or press <b>F</b>). It fires the next dish on your oldest ticket without you aiming at anything. When the rail stacks up, hammer it.',13000);
   }
 }
 
@@ -1262,7 +1294,7 @@ const TUT_CARDS={
   6:{t:'VIPs ★',h:'Gold chits. Double tips, 40% less patience. Feed them first — they do not wait.'},
   7:{t:'BUS TOURS 🚌',h:'Three tickets land at once, no warning. Keep a pan free per station or the rail buries you.'},
   8:{t:'NIGHT CONDITIONS',h:'Every night now rolls a condition — read the card before you open. Some nights change all the rules.'},
-  9:{t:"86'D ⚡",h:'Equipment fails mid-service. A downed station cooks nothing — but you are not stuck: TAP THE STATION HEADER four times to fix it early, or hit the small 86 button on a dish to cut it (costs a $'+COMP_FEE+' comp; the rest of the ticket still plates and nobody walks).'},
+  9:{t:"86'D ⚡",h:'Equipment fails mid-service. A downed station cooks nothing — but you are not stuck: TAP THE STATION HEADER four times to fix it early, or hit CUT on a stranded dish to drop it from the ticket (costs a $'+COMP_FEE+' comp; the rest of the ticket still plates and nobody walks).'},
   10:{t:'THE CRITIC 🟣',h:'Purple chit, three dishes, patient. ALL perfect and hot = +$150 and stars. Anything less becomes a review you\'ll feel.'},
   12:{t:'4-TOPS',h:'Four-dish tickets. Fire them across stations in PARALLEL, not one at a time — the plate scores on its coldest dish.'},
   14:{t:'THE FINISH ↳',h:'Premium dishes take TWO passes now: pull the cook, then RE-FIRE from the ticket for the finish — the rest, the baste, the crisp. Both passes perfect = MASTERED ★ +25%. The brigade won\'t touch this pass. It\'s yours.'},
@@ -1371,8 +1403,10 @@ function buildChit(tk){
     it.el=d; it.tagEl=d.querySelector('.tag'); it.miniEl=d.querySelector('.mini'); it.barEl=d.querySelector('.mini i');
     /* v14.3: the way out — cut this dish rather than lose the table */
     if(mechOn('down')){
-      const kb=document.createElement('button'); kb.className='kill86'; kb.textContent='86';
-      kb.title='Cut this dish — comp $'+COMP_FEE+', but the table stays';
+      /* v14.5: this said "86" — the same word the game already uses for a
+         station outage. Two different meanings, one label. It's CUT now. */
+      const kb=document.createElement('button'); kb.className='kill86'; kb.textContent='CUT';
+      kb.title='Cut this dish from the ticket — costs a $'+COMP_FEE+' comp, but the table stays and nobody walks';
       kb.addEventListener('click',ev=>{ ev.stopPropagation(); void86(tk,i); });
       d.querySelector('.iRow').appendChild(kb);
       it.killBtn=kb;
@@ -1426,7 +1460,7 @@ function void86(tk,idx){
   if(it.pan){ clearPan(it.pan); }
   it.state='void';
   it.el.className='item void';
-  it.tagEl.style.display=''; it.tagEl.className='tag ov'; it.tagEl.textContent="86'D";
+  it.tagEl.style.display=''; it.tagEl.className='tag ov'; it.tagEl.textContent='CUT';
   it.miniEl.style.display='none';
   if(it.killBtn) it.killBtn.remove();
   G.tips=Math.max(0,G.tips-COMP_FEE);
@@ -1438,7 +1472,7 @@ function void86(tk,idx){
     killTicket(tk,'dying');
     return;
   }
-  toast("86'D "+it.m.n+' — REST OF THE TICKET STANDS','var(--warn)');
+  toast('CUT '+it.m.n+' — REST OF THE TICKET STANDS','var(--warn)');
   refreshTicket(tk);
 }
 function inspecting(){ return G.inspUntil>G.t; }
@@ -1817,7 +1851,7 @@ function step(dt){
       G.downUntil[st.id]=G.t+ev.dur; G.fixTaps[st.id]=0;
       toast("86 — "+st.name+" IS DOWN. TAP THE HEADER TO FIX IT",'var(--bad)'); SFX.down();
       if(!META.tut.fix86&&!G.endless){ META.tut.fix86=1; saveMeta();
-        coach('<b>86 — '+st.name+' IS DOWN.</b> Two ways out: <b>tap that station\'s header 4×</b> to fix it early, or hit the small <b>86</b> button on a stuck dish to cut it — you comp $'+COMP_FEE+', but the table stays and nobody walks.',11000); }
+        coach('<b>86 — '+st.name+' IS DOWN.</b> Two ways out: <b>tap that station\'s header 4×</b> to fix it early, or hit <b>CUT</b> on a stranded dish to drop it — you comp $'+COMP_FEE+', but the table stays and nobody walks.',11000); }
     }
   }
   for(const st of STATIONS){
@@ -1850,6 +1884,14 @@ function step(dt){
   if(G.duelAt && !G.duelDone && G.t>=G.duelAt && !G.closing && G.tickets.length<G.railCap){
     G.duelDone=true; spawnTicket({duel:true});
   }
+  /* v14.5: the first time the rail actually stacks up, teach the button that
+     saves it. Jaxon played 14 versions without finding F, then S-ranked the
+     night he learned it — that is a teaching bug, not a player mistake. */
+  if(!G.endless && !META.tut.fireOldest && G.tickets.filter(t=>!t.dead).length>=4){
+    META.tut.fireOldest=1; saveMeta();
+    coach('<b>THE RAIL IS STACKING.</b> Stop aiming — hit <b>🔥 FIRE OLDEST</b> (bottom right, or press <b>F</b>) over and over. It fires the next dish on your oldest ticket every press. This is how you dig out.',11000);
+  }
+
   /* v11: named regulars walk in on schedule */
   for(const ev of (G.vipSpawns||[])){
     if(!ev.fired && G.t>=ev.at && !G.closing && G.tickets.length<G.railCap){
@@ -2062,7 +2104,7 @@ function renderShop(container){
     {id:'crew', l:'👥 CREW', n:canHire},
     {id:'gear', l:'🧥 GEAR', n:canBuyGear},
     {id:'line', l:'⚙️ LINE', n:canBuyLine},
-    {id:'goals',l:'🎯 GOALS', n:0},
+    {id:'goals',l:'🏆 ACHIEVEMENTS', n:0},
   ];
   const bar=document.createElement('div'); bar.id='shopTabs';
   tabs.forEach(t=>{
@@ -2806,6 +2848,7 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden&&G.running
    tips and ADVANCED THE NIGHT. Walking out mid-service counted as closing the
    night. Endless has no calendar so it still just ends the run; career now
    abandons: nothing banks, the night stays put, and it asks first. */
+$('#fireOldestBtn').addEventListener('click',()=>{ if(G.running&&!G.paused) fireOldest(); });
 $('#quit').addEventListener('click',()=>{
   if(!G.running) return;
   if(G.endless){ finishEndless(); return; }
