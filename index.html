@@ -274,6 +274,12 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .shopTab:hover{color:var(--txt)}
 .shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
 .shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
+.cookSecs{font-size:8.5px;color:var(--dim);letter-spacing:.3px;flex:none;margin-left:4px;opacity:.85}
+.item.cooking .cookSecs,.item.ready .cookSecs{display:none}
+.syncLine{font-size:8.5px;letter-spacing:.8px;text-align:center;padding:2px 0;border-radius:2px;margin:3px 0 1px}
+.syncLine.tight{color:#ffd84d;background:rgba(255,216,77,.14);font-weight:700}
+.syncLine.half{color:#7dd3fc;background:rgba(125,211,252,.1)}
+.syncLine.loose{color:var(--dim)}
 .wardPrev{position:relative;display:flex;align-items:flex-end;justify-content:center;
   background:linear-gradient(180deg,#0f151a,#141c22);border:1px solid var(--line);border-radius:3px;
   padding:6px 0 4px;margin-bottom:7px;min-height:78px}
@@ -385,7 +391,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.8</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v15</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -429,6 +435,7 @@ const WEEDS_IN  = 6, WEEDS_OUT = 3;
 const MAX_RAIL  = 10;
 const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w','e','r','t','y'];
 const COMP_FEE = 12;      // v14.3: what it costs to 86 a dish and keep the table
+const TIGHT_WIN = 4.5;    // v15: seconds inside which a table's dishes count as one pass
 const SKINS = ['#f6d7b0','#eac086','#d29b6c','#a96f44','#7c4a26','#5a3319'];
 const HAIRS = ['#1a1a1a','#3b2a1a','#6b3f1d','#a56a2a','#c9a227','#7a7a7a','#c0392b','#2563eb'];
 const HATSTYLES = ['toque','bandana','beanie','none'];
@@ -620,6 +627,8 @@ const ACHS = [
   {id:'michelin', n:'THE ROOM',         d:'Reach the Michelin Room (tier 5).', test:c=>(META.tier||0)>=5},
   {id:'season10', n:'SEASONED',         d:'Season 10 dishes in one service.', test:c=>(G.seasonsCt||0)>=10},
   {id:'master',   n:'THE FINISH',       d:'Master a two-pass dish — both passes perfect.', test:c=>(G.masteredCt||0)>0},
+  {id:'tight1',   n:'ON THE PASS',      d:'Land every dish on a table within 4.5s of each other.', test:c=>(G.tightCt||0)>0},
+  {id:'tight5',   n:'EXPEDITER',        d:'Five tight passes in one service.', test:c=>(G.tightCt||0)>=5},
   {id:'rivaldown',n:'RIVAL DOWN',       d:'Beat Meridian in the Cook-Off.', test:c=>!!(META.rival&&META.rival.beaten)},
 ];
 function checkAchs(ctx){
@@ -703,6 +712,7 @@ const WARDROBE = [
   {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, chefOnly:true, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6}},
   {id:'champjkt',n:'CHAMPION\'S JACKET', slot:'body', stars:5, px:[[2,8,'#d4af37'],[4,8,'#d4af37'],[7,8,'#d4af37'],[9,8,'#d4af37']], d:'Gold on the shoulders. Meridian knows exactly where you got it.', req:{label:'Beat Meridian in the Cook-Off', test:()=>!!(META.rival&&META.rival.beaten)}},
   {id:'saltcell',n:'THE SALT CELLAR',   slot:'accessory', stars:2, px:[[0,11,'#f5ecd8'],[0,12,'#d8c8a8']], d:'Clipped to the apron. Reach without looking.', req:{label:'Season 150 dishes lifetime', test:()=>(META.life.seasons||0)>=150}},
+  {id:'expotwl', n:"THE EXPO'S TOWEL",  slot:'hand', stars:4, px:[[10,9,'#f4f4f4'],[10,10,'#e2e2dc'],[11,9,'#d8d8d0']], d:'Always over the shoulder. The mark of someone who calls the pass, not just cooks it.', req:{label:'100 tight passes lifetime', test:()=>(META.life.tight||0)>=100}},
   {id:'ashepin', n:'ASHE\'S PIN',       slot:'accessory', stars:6, px:[[4,8,'#c084fc']], d:'She doesn\'t give these. She leaves them.', req:{label:'Make Vivian Ashe a patron', test:()=>!!(META.vips.ashe&&META.vips.ashe.patron)}},
   {id:'starredtq',n:'THE STARRED TOQUE', slot:'hat', stars:8, chefOnly:true, hatRows:['..WWWWWWWW..','.WWW*WWWWWW.','.GGGGGGGGGG.','..WWWWWWWW..'], pal:{W:'#fbfbf6','*':'#ffd84d',G:'#d4af37'}, d:'White toque, gold band, one gold star. Status you wear.', req:{label:'Guide rating ≥ 1 star', test:()=>((META.guide&&META.guide.rating)||0)>=1}},
 ];
@@ -881,6 +891,7 @@ function loadMeta(){
       if(!META.rival) META.rival={won:0,lost:0,beaten:false,wk:null};
       if(typeof META.rivalUntil!=='number') META.rivalUntil=0;
       if(typeof META.life.seasons!=='number') META.life.seasons=0;
+      if(typeof META.life.tight!=='number') META.life.tight=0;   // v15
       if(typeof META.life.mastered!=='number') META.life.mastered=0;
       if(m.sous && !META.crew.length){
         META.crew.push({role:'cook', name:m.sous.name, hat:m.sous.hat,
@@ -1374,7 +1385,7 @@ const TUT_CARDS={
   8:{t:'NIGHT CONDITIONS',h:'Every night now rolls a condition — read the card before you open. Some nights change all the rules.'},
   9:{t:"86'D ⚡",h:'Equipment fails mid-service. A downed station cooks nothing — but you are not stuck: TAP THE STATION HEADER four times to fix it early, or hit CUT on a stranded dish to drop it from the ticket (costs a $'+COMP_FEE+' comp; the rest of the ticket still plates and nobody walks).'},
   10:{t:'THE CRITIC 🟣',h:'Purple chit, three dishes, patient. ALL perfect and hot = +$150 and stars. Anything less becomes a review you\'ll feel.'},
-  12:{t:'4-TOPS',h:'Four-dish tickets. Fire them across stations in PARALLEL, not one at a time — the plate scores on its coldest dish.'},
+  12:{t:'4-TOPS + THE TIGHT PASS ⟡',h:'Four-dish tickets — and the real job of a pass. Every dish shows its COOK TIME on the chit. Fire so they all finish TOGETHER: a 9s ribeye goes in seven seconds before a 2s plate of oysters. Land a table\'s dishes within 4.5s of each other and the whole ticket pays +40% (⟡ TIGHT PASS). Fire everything at once and the first dish sits under the lamp going cold. Your crew pulls — but YOU fire, so this decision is always yours.'},
   14:{t:'THE FINISH ↳',h:'Premium dishes take TWO passes now: pull the cook, then RE-FIRE from the ticket for the finish — the rest, the baste, the crisp. Both passes perfect = MASTERED ★ +25%. The brigade won\'t touch this pass. It\'s yours.'},
   16:{t:'HOW YOU ARE GRADED 📋',h:'Your night grade is execution only — money never counts toward it. PERFECT (40%) pulls inside the window · SERVICE (30%) tables kept · CLEAN (15%) product not burnt · CRAFT (15%) the seasons, flips and finishes YOU did yourself. A trained brigade can carry the first three, but CRAFT is yours alone — which is why an S needs you working the windows, not just owning upgrades.'},
   17:{t:'THE WEEK 📅',h:'Nights are days now, MON–SAT, each with its own shape. Saturday averages your six grades into a WEEK GRADE that pays stars and a tip bonus — then DARK MONDAY: one spending decision before the new week.'},
@@ -1469,13 +1480,18 @@ function buildChit(tk){
   const el=document.createElement('div');
   el.className='chit'+(tk.vip?' vip':'')+(tk.critic?' critic':'')+(tk.party?' party':'')+(tk.duel?' duel':'');
   el.innerHTML=`<div class="chHead"><span>#${String(tk.id).padStart(3,'0')}</span><span class="tbl">${tk.table}</span></div>
-    <div class="timerTrk"><div class="timerBar"></div></div><div class="items"></div>`;
+    <div class="timerTrk"><div class="timerBar"></div></div>
+    <div class="syncLine" style="display:none"></div><div class="items"></div>`;
   const box=el.querySelector('.items');
   tk.items.forEach((it,i)=>{
     const st=STATIONS.find(s=>s.id===it.m.st);
     const d=document.createElement('div'); d.className='item todo';
     d.style.borderLeft='3px solid '+st.color;
+    /* v15: the cook time is on the chit now. You cannot plan a stagger you
+       cannot see — this is the number the whole TIGHT PASS decision runs on. */
+    const secs=(it.m.cook+(it.m.tech&&mechOn('tech')?it.m.tech.cook:0));
     d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${foodTag(it.m.n,'cooked',2,it.m.e)}</span>${it.m.n}${it.m.tech&&mechOn('tech')?' <span style="font-size:8px;opacity:.6">×2</span>':''}</span>
+        <span class="cookSecs">${secs.toFixed(1)}s</span>
         <span class="tag" style="display:none"></span></div>
       <div class="mini" style="display:none"><i></i></div>`;
     d.addEventListener('click',()=>fire(tk,i));
@@ -1496,6 +1512,7 @@ function buildChit(tk){
   btn.style.display='none'; btn.addEventListener('click',()=>plate(tk));
   el.appendChild(btn);
   tk.el=el; tk.bar=el.querySelector('.timerBar'); tk.btn=btn;
+  tk.syncEl=el.querySelector('.syncLine');
   railEl.appendChild(el);
   const empty=railEl.querySelector('#railEmpty'); if(empty) empty.style.display='none';
 }
@@ -1724,6 +1741,33 @@ function plate(tk, byExpo=false){
   });
   qual/=Math.max(1,tk.items.filter(it=>it.state!=='void').length);
   if(tk.items.some(it=>it.state==='void')) allPerfect=false;   // a cut dish is never a perfect table
+
+  /* ==================== v15: THE TIGHT PASS ====================
+     Jaxon: "im just spaming fire and clicking orders over and over i want
+     something else to do." He was right, and the reason was structural:
+     nothing punished firing every dish on a ticket the instant it landed.
+     Heat decay existed but bottomed out at 30% — a soft, invisible tax.
+     So the optimal play WAS to spam, and the game had actions but no
+     decisions.
+
+     The real skill on a pass is expediting: timing a table's dishes so they
+     finish TOGETHER. A ribeye is 9.5s, oysters are 2s — fire them at the
+     same moment and the ribeye sits under the lamp going grey while you
+     wait. Fire the ribeye first, the oysters seven seconds later, and both
+     hit the window at once.
+
+     THE TIGHT PASS pays for exactly that: every dish pulled inside a few
+     seconds of the others. It turns 'what do I press' into 'what order do
+     I press it in', which is a decision, which is a game. */
+  const pulls=tk.items.filter(it=>it.state!=='void'&&it.pulledAt);
+  let spread=0, tight=0;
+  if(pulls.length>=2){
+    const ts=pulls.map(it=>it.pulledAt);
+    spread=Math.max(...ts)-Math.min(...ts);
+    tight = spread<=TIGHT_WIN ? 1 : spread<=TIGHT_WIN*2 ? .5 : 0;
+    if(tight===1){ base*=1.40; G.tightCt=(G.tightCt||0)+1; }
+    else if(tight===.5) base*=1.15;
+  }
   if(!G.endless&&META.up.menu) base*=1.1;
   if(!G.endless) base*=(1+.04*(META.up.menuDev||0));
   if(!G.endless) base*=(1+.12*(META.tier||0));   // renovated rooms charge renovated prices
@@ -1743,6 +1787,13 @@ function plate(tk, byExpo=false){
   G.tips+=tip; G.covers++;
   if(byExpo){ G.expoPlates++; floatText(tk.el,'📣 +$'+tip,'#5ad1e6'); }
   else floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
+  if(tight===1){
+    floatText(tk.el,'⟡ TIGHT PASS +40%','#ffd84d'); SFX.star&&SFX.star();
+    if(!G.endless&&!META.tut.tight){ META.tut.tight=1; saveMeta();
+      coach('<b>⟡ TIGHT PASS.</b> Every dish on that table hit the window together — <b>+40%</b>. That is the whole job of a pass: a ribeye takes 9s and oysters take 2s, so you fire the ribeye FIRST and the oysters seven seconds later. Fire everything at once and the first dish sits going cold.',13000); }
+  } else if(pulls.length>=2 && tight===0 && spread>TIGHT_WIN*2){
+    floatText(tk.el,'STRAGGLED — '+spread.toFixed(0)+'s APART','#8a949c');
+  }
   if(tk.critic){
     if(allPerfect && minHeat>.7){
       G.tips+=150; G.criticFloored=true;
@@ -2147,6 +2198,22 @@ function render(){
         it.barEl.style.width=(h*100)+'%';
         if(h<=HEAT_FLOOR+.02){ it.tagEl.textContent='COLD'; it.tagEl.className='tag ov'; }
       }
+    }
+    /* v15: live sync readout — how far apart this table's plates are landing,
+       and whether the TIGHT PASS bonus is still on the table. */
+    if(tk.syncEl){
+      const done=tk.items.filter(i=>i.state==='pass'&&i.pulledAt);
+      const liveCt=tk.items.filter(i=>i.state!=='void').length;
+      if(liveCt>=2&&done.length>=1){
+        const ts=done.map(i=>i.pulledAt);
+        const spread=(done.length===liveCt?Math.max(...ts):G.t)-Math.min(...ts);
+        const ok=spread<=TIGHT_WIN, half=!ok&&spread<=TIGHT_WIN*2;
+        tk.syncEl.style.display='';
+        tk.syncEl.className='syncLine '+(ok?'tight':half?'half':'loose');
+        tk.syncEl.textContent = ok?'⟡ TIGHT '+spread.toFixed(1)+'s (+40%)'
+          : half?'◇ '+spread.toFixed(1)+'s (+15%)'
+          : '· '+spread.toFixed(1)+'s apart';
+      } else tk.syncEl.style.display='none';
     }
   }
 }
@@ -2574,7 +2641,7 @@ function start(endless=false){
   Object.assign(G,{running:true,over:false,paused:false,endless,t:0,clock:SERVICE,closing:false,closeT:0,
     tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,
     crewPulls:0,expoPlates:0,hostSaves:0,hostCd:0,criticFloored:false,partyPlated:false,fines:0,
-    seasonsCt:0,masteredCt:0,duelAt:0,duelDone:true,
+    seasonsCt:0,masteredCt:0,tightCt:0,duelAt:0,duelDone:true,
     nextSpawn:2.2,ticketNo:0,tickets:[],mod:endless?null:modFor(META.night),railCap:MAX_RAIL,
     inspAt:0,inspUntil:0,
     downUntil:{},downSchedule:[],fixTaps:{},comps:0,criticAt:0,criticDone:false,
@@ -2789,7 +2856,7 @@ function gradeBreakdown(grade,col){
     ${row('PERFECT', g.perfect, '40%', 'pulled inside the window')}
     ${row('SERVICE', g.service, '30%', 'tables kept, not walked')}
     ${row('CLEAN',   g.clean,   '15%', 'product not burnt')}
-    ${row('CRAFT',   g.craft,   '15%', 'YOUR seasons, flips &amp; finishes')}
+    ${row('CRAFT',   g.craft,   '15%', 'YOUR seasons, flips, finishes &amp; tight passes')}
     <div class="gFoot">${nx
       ? `<b style="color:${col}">${nx[0]}</b> needs <b>${nx[1]}</b>${nx[0]==='S'?' with 1 walkout or fewer':nx[0]==='A'?' with 3 walkouts or fewer':''}. ${
           g.craft<.5 ? 'Your weakest line is CRAFT — the crew can pull for you, but seasoning and flipping is yours alone.'
@@ -2837,7 +2904,9 @@ function finish(){
   const perfectRate = G.pulls ? G.perfects/G.pulls : 0;
   const wasteRate   = G.pulls ? Math.min(1,G.waste/G.pulls) : 0;
   const myPulls     = Math.max(1, G.pulls - G.crewPulls);
-  const craftRate   = Math.min(1, (G.flips + (G.seasonsCt||0) + 2*(G.masteredCt||0)) / myPulls);
+  /* v15: a tight pass is craft — and it is the one decision a full brigade
+     can never take from you, because the crew pulls but YOU fire. */
+  const craftRate   = Math.min(1, (G.flips + (G.seasonsCt||0) + 2*(G.masteredCt||0) + 3*(G.tightCt||0)) / myPulls);
   const sc = Math.round(100*(perfectRate*.40 + rate*.30 + (1-wasteRate)*.15 + craftRate*.15));
   G.gradeParts={perfect:perfectRate,service:rate,clean:1-wasteRate,craft:craftRate,score:sc};
   let grade='D', col='var(--bad)';
@@ -2858,6 +2927,7 @@ function finish(){
   L.services++; L.pulls+=G.pulls; L.perfects+=G.perfects; L.waste+=G.waste;
   L.covers+=G.covers; L.flips+=G.flips; L.banked+=G.tips;
   L.seasons=(L.seasons||0)+(G.seasonsCt||0); L.mastered=(L.mastered||0)+(G.masteredCt||0);
+  L.tight=(L.tight||0)+(G.tightCt||0);
   L.bestCombo=Math.max(L.bestCombo,G.comboMax);
   if(G.criticFloored) L.criticFloors++;
   if(G.weedsTime>=60) L.weeds60=true;

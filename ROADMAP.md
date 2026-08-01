@@ -252,7 +252,25 @@ Jaxon: "people can bypass stage nights by just ending the service."
       service is actually worked: finish() and failNight() tick it (both
       were cooked), walking out does not. The walk-out card says so.
 
-## v15 — CREWS (multiplayer, the honest path)
+## v15 — THE TIGHT PASS (SHIPPED 2026-08-01)
+Jaxon: "im just spaming fire and clicking orders over and over i want
+something else to do." The sharpest note yet, and structural: nothing
+punished firing every dish on a ticket at once. Heat decay existed but
+floored at 30% — a soft, invisible tax — so spam WAS optimal. The game had
+actions but no decisions.
+- [x] THE TIGHT PASS: a table's dishes pulled within 4.5s of each other pay
+      +40% (within 9s, +15%). Expediting — the actual job of a pass — becomes
+      the core decision: a 9.5s ribeye fires seven seconds before a 2s plate
+      of oysters so they land together.
+- [x] Cook time printed on every chit item — you cannot plan a stagger you
+      cannot see. Live sync readout per ticket (⟡ TIGHT 2.1s / ◇ / apart).
+- [x] The crew pulls but the PLAYER fires, so a full brigade can never erode
+      this decision — the standing answer to "verbs feel useless with 3 cooks"
+- [x] Tight passes weight triple in the grade's CRAFT component; 2 new
+      achievements (ON THE PASS, EXPEDITER) and THE EXPO'S TOWEL at 100
+      lifetime tight passes
+
+## v16 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).
 1. Global leaderboard first (endless scores, name + crew tag field)
@@ -264,7 +282,7 @@ Supabase project covers both (J4 research picked it; Jaxon owns the account).
 The chef character (v14) is the identity that travels: your chef + name +
 crew tag is what other players see.
 
-## v16 — next
+## v17 — next
 - [ ] Prestige seasons (endgame doc §6) — the go-around-again layer
 - [ ] Crew morale + staff storylines (endgame doc §4)
 - [ ] Per-station verb identities (grill sear marks, fry shake, garde compose)
