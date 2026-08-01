@@ -102,9 +102,9 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
    itself goes back to plain dark steel so the sprites read. */
 .station .pans{position:relative;background:linear-gradient(180deg,#171d23,#11161a)}
 .panSurf{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:88%;height:auto;image-rendering:pixelated;opacity:.55;z-index:0;pointer-events:none}
-.pan.live .panSurf{opacity:.85}
-.pan.empty .panSurf{opacity:.3}
+  width:94%;height:auto;image-rendering:pixelated;opacity:.62;z-index:0;pointer-events:none}
+.pan.live .panSurf{opacity:.92}
+.pan.empty .panSurf{opacity:.34}
 .pan.dead .panSurf{opacity:.15;filter:grayscale(1)}
 .pan>*:not(.panSurf){position:relative;z-index:1}
 .station .pans>*{position:relative;z-index:1}
@@ -505,7 +505,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v17.3</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -604,6 +604,152 @@ const EQUIP={
    slot's worth of machine: a grate section over coals, a burner with its
    ring, a fryer well with an oil line, a chilled steel bay, a binchotan
    trough, a neta case section. */
+/* ================= v18: BIGGER GRIDS, READABLE EQUIPMENT =================
+   Jaxon: "all the stations look off still... i want people to tell wtf shit
+   is so it needs to be more detailed like smaller pixels or something."
+   Correct diagnosis. The old surfaces were 16x10 — there is no drawing of a
+   deep fryer that reads at 16x10. These are 32x20, four times the pixels,
+   drawn as recognisable machines in three-quarter view: a body, a working
+   surface, controls, and a silhouette you can name at a glance.
+
+   SPRITE_SRC below is the override hook: any station or dish can be replaced
+   by an external PNG (e.g. exported from PixelLab) embedded as a base64 data
+   URI, without touching the renderer. Art can improve independently of code. */
+const SPRITE_SRC={};   // id -> "data:image/png;base64,..." (overrides the grid)
+const SURFACE_HI={
+  grill:{rows:[
+    '................................',
+    '.....HH....................HH...',
+    '....HHHH..................HHHH..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..K==========================K..',
+    '..K=oo=oo=oo=oo=oo=oo=oo=oo==K..',
+    '..K==========================K..',
+    '..K=oo=oo=oo=oo=oo=oo=oo=oo==K..',
+    '..K==========================K..',
+    '..K=oo=oo=oo=oo=oo=oo=oo=oo==K..',
+    '..K==========================K..',
+    '..KccccccccccccccccccccccccccK..',
+    '..KcbbbcbbbcbbbcbbbcbbbcbbbccK..',
+    '..KccccccccccccccccccccccccccK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..KddddddddddddddddddddddddddK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '...LL....................LL.....',
+    '...LL....................LL.....',
+    '................................'],
+    pal:{K:'#3d444b','=':'#171b1e',o:'#ff5330',c:'#3a1408',b:'#ff7a2a',d:'#22282d',H:'#5a636b',L:'#2a3036'}},
+  saute:{rows:[
+    '................................',
+    '................................',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..KssssssssssssssssssssssssssK..',
+    '..Ks....rrrrrr......rrrrrr...sK..'.slice(0,32),
+    '..Ks..rr......rr..rr......rr.sK..'.slice(0,32),
+    '..Ks.r..oooooo..r.r..oooooo..sK.'.slice(0,32),
+    '..Ks.r.oooooooo.r.r.oooooooo.sK.'.slice(0,32),
+    '..Ks.r..oooooo..r.r..oooooo..sK.'.slice(0,32),
+    '..Ks..rr......rr..rr......rr.sK..'.slice(0,32),
+    '..Ks....rrrrrr......rrrrrr...sK..'.slice(0,32),
+    '..KssssssssssssssssssssssssssK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..KdddNNdddddNNdddddNNddddddNK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..KddddddddddddddddddddddddddK..',
+    '..KddddddddddddddddddddddddddK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '................................',
+    '................................'],
+    pal:{K:'#3d444b',s:'#4e565e',r:'#5f6870',o:'#ffa41f',d:'#252b31',N:'#c9ced3'}},
+  fry:{rows:[
+    '................................',
+    '..........HHHHHH................',
+    '.........HH....HH...............',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..Km++++++++++++++++++++++++mK..',
+    '..Km+oooooooooooooooooooooo+mK..',
+    '..Km+o.o.o.o.o.o.o.o.o.o.oo+mK..',
+    '..Km+oooooooooooooooooooooo+mK..',
+    '..Km+o.o.o.o.o.o.o.o.o.o.oo+mK..',
+    '..Km+oooooooooooooooooooooo+mK..',
+    '..Km+o.o.o.o.o.o.o.o.o.o.oo+mK..',
+    '..Km++++++++++++++++++++++++mK..',
+    '..KmmmmmmmmmmmmmmmmmmmmmmmmmmK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..KdddddddNNNNdddddddNNNNddddK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..KddddddddddddddddddddddddddK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '................................',
+    '................................'],
+    pal:{K:'#3d444b',m:'#5b5b49','+':'#6f6952',o:'#b3952f',d:'#252b31',N:'#c9ced3',H:'#6a737b'}},
+  cold:{rows:[
+    '................................',
+    '................................',
+    '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+    '..w==========================w..',
+    '..w=BBBBBBBBBB=..=gggggggg==.w..'.slice(0,32),
+    '..w=BBBBBBBBBB=..=gggggggg==.w..'.slice(0,32),
+    '..w=BBBBBBBBBB=..=gggggggg==.w..'.slice(0,32),
+    '..w==========================w..',
+    '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+    '..w==========================w..',
+    '..w=CC==CC==CC==CC==CC==CC===w..',
+    '..w=CC==CC==CC==CC==CC==CC===w..',
+    '..w==========================w..',
+    '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+    '..wddddddddddddddddddddddddddw..',
+    '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+    '...LL....................LL.....',
+    '...LL....................LL.....',
+    '................................',
+    '................................'],
+    pal:{w:'#7f939f','=':'#39454d',B:'#c9b58a',g:'#8fd06a',C:'#5ad1e6',d:'#2a343b',L:'#4a555d'}},
+  robata:{rows:[
+    '................................',
+    '................................',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..K==========================K..',
+    '..K==========================K..',
+    '..KccccccccccccccccccccccccccK..',
+    '..KcbbbbcbbbbcbbbbcbbbbcbbbbcK..',
+    '..KcbbbbcbbbbcbbbbcbbbbcbbbbcK..',
+    '..KccccccccccccccccccccccccccK..',
+    '..KcbbbbcbbbbcbbbbcbbbbcbbbbcK..',
+    '..KccccccccccccccccccccccccccK..',
+    '..K==========================K..',
+    '..K==========================K..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '..KddddddddddddddddddddddddddK..',
+    '..KKKKKKKKKKKKKKKKKKKKKKKKKKKK..',
+    '...LL....................LL.....',
+    '...LL....................LL.....',
+    '................................',
+    '................................'],
+    pal:{K:'#3d444b','=':'#c9a227',c:'#3a1208',b:'#ff6a2a',d:'#252b31',L:'#2a3036'}},
+  sushi:{rows:[
+    '................................',
+    '..gggggggggggggggggggggggggggg..',
+    '..g..........................g..',
+    '..g..........................g..',
+    '..g.rrrr..pppp..wwww..mmmm...g..',
+    '..g.rrrr..pppp..wwww..mmmm...g..',
+    '..g..........................g..',
+    '..gggggggggggggggggggggggggggg..',
+    '..RRRRRRRRRRRRRRRRRRRRRRRRRRRR..',
+    '..RnnnnRRnnnnRRnnnnRRnnnnRRnnR..',
+    '..RRRRRRRRRRRRRRRRRRRRRRRRRRRR..',
+    '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+    '..w==========================w..',
+    '..w==========================w..',
+    '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+    '..wddddddddddddddddddddddddddw..',
+    '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+    '................................',
+    '................................',
+    '................................'],
+    pal:{g:'#a9c0cc',r:'#e05a5a',p:'#f2a0b0',w:'#7f939f',m:'#d9584e',R:'#efe9dd',n:'#d8cfbe','=':'#39454d',d:'#2a343b'}},
+};
 const SURFACE={
   // a grill grate: iron bars with coals glowing between them
   grill:{rows:[
@@ -642,8 +788,15 @@ const SURFACE={
     '................','................'],
     pal:{g:'#9fb4c0',r:'#e05a5a',p:'#f2a0b0',w:'#e8e2d6',m:'#d9584e'}},
 };
+/* v18: resolve a station's art. Priority:
+     1. SPRITE_SRC['equip_<id>'] — an external PNG (PixelLab export) embedded
+        as a base64 data URI. Drop one in and it wins, no code change.
+     2. SURFACE_HI — the 32x20 hand-drawn grid (4x the old detail).
+     3. SURFACE — the original 16x10, kept as a floor so nothing can blank. */
 function surfaceURL(stId,px=4){
-  const S=SURFACE[stId]; if(!S) return '';
+  const ext=SPRITE_SRC['equip_'+stId];
+  if(ext) return ext;
+  const S=SURFACE_HI[stId]||SURFACE[stId]; if(!S) return '';
   const rows=S.rows, W=rows[0].length, H=rows.length;
   const cv=document.createElement('canvas');
   cv.width=W*px; cv.height=H*px;
