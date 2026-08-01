@@ -101,10 +101,13 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
    stretched one tile across the column and it looked like mush). The column
    itself goes back to plain dark steel so the sprites read. */
 .station .pans{position:relative;background:linear-gradient(180deg,#171d23,#11161a)}
-/* v18.1: the PixelLab equipment is square and detailed — show it whole and
-   bright rather than washed out behind the readout. */
-.panSurf{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  height:86%;width:auto;max-width:96%;image-rendering:pixelated;opacity:.85;z-index:0;pointer-events:none}
+/* v18.2 (Jaxon: "the timing bar doesnt line up with them any more"). The
+   equipment was centred over the WHOLE pan, so it sat on top of the cook
+   track at the bottom. It is now boxed into the area ABOVE the bar —
+   object-fit:contain letterboxes it inside that box at any pan height, so
+   the timing bar always has its own clear strip and never gets covered. */
+.panSurf{position:absolute;left:0;top:2px;width:100%;height:calc(100% - 20px);
+  object-fit:contain;image-rendering:pixelated;opacity:.85;z-index:0;pointer-events:none}
 .pan.live .panSurf{opacity:1}
 .pan.empty .panSurf{opacity:.42}
 .pan.dead .panSurf{opacity:.15;filter:grayscale(1)}
@@ -185,7 +188,7 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .station[data-st=fry]   .pan.live::after{background:linear-gradient(0deg,rgba(255,216,77,.20),transparent)}
 @keyframes heatBreathe{0%,100%{opacity:.55}50%{opacity:1}}
 .pan.burning::after{animation-duration:.4s!important}
-.cookTrk{height:10px;background:#0c1013;border-radius:2px;position:relative;overflow:hidden;flex:0 0 auto}
+.cookTrk{height:10px;background:#0c1013;border-radius:2px;position:relative;overflow:hidden;flex:0 0 auto;z-index:3}
 .cookFill{height:100%;width:0;background:linear-gradient(90deg,#8a3a12,var(--hot));transition:background .15s}
 .zone{position:absolute;top:0;bottom:0;background:rgba(65,214,127,.28);border-left:1px solid var(--good);border-right:1px solid var(--good)}
 .zoneF{position:absolute;top:0;bottom:0;background:rgba(250,204,21,.3);border-left:1px solid var(--warn);border-right:1px solid var(--warn)}
@@ -507,7 +510,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.1</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.2</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
