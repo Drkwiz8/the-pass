@@ -104,7 +104,8 @@ KITS.forEach(k=>{
   const sz=document.createElement('div'); sz.className='sizes';
   [8,5,2].forEach(px=>{ sz.appendChild(draw(k.p,px)); });
   d.appendChild(sz);
-  d.innerHTML+=`<em>${k.n} — locker room · shop · on the line</em>`;
+  const em=document.createElement('em'); em.textContent=k.n+' — locker room · shop · on the line';
+  d.appendChild(em);
   row.appendChild(d);
 });
 </script>
