@@ -202,6 +202,33 @@ hidden on a keyboard shortcut — and unreachable entirely on mobile.
       lit green instead of locked ones greyed to mud, a progress bar, earned
       ones sorted first, and every row states its ⭐1 payout out loud
 
+## v14.6 — THE GRADE, AND THE STAGE REWORKED (SHIPPED 2026-08-01)
+Jaxon: "how does the ranking work cause i felt like that was easy" · "i feel
+like im not flipping or seasoning because how many orders there are and how
+often the other cooks miss and the other cooks also dont season" · "i wanna
+rework the stage training thing again."
+- [x] GRADE BUG: the old score was `tips × service rate` vs a fixed 1100 for
+      S. Tips inflate with menu upgrades, renovation tiers, the Guide
+      multiplier, garnish and VIP doubles — so by the mid-20s S cleared
+      itself. The grade was measuring UPGRADES, not cooking. Now it is four
+      ratios that cannot inflate: PERFECT 40 / SERVICE 30 / CLEAN 15 /
+      CRAFT 15, where CRAFT counts only the player's own seasons, flips and
+      MASTERED finishes over the player's own pulls. A crew can carry the
+      first three; S requires the chef to work the windows.
+- [x] WHY <grade> panel on the close card: four bars, weights, and what the
+      next grade needs — plus a pointed note at the weakest line.
+- [x] STAGES REWORKED: no more faceless +7%. A stage now teaches a NAMED
+      SKILL the player picks — MISE EN PLACE (NOMA, seasons every dish they
+      pull), PRECISION (Le Bernardin, never spaces out), SPEED (Atelier Lux),
+      COMPOSURE (The French Room, quirks and the weeds stop biting). Up to
+      three per cook, badges on the crew card, old numeric skill migrates.
+- [x] MISE EN PLACE directly answers "the cooks dont season" — a trained
+      brigade stops handing over bare product. FLIP and THE FINISH are still
+      never taught (v12.1 rule): the crew frees your hands for the windows
+      rather than replacing you at them.
+- [x] Crew seasons tracked separately (G.crewSeasons) so they never inflate
+      the player's CRAFT score or the lifetime SALT CELLAR count
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).

@@ -274,6 +274,30 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .shopTab:hover{color:var(--txt)}
 .shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
 .shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
+.progTag{display:inline-block;background:rgba(90,209,230,.14);border:1px solid #5ad1e6;color:#5ad1e6;
+  border-radius:2px;font-size:8.5px;letter-spacing:.8px;padding:1px 5px;margin:2px 3px 0 0}
+.stageMenu{grid-column:1/-1;background:#0f151a;border:1px solid #5ad1e6;border-radius:4px;padding:11px 12px;margin:2px 0 8px}
+.stgHead{font-size:10.5px;letter-spacing:1.2px;font-weight:700;color:#5ad1e6;margin-bottom:8px}
+.stgHead small{display:block;font-size:9px;color:var(--dim);letter-spacing:.4px;font-weight:400;margin-top:2px}
+.stgOpt{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
+  border-top:1px solid var(--line);padding:8px 0}
+.stgOpt b{font-size:11px;letter-spacing:.6px}
+.stgOpt b em{font-style:normal;color:var(--dim);font-size:9.5px;letter-spacing:.4px}
+.stgOpt small{display:block;font-size:9.5px;color:var(--dim);line-height:1.4;margin-top:2px}
+.stgOpt button{white-space:nowrap}
+.stgCancel{width:100%;margin-top:9px;background:transparent;border:1px solid var(--line2);color:var(--dim)}
+.gradeBox{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:11px 13px;margin:10px 0}
+.gHead{display:flex;justify-content:space-between;font-size:10px;letter-spacing:1.5px;font-weight:700;
+  color:var(--dim);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:8px}
+.gRow{display:grid;grid-template-columns:58px 1fr 34px 30px;gap:7px;align-items:center;margin-bottom:5px}
+.gLbl{font-size:9.5px;letter-spacing:1px;color:var(--txt);font-weight:700}
+.gTrk{height:6px;background:#0d1216;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.gTrk i{display:block;height:100%;background:linear-gradient(90deg,var(--hot),var(--star));transition:width .5s ease}
+.gPct{font-size:10px;color:var(--txt);text-align:right}
+.gWt{font-size:8.5px;color:var(--dim);text-align:right}
+.gHint{grid-column:2/5;font-size:9px;color:var(--dim);margin-top:-2px}
+.gFoot{font-size:10px;color:var(--dim);line-height:1.5;border-top:1px solid var(--line);padding-top:7px;margin-top:8px}
+@media (max-width:900px){ .gRow{grid-template-columns:52px 1fr 32px 0} .gWt{display:none} }
 .achBarTrk{height:5px;background:var(--panel2);border:1px solid var(--line);border-radius:3px;overflow:hidden}
 .achBarFill{height:100%;background:linear-gradient(90deg,var(--good),var(--star));transition:width .4s ease}
 .kill86{background:transparent;border:1px solid var(--line2);color:var(--dim);border-radius:3px;
@@ -354,7 +378,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.5</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.6</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -743,7 +767,39 @@ function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,fli
    locker room, first name on the door. Some gear only the chef can wear. */
 function freshChef(){ return {role:'chef', name:'CHEF', skin:SKINS[1], hair:HAIRS[1],
   hatStyle:'toque', hat:'#f4f4f4', coat:'#f4f4f4', apron:'#1e293b', gear:{}}; }
-const STAGE_SPOTS=['NOMA','LE BERNARDIN','ATELIER LUX','THE FRENCH ROOM','SAISON'];
+/* ==================== v14.6: THE STAGE, REWORKED ====================
+   Jaxon: "i wanna rework the stage training thing again" + "the other cooks
+   dont season." Old stages were a faceless +7% reaction — you paid $500 and
+   a number moved. Now a stage TEACHES A NAMED SKILL that you pick, and the
+   skills are answers to real complaints about the brigade. A cook can learn
+   up to three. FLIP and THE FINISH are never taught: those stay the chef's
+   own work (the v12.1 rule), so a trained brigade frees your hands for the
+   windows instead of replacing you at them. */
+const STAGE_PROGRAMS=[
+  {id:'mise',  at:'NOMA',           n:'MISE EN PLACE', cost:600,
+   d:'Seasons every dish before pulling it. Your crew stops handing you bare product.'},
+  {id:'prec',  at:'LE BERNARDIN',   n:'PRECISION',     cost:700,
+   d:'Never spaces out. If they are on the station, the dish gets pulled.'},
+  {id:'speed', at:'ATELIER LUX',    n:'SPEED',         cost:650,
+   d:'Reacts at the top of the window instead of drifting to the back of it.'},
+  {id:'comp',  at:'THE FRENCH ROOM',n:'COMPOSURE',     cost:750,
+   d:'Works the weeds like it is a Tuesday. Bad quirks stop biting.'},
+];
+function progOf(m,id){ return !!(m.progs&&m.progs[id]); }
+function progCount(m){ return m.progs?Object.keys(m.progs).length:0; }
+/* stageLine() must run BEFORE stageGraduate() clears m.stage — it reads the
+   destination off it. Kept as two calls so the close cards can order them. */
+function stageLine(m,tail){
+  const p=STAGE_PROGRAMS.find(x=>x.id===(m.stage&&m.stage.prog));
+  return `<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage?m.stage.at:'STAGE'}</b>${p?` — they learned <b style="color:#5ad1e6">${p.n}</b>. ${p.d}`:''} ${tail||''}</div>`;
+}
+function stageGraduate(m){
+  if(!m.stage) return;
+  if(!m.progs) m.progs={};
+  if(m.stage.prog) m.progs[m.stage.prog]=1;
+  m.skill=progCount(m);
+  delete m.stage;
+}
 function freshVips(){ return {
   duvall:{v:0,s:0,patron:false,off:false},
   rosa:{v:0,s:0,patron:false,off:false},
@@ -792,6 +848,13 @@ function loadMeta(){
           m.stage.left=Math.max(1,(m.stage.until||META.night+3)-META.night);
           delete m.stage.until;
         }
+        // v14.6: old numeric m.skill becomes named programs, in order, so
+        // nobody loses training they already paid for
+        if(!m.progs){
+          m.progs={};
+          for(let i=0;i<(m.skill||0)&&i<STAGE_PROGRAMS.length;i++) m.progs[STAGE_PROGRAMS[i].id]=1;
+        }
+        if(m.stage&&!m.stage.prog) m.stage.prog=STAGE_PROGRAMS[0].id;
       });
       if(typeof META.mercy!=='number') META.mercy=0;
       // v13: the coach remembers what it has taught — and never lectures a
@@ -1298,6 +1361,7 @@ const TUT_CARDS={
   10:{t:'THE CRITIC 🟣',h:'Purple chit, three dishes, patient. ALL perfect and hot = +$150 and stars. Anything less becomes a review you\'ll feel.'},
   12:{t:'4-TOPS',h:'Four-dish tickets. Fire them across stations in PARALLEL, not one at a time — the plate scores on its coldest dish.'},
   14:{t:'THE FINISH ↳',h:'Premium dishes take TWO passes now: pull the cook, then RE-FIRE from the ticket for the finish — the rest, the baste, the crisp. Both passes perfect = MASTERED ★ +25%. The brigade won\'t touch this pass. It\'s yours.'},
+  16:{t:'HOW YOU ARE GRADED 📋',h:'Your night grade is execution only — money never counts toward it. PERFECT (40%) pulls inside the window · SERVICE (30%) tables kept · CLEAN (15%) product not burnt · CRAFT (15%) the seasons, flips and finishes YOU did yourself. A trained brigade can carry the first three, but CRAFT is yours alone — which is why an S needs you working the windows, not just owning upgrades.'},
   17:{t:'THE WEEK 📅',h:'Nights are days now, MON–SAT, each with its own shape. Saturday averages your six grades into a WEEK GRADE that pays stars and a tip bonus — then DARK MONDAY: one spending decision before the new week.'},
   23:{t:'THE GUIDE ★',h:'Vivian Ashe eats here every night this week, unmarked — ANY ticket might be hers. Saturday she rates you 0–3 stars, and each star raises every menu price permanently. Cook every ticket like it\'s hers.'},
   29:{t:'THE COOK-OFF ⚔',h:'Meridian sends one black challenge chit per night this week: hard dishes, perfect AND hot or the round is lost. Win 4 of 6 by Saturday to take the street — and bring your stolen regulars home.'},
@@ -1770,16 +1834,32 @@ function crewStep(){
   const skill=cookSkill();
   for(const c of activeCooks()){
     if(stationDown(c.station)) continue;
-    let react=(.55-.16*skill)*(1-.07*(c.skill||0));   // staged cooks come back sharper
-    if(c.quirk==='owl' && G.t>120) react*=.8;
-    if(c.quirk==='clutch' && G.weeds) react*=.75;
-    if(c.quirk==='slow' && G.t<60) react*=1.3;
+    const composed = progOf(c,'comp');
+    let react=(.55-.16*skill)*(progOf(c,'speed')?.45:1);
+    if(!composed){
+      if(c.quirk==='owl' && G.t>120) react*=.8;
+      if(c.quirk==='clutch' && G.weeds) react*=.75;
+      if(c.quirk==='slow' && G.t<60) react*=1.3;
+    }
     let spaceOut=[.18,.09,.03,.01][skill];
     if(c.quirk==='steady') spaceOut*=.5;
+    if(composed) spaceOut*=.5;
+    if(progOf(c,'prec')) spaceOut=0;               // PRECISION: they never drop one
     for(const pan of G.pans){
       if(pan.st!==c.station || !pan.item || pan.sousSkip) continue;
       /* v12.1: the finish pass and the Cook-Off are chef's work — the brigade stands back */
       if(pan.item.stage===1 || (pan.ticket&&pan.ticket.duel)) continue;
+      /* v14.6 MISE EN PLACE: a trained cook seasons their own product instead
+         of handing you bare dishes. Only SEASON — the flip is still yours. */
+      if(progOf(c,'mise') && mechOn('season') && !pan.item.seasoned && !pan.item.flipped){
+        const [ss,se]=seasonWin(pan);
+        if(pan.t>=ss && pan.t<=se){
+          pan.item.seasoned=true; pan.item.byCrewSeason=true;
+          G.crewSeasons=(G.crewSeasons||0)+1;
+          pan.zoneS.style.display='none';
+          floatText(pan.el,'🧂 '+c.name,'#5ad1e6');
+        }
+      }
       const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
       if(!inWin) continue;
       if(!pan.sousDecided){
@@ -2189,28 +2269,48 @@ function renderShop(container){
     const q=quirkOf(m);
     const d=document.createElement('div'); d.className='upg crewCard';
     const roleLabel=m.role==='cook'?STATIONS.find(s=>s.id===m.station).name+' COOK':m.role.toUpperCase();
-    d.innerHTML=`<b>${memberFig(m)} ${m.name} — ${roleLabel}${m.skill?' <span style="color:var(--gold)">'+'★'.repeat(m.skill)+'</span>':''}</b>
-      <small><span class="quirkTag">◈ ${q?q.n:''}</span> ${q?q.d:''}${m.skill?' · staged ×'+m.skill+' (+'+(m.skill*7)+'% hands)':''}</small>`;
+    const badges=STAGE_PROGRAMS.filter(p=>progOf(m,p.id))
+      .map(p=>`<span class="progTag">${p.n}</span>`).join('');
+    d.innerHTML=`<b>${memberFig(m)} ${m.name} — ${roleLabel}${progCount(m)?' <span style="color:var(--gold)">'+'★'.repeat(progCount(m))+'</span>':''}</b>
+      <small><span class="quirkTag">◈ ${q?q.n:''}</span> ${q?q.d:''}</small>
+      ${badges?`<small style="margin-top:3px">${badges}</small>`:''}`;
     if(m.stage){
+      const pr=STAGE_PROGRAMS.find(p=>p.id===m.stage.prog);
       const sb=document.createElement('button'); sb.disabled=true;
-      sb.textContent='ON STAGE AT '+m.stage.at+' — BACK IN '+m.stage.left+(m.stage.left>1?' SERVICES':' SERVICE');
+      sb.textContent='AT '+m.stage.at+' LEARNING '+(pr?pr.n:'')+' — '+m.stage.left+(m.stage.left>1?' SERVICES':' SERVICE');
       d.appendChild(sb);
     } else {
       const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
       b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container,d));
       d.appendChild(b);
-      /* v14: the stage — three nights unpaid somewhere great, back sharper */
-      if(m.role==='cook'&&(m.skill||0)<3){
+      /* v14.6: pick what they go learn. Three services away, one named skill back. */
+      if(m.role==='cook'&&progCount(m)<3){
+        const open=STAGE_PROGRAMS.filter(p=>!progOf(m,p.id));
         const sb=document.createElement('button'); sb.style.marginTop='4px';
-        sb.textContent='SEND ON STAGE — $500 (3 NIGHTS)';
-        sb.disabled=META.bank<500;
+        sb.textContent='SEND ON STAGE ▸';
         sb.addEventListener('click',()=>{
-          if(META.bank<500) return;
-          META.bank-=500;
-          m.stage={left:3, at:STAGE_SPOTS[(Math.random()*STAGE_SPOTS.length)|0]};
-          saveMeta(); SFX.buy();
-          toast(m.name+' LEFT TO STAGE AT '+m.stage.at+' — BACK IN 3 NIGHTS','#5ad1e6');
-          renderShop(container);
+          const menu=document.createElement('div'); menu.className='stageMenu';
+          menu.innerHTML=`<div class="stgHead">WHERE DOES ${m.name} GO? <small>3 services away — the line runs short while they're gone</small></div>`;
+          open.forEach(p=>{
+            const o=document.createElement('div'); o.className='stgOpt';
+            o.innerHTML=`<b>${p.n} <em>— ${p.at}</em></b><small>${p.d}</small>`;
+            const ob=document.createElement('button');
+            ob.textContent='$'+p.cost; ob.disabled=META.bank<p.cost;
+            ob.addEventListener('click',()=>{
+              if(META.bank<p.cost) return;
+              META.bank-=p.cost;
+              m.stage={left:3, at:p.at, prog:p.id};
+              saveMeta(); SFX.buy();
+              toast(m.name+' LEFT FOR '+p.at+' — LEARNING '+p.n,'#5ad1e6');
+              renderShop(container);
+            });
+            o.appendChild(ob); menu.appendChild(o);
+          });
+          const cancel=document.createElement('button'); cancel.className='stgCancel'; cancel.textContent='NEVER MIND';
+          cancel.addEventListener('click',()=>menu.remove());
+          menu.appendChild(cancel);
+          const old=crewGrid.querySelector('.stageMenu'); if(old) old.remove();
+          d.after(menu);
         });
         d.appendChild(sb);
       }
@@ -2573,8 +2673,7 @@ function failNight(){
   let backLine='';
   META.crew.forEach(m=>{
     if(m.stage&&--m.stage.left<=0){
-      m.skill=Math.min(3,(m.skill||0)+1);
-      backLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage.at}</b> — ${'★'.repeat(m.skill)} (+${m.skill*7}% hands). At least someone had a good night.</div>`;
+      backLine+=stageLine(m,'At least someone had a good night.'); stageGraduate(m);
       delete m.stage;
     }
   });
@@ -2631,6 +2730,36 @@ function concedeNight(){
   card.querySelector('#start').addEventListener('click',()=>start(false));
 }
 
+/* v14.6: show the working. A grade you can't explain is as useless as a
+   grade you can't fail — this is the four bars the score is made of, with
+   the next grade's requirement spelled out. */
+function gradeBreakdown(grade,col){
+  const g=G.gradeParts; if(!g) return '';
+  const NEXT={D:['C',45],C:['B',62],B:['A',76],A:['S',88],S:null};
+  const row=(label,val,weight,hint)=>{
+    const pct=Math.round(val*100);
+    return `<div class="gRow"><span class="gLbl">${label}</span>
+      <span class="gTrk"><i style="width:${pct}%"></i></span>
+      <span class="gPct">${pct}%</span><span class="gWt">${weight}</span>
+      <span class="gHint">${hint}</span></div>`;
+  };
+  const nx=NEXT[grade];
+  return `<div class="gradeBox">
+    <div class="gHead"><span>WHY ${grade}</span><span style="color:${col}">${g.score}/100</span></div>
+    ${row('PERFECT', g.perfect, '40%', 'pulled inside the window')}
+    ${row('SERVICE', g.service, '30%', 'tables kept, not walked')}
+    ${row('CLEAN',   g.clean,   '15%', 'product not burnt')}
+    ${row('CRAFT',   g.craft,   '15%', 'YOUR seasons, flips &amp; finishes')}
+    <div class="gFoot">${nx
+      ? `<b style="color:${col}">${nx[0]}</b> needs <b>${nx[1]}</b>${nx[0]==='S'?' with 1 walkout or fewer':nx[0]==='A'?' with 3 walkouts or fewer':''}. ${
+          g.craft<.5 ? 'Your weakest line is CRAFT — the crew can pull for you, but seasoning and flipping is yours alone.'
+          : g.perfect<.7 ? 'Your weakest line is PERFECT — pull in the green, not before it.'
+          : g.service<.85 ? 'Your weakest line is SERVICE — fire the oldest ticket first and CUT what you cannot reach.'
+          : 'Tighten every line a little.'}`
+      : 'Nothing above this. You cooked a perfect service.'}</div>
+  </div>`;
+}
+
 function starHaul(grade){
   const earns=[];
   if(grade==='S') earns.push([3,'S-grade service']);
@@ -2651,12 +2780,31 @@ function finish(){
   const acc = G.pulls?Math.round(G.perfects/G.pulls*100):0;
   const served=G.covers+G.walkouts;
   const rate = served?G.covers/served:0;
+  /* ===================== v14.6: THE GRADE, HONESTLY =====================
+     Jaxon: "how does the ranking work now cause i felt like that was easy."
+     It WAS easy — the old score was `tips × service rate` against a fixed
+     1100 threshold for S. But tips inflate with every menu upgrade, every
+     renovation tier, the Guide multiplier, garnish, VIP doubles... so by the
+     mid-20s the threshold cleared itself and S stopped meaning anything.
+     The grade was measuring your UPGRADES, not your cooking.
+
+     Now it measures execution only, on ratios that can't inflate:
+       PERFECT  40% — did you pull in the window
+       SERVICE  30% — did you keep the tables
+       CLEAN    15% — did you avoid burning product
+       CRAFT    15% — did YOU work the windows (flips, seasons, finishes)
+     Money is still the reward; it is no longer the score. */
+  const perfectRate = G.pulls ? G.perfects/G.pulls : 0;
+  const wasteRate   = G.pulls ? Math.min(1,G.waste/G.pulls) : 0;
+  const myPulls     = Math.max(1, G.pulls - G.crewPulls);
+  const craftRate   = Math.min(1, (G.flips + (G.seasonsCt||0) + 2*(G.masteredCt||0)) / myPulls);
+  const sc = Math.round(100*(perfectRate*.40 + rate*.30 + (1-wasteRate)*.15 + craftRate*.15));
+  G.gradeParts={perfect:perfectRate,service:rate,clean:1-wasteRate,craft:craftRate,score:sc};
   let grade='D', col='var(--bad)';
-  const sc = G.tips*rate - G.walkouts*15 - G.waste*10;
-  if(sc>=1100&&G.walkouts<=3){grade='S';col='#ffd84d'}
-  else if(sc>=800){grade='A';col='var(--good)'}
-  else if(sc>=500){grade='B';col='#7dd3fc'}
-  else if(sc>=250){grade='C';col='var(--warn)'}
+  if(sc>=88&&G.walkouts<=1){grade='S';col='#ffd84d'}
+  else if(sc>=76&&G.walkouts<=3){grade='A';col='var(--good)'}
+  else if(sc>=62){grade='B';col='#7dd3fc'}
+  else if(sc>=45){grade='C';col='var(--warn)'}
   let best=0; try{ best=+(localStorage.getItem('pass_best')||0); if(G.tips>best){best=G.tips; localStorage.setItem('pass_best',best);} }catch(e){}
 
   const earns=starHaul(grade);
@@ -2736,8 +2884,7 @@ function finish(){
   META.mercy=0;                       // a closed night resets the assist
   META.crew.forEach(m=>{
     if(m.stage&&--m.stage.left<=0){
-      m.skill=Math.min(3,(m.skill||0)+1);
-      weekLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage.at}</b> — new scars, faster hands. ${'★'.repeat(m.skill)} (+${m.skill*7}% reaction, permanent)</div>`;
+      weekLine+=stageLine(m,'New scars, and a skill that is theirs for good.'); stageGraduate(m);
       delete m.stage;
     }
   });
@@ -2759,6 +2906,7 @@ function finish(){
       <div><b>${G.waste}</b><span>BURNT / WASTED</span></div>
       <div><b style="font-size:12px;line-height:1.4">${crewLine}</b><span>THE BRIGADE</span></div>
     </div>
+    ${gradeBreakdown(grade,col)}
     ${earned?`<div class="starLine"><b style="color:var(--star)">+${earned} ⭐</b> — ${earns.map(e=>e[1]+' (+'+e[0]+')').join(' · ')}</div>`
       :`<div class="starLine" style="border-left-color:var(--line2);color:var(--dim)">No stars tonight — B-grade or better, zero walkouts, or big moments earn them.</div>`}
     ${weekLine}
@@ -2866,8 +3014,7 @@ function abandonNight(){
   let backLine='';
   META.crew.forEach(m=>{
     if(m.stage&&--m.stage.left<=0){
-      m.skill=Math.min(3,(m.skill||0)+1);
-      backLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage.at}</b> — ${'★'.repeat(m.skill)} (+${m.skill*7}% hands).</div>`;
+      backLine+=stageLine(m,''); stageGraduate(m);
       delete m.stage;
     }
   });
