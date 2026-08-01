@@ -586,7 +586,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v21</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v21.1</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -1672,83 +1672,15 @@ const CHEF_BODY = [
   '.OO......OO.',
 ];
 
-/* ============ v21: THE BRIGADE, MEASURED OFF THE PIXELLAB ART ============
-   Two earlier attempts (v19, v19.1) were guesses and both looked worse. This
-   one is built from measurements taken by decoding the PixelLab chef sprite
-   pixel-by-pixel:
+/* ART NOTE — the brigade sprites stay at 12x17 on purpose.
+   Three attempts to redraw them larger (v19 round, v19.1 still round, v21
+   measured off the PixelLab reference) all landed worse in Jaxon's eyes than
+   the original, and v21 additionally broke gear alignment: the wardrobe's
+   px coordinates are authored on this 12x17 grid, so ANY replacement grid
+   must be an exact 2x (24x34) or every glasses/beard/tattoo lands off its
+   feature. That constraint plus hand-drawing is where this keeps failing.
+   The real options are recorded in ROADMAP.md under ART DIRECTION. */
 
-     PROPORTION  its shoulders are 2.4x the head width. Mine were 1.6x —
-                 that missing taper is why the old sprite read as a blob.
-                 Head 10 wide, shoulders 20 wide here.
-     TONES       it spends 4-5 lightness steps on ONE material (the coat runs
-                 253 / 243 / 211 / 192 / 180). Two tones always read flat, no
-                 matter how many pixels you spend. See the shading pass in
-                 chefURL: highlight, base, mid, shadow, placed by POSITION in
-                 the form, not just on the outer edge.
-     OUTLINE     near-black #010104, not a hard #000.
-     PALETTE     37 colours total for the whole sprite. Tight, not muddy.
-
-   Grid is 24x40 (8 hat rows + 32 body) — taller than v19's 34 because
-   realistic proportions need the height to fit a readable face under them. */
-const CHEF_HATS_HI = {
-  toque:   ['.....HHHHHHHHHHHHHH.....','....HHHHHHHHHHHHHHHH....','....HHHHHHHHHHHHHHHH....','....HHHHHHHHHHHHHHHH....',
-            '.....HHHHHHHHHHHHHH.....','......HHHHHHHHHHHH......','......HHHHHHHHHHHH......','......HHHHHHHHHHHH......'],
-  bandana: ['........................','........................','........................','........................',
-            '........................','......HHHHHHHHHHHH......','.....HHHHHHHHHHHHHH.....','.....HHHHHHHHHHHHHH.....'],
-  beanie:  ['........................','........................','........................','......HHHHHHHHHHHH......',
-            '.....HHHHHHHHHHHHHH.....','.....HHHHHHHHHHHHHH.....','.....HHHHHHHHHHHHHH.....','......HHHHHHHHHHHH......'],
-  none:    ['........................','........................','........................','........................',
-            '........................','.......RRRRRRRRRR.......','......RRRRRRRRRRRR......','......RRRRRRRRRRRR......'],
-};
-const CHEF_BODY_HI = [
-  '.......RRRRRRRRRR.......',   //  0  head: 10 wide
-  '......RRRRRRRRRRRR......',   //  1
-  '......RRSSSSSSSSRR......',   //  2
-  '.......SSSSSSSSSS.......',   //  3
-  '.......SSSSSSSSSS.......',   //  4
-  '.......SEESSSSEES.......',   //  5  eyes
-  '.......SEESSSSEES.......',   //  6
-  '.......SSSSSSSSSS.......',   //  7
-  '.......SSSSSSSSSS.......',   //  8
-  '.......SSSMMMMSSS.......',   //  9  mouth
-  '........SSSSSSSS........',   // 10  jaw
-  '.........NNNNNN.........',   // 11  neck
-  '..CCCCCCCCCCCCCCCCCCCC..',   // 12  shoulders: 20 wide = 2x the head
-  '..CCCCLCCCCCCCCCCLCCCC..',   // 13  arm seams — sleeve reads apart from torso
-  '..CCCCLCCCLLCCCCLCCCCC..',   // 14  lapels
-  '..CCCCLCCCLLCCCCLCCCCC..',   // 15
-  '..WCCCLCAAAAAAAALCCCCW..',   // 16  cuffs at the sleeve ends
-  '..SCCCLAAAAAAAAAALCCCS..',   // 17  hands
-  '..SCCCLAAAAAAAAAALCCCS..',   // 18
-  '...CCCAAAAAAAAAAAACCC...',   // 19
-  '...CCAAAAAAAAAAAAAACC...',   // 20
-  '...CCAAAAAAAAAAAAAACC...',   // 21
-  '...TTAAAAAAAAAAAAAATT...',   // 22  apron ties
-  '....CAAAAAAAAAAAAAAC....',   // 23
-  '....CAAAAAAAAAAAAAAC....',   // 24
-  '....CAAAAAAAAAAAAAAC....',   // 25
-  '.....AAAAAAAAAAAAAA.....',   // 26  apron hem
-  '.....PPPPPP..PPPPPP.....',   // 27  legs
-  '.....PPPPPP..PPPPPP.....',   // 28
-  '.....PPPPPP..PPPPPP.....',   // 29
-  '....OOOOOOO..OOOOOOO....',   // 30  shoes
-  '....OOOOOOO..OOOOOOO....',   // 31
-];
-/* Wardrobe pieces are authored on the old 12x17 grid. Scale x2 horizontally
-   and x2 vertically, then push down by the extra hat rows so a piece drawn
-   over the eyes still lands over the eyes. */
-const GEAR_DY = 0;
-function gearPx(px){
-  const out=[];
-  for(const [x,y,c] of px){ const X=x*2, Y=y*2+GEAR_DY;
-    out.push([X,Y,c],[X+1,Y,c],[X,Y+1,c],[X+1,Y+1,c]); }
-  return out;
-}
-function gearHatRows(rows){
-  const out=[];
-  for(const r of rows){ const d=r.split('').map(ch=>ch+ch).join(''); out.push(d,d); }
-  return out;
-}
 
 function shade(hex,f){
   const n=parseInt(hex.slice(1),16), r=(n>>16)&255, g=(n>>8)&255, b=n&255;
@@ -1757,23 +1689,22 @@ function shade(hex,f){
 }
 function chefURL(m,px=3){
   const gearHat = m.gear&&m.gear.hat ? WARDROBE.find(w=>w.id===m.gear.hat) : null;
-  const hatRows = gearHat ? gearHatRows(gearHat.hatRows) : CHEF_HATS_HI[m.hatStyle||'toque'];
-  const rows=[...hatRows,...CHEF_BODY_HI];
-  const W=24, H=rows.length;
+  const hatRows = gearHat ? gearHat.hatRows : CHEF_HATS[m.hatStyle||'toque'];
+  const rows=[...hatRows,...CHEF_BODY];
+  const W=12, H=rows.length;
   const cv=document.createElement('canvas');
-  cv.width=(W+2)*px; cv.height=(H+2)*px;
+  cv.width=(W+2)*px; cv.height=(H+2)*px;    // 1-cell margin for the outline
   const x=cv.getContext('2d');
-  const skin=m.skin||SKINS[0], coat=m.coat||'#f4f4f4', apron=m.apron||'#1e293b';
-  const pal={H:m.hat,R:m.hair||'#3b2a1a',S:skin,E:'#14100c',
-             C:coat,A:apron,P:'#232a31',O:'#0d0f11',W:'#ffffff',
-             N:shade(skin,-.30), M:shade(skin,-.45),
-             L:shade(coat,-.16), T:shade(apron,-.34)};
+  const pal={H:m.hat,R:m.hair||'#3b2a1a',S:m.skin||SKINS[0],E:'#14100c',
+             C:m.coat||'#f4f4f4',A:m.apron,P:'#232a31',O:'#0d0f11',W:'#ffffff'};
   if(gearHat&&gearHat.pal) Object.entries(gearHat.pal).forEach(([k,v])=>{ pal[k]= v==='HATC'?m.hat:v; });
+  // gear overlay participates in silhouette, outline, and shading
   const overlay={};
   if(m.gear){
     SLOTS.filter(s=>s!=='hat').forEach(slot=>{
       const p=m.gear[slot]&&WARDROBE.find(w=>w.id===m.gear[slot]);
-      if(p&&p.px) gearPx(p.px).forEach(([gx,gy,c])=>{ overlay[gx+','+gy]= c==='HAIR'?(m.hair||'#3b2a1a'):c; });
+      // gear px coords are ABSOLUTE grid rows (hats occupy rows 0-3, eyes row 5)
+      if(p&&p.px) p.px.forEach(([gx,gy,c])=>{ overlay[gx+','+gy]= c==='HAIR'?(m.hair||'#3b2a1a'):c; });
     });
   }
   const colorAt=(cx,cy)=>{
@@ -1781,36 +1712,18 @@ function chefURL(m,px=3){
     if(cx<0||cy<0||cx>=W||cy>=H) return null;
     const ch=rows[cy][cx]; return ch==='.'?null:(pal[ch]||'#f0f');
   };
-  /* v21: FOUR tones per material, placed by position in the form — this is the
-     single biggest thing taken from the PixelLab sprite, which spends
-     253/243/211/192/180 on one white coat. Light falls from the upper left:
-     the left edge catches a highlight, the right third sits in mid-shade, and
-     the bottom/right rim goes to full shadow. Shading only the outer edge
-     (what v19 did) always reads flat no matter how many pixels you spend. */
-  const span={};                       // per row: where the figure starts/ends
-  for(let cy=0;cy<H;cy++){ let l=-1,r=-1;
-    for(let cx=0;cx<W;cx++) if(colorAt(cx,cy)!==null){ if(l<0)l=cx; r=cx; }
-    span[cy]=[l,r];
-  }
-  x.fillStyle='#010104';               // near-black outline, not pure black
+  // outline pass: dark rim around the whole silhouette
+  x.fillStyle='#0a0c0f';
   for(let cy=-1;cy<=H;cy++) for(let cx=-1;cx<=W;cx++){
     if(colorAt(cx,cy)) continue;
     if(colorAt(cx+1,cy)||colorAt(cx-1,cy)||colorAt(cx,cy+1)||colorAt(cx,cy-1))
       x.fillRect((cx+1)*px,(cy+1)*px,px,px);
   }
+  // fill pass with right/bottom edge shading for form
   for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
     const c=colorAt(cx,cy); if(!c) continue;
-    let out=c;
-    if(c!=='#14100c'&&c!=='#010104'){
-      const [l,r]=span[cy], wRow=r-l+1;
-      const rel=wRow>1 ? (cx-l)/(wRow-1) : 0;      // 0 = left edge, 1 = right edge
-      const rim = !colorAt(cx+1,cy) || !colorAt(cx,cy+1);
-      const lit = (!colorAt(cx-1,cy) || !colorAt(cx,cy-1)) && rel<.45;
-      if(rim)       out=shade(c,-.26);             // shadow rim
-      else if(rel>.72) out=shade(c,-.13);          // mid-shade on the right
-      else if(lit)  out=shade(c,+.10);             // highlight catching the light
-    }
-    x.fillStyle=out;
+    const edge = !colorAt(cx+1,cy) || !colorAt(cx,cy+1);
+    x.fillStyle= edge&&c!=='#14100c' ? shade(c,-.22) : c;
     x.fillRect((cx+1)*px,(cy+1)*px,px,px);
   }
   return cv.toDataURL();
@@ -1821,7 +1734,7 @@ function memberFig(m,big){
   if(!m) return '';
   /* v19: the grid doubled, so the pixel scale halves to keep every sprite the
      same physical size on screen — same footprint, twice the detail. */
-  const px=big?4:1;
+  const px=big?5:2;
   return `<img class="chefImg" src="${chefURL(m,px)}" alt="${m.name}">`;
 }
 
@@ -3503,7 +3416,7 @@ function renderShop(container){
    ON A CHEF — the real sprite pipeline, same outline and shading as service,
    so what you see is exactly what you get. Locked pieces preview too: you
    should know what you are working toward. */
-function previewURL(w,px=2){
+function previewURL(w,px=4){
   const base={role:'chef', skin:META.chef.skin, hair:META.chef.hair,
     hatStyle:META.chef.hatStyle||'toque', hat:META.chef.hat, coat:META.chef.coat,
     apron:META.chef.apron, gear:{}};
@@ -3565,7 +3478,7 @@ function renderLocker(){
   crewBox.appendChild(meHead);
   const meGrid=document.createElement('div'); meGrid.className='crewGrid';
   const meCard=document.createElement('div'); meCard.className='upg'; meCard.style.borderColor='var(--gold)';
-  meCard.innerHTML=`<div style="text-align:center;padding:10px 0"><img class="chefImg" src="${chefURL(META.chef,4)}" alt="${META.chef.name}"></div>
+  meCard.innerHTML=`<div style="text-align:center;padding:10px 0"><img class="chefImg" src="${chefURL(META.chef,9)}" alt="${META.chef.name}"></div>
     <b style="text-align:center">${META.chef.name} — CHEF DE CUISINE</b>
     <small style="text-align:center">Your name on the door. CROWN, STARRED TOQUE and THE HALO fit only you.</small>`;
   const meBtn=document.createElement('button'); meBtn.textContent='CUSTOMIZE ▸';
@@ -3659,7 +3572,7 @@ function renderMemberCfg(grid,m,container,afterEl){
         // render the option ON this member so you see it as it will look
         const ghost={...m, gear:{...(m.gear||{})}};
         if(w) ghost.gear[slot]=w.id; else delete ghost.gear[slot];
-        b.innerHTML=`<img src="${chefURL(ghost,2)}" alt=""><span>${w?w.n:'NONE'}</span>`;
+        b.innerHTML=`<img src="${chefURL(ghost,4)}" alt=""><span>${w?w.n:'NONE'}</span>`;
         b.addEventListener('click',()=>{
           if(!m.gear) m.gear={};
           if(w) m.gear[slot]=w.id; else delete m.gear[slot];
