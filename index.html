@@ -325,7 +325,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v13</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -366,7 +366,7 @@ const HEAT_FLOOR= .30;
 const BURN_GRACE= 1.6;
 const WEEDS_IN  = 6, WEEDS_OUT = 3;
 const MAX_RAIL  = 10;
-const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w'];
+const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w','e','r','t','y'];
 const SKINS = ['#f6d7b0','#eac086','#d29b6c','#a96f44','#7c4a26','#5a3319'];
 const HAIRS = ['#1a1a1a','#3b2a1a','#6b3f1d','#a56a2a','#c9a227','#7a7a7a','#c0392b','#2563eb'];
 const HATSTYLES = ['toque','bandana','beanie','none'];
@@ -585,7 +585,7 @@ function renderAchs(container){
 
 /* ============================== WARDROBE (star store) ============================== */
 const WARDROBE = [
-  {id:'crown',   n:'CROWN',            slot:'hat', stars:5, hatRows:['............','..G..G..G...','..GGGJJGGG..','..GGGGGGGG..'], pal:{G:'#d4af37',J:'#e11d48'}, d:'For the king or queen of the pass.'},
+  {id:'crown',   n:'CROWN',            slot:'hat', stars:5, chefOnly:true, hatRows:['............','..G..G..G...','..GGGJJGGG..','..GGGGGGGG..'], pal:{G:'#d4af37',J:'#e11d48'}, d:'For the king or queen of the pass.'},
   {id:'goldtoque',n:'GOLD TOQUE',      slot:'hat', stars:4, hatRows:['..GGGGGGGG..','.GGGGGGGGGG.','.GGWGGGGGGG.','..GGGGGGGG..'], pal:{G:'#d4af37',W:'#fff7d6'}, d:'The classic, in solid gold.'},
   {id:'paperhat',n:'PAPER BOAT HAT',   slot:'hat', stars:2, hatRows:['............','....WWWW....','..WWWWWWWW..','..WWWWWWWW..'], pal:{W:'#f8f8f8'}, d:'Old-school diner energy.'},
   {id:'cap',     n:'BALL CAP',         slot:'hat', stars:2, hatRows:['............','............','..KKKKKKKK..','.KKKKKKKKK..'], pal:{K:'HATC'}, d:'Backwards optional (it isn\'t).'},
@@ -627,11 +627,11 @@ const WARDROBE = [
   {id:'tatscript',n:'KITCHEN SCRIPT',  slot:'tattoo', stars:4, px:[[1,10,'#334155'],[10,11,'#334155']], d:'It says something. You know what it says.', req:{label:'Serve every dish on the menu', test:()=>MENU.every(d=>META.life.dishes[d.n])}},
   {id:'tatflame',n:'FLAME SLEEVE',     slot:'tattoo', stars:5, px:[[1,10,'#e25822'],[1,11,'#f2a13c'],[10,10,'#e25822'],[10,11,'#f2a13c']], d:'Both forearms. Zero regrets.', req:{label:'Land 50 lifetime flips', test:()=>META.life.flips>=50}},
   {id:'cig',     n:'CIGARETTE BEHIND THE EAR', slot:'accessory', stars:2, px:[[9,4,'#f8fafc'],[10,4,'#e25822']], d:'Never lit during service.', req:{label:'10 lifetime clean nights (zero walkouts)', test:()=>META.life.cleanNights>=10}},
-  {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6}},
+  {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, chefOnly:true, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6}},
   {id:'champjkt',n:'CHAMPION\'S JACKET', slot:'body', stars:5, px:[[2,8,'#d4af37'],[4,8,'#d4af37'],[7,8,'#d4af37'],[9,8,'#d4af37']], d:'Gold on the shoulders. Meridian knows exactly where you got it.', req:{label:'Beat Meridian in the Cook-Off', test:()=>!!(META.rival&&META.rival.beaten)}},
   {id:'saltcell',n:'THE SALT CELLAR',   slot:'accessory', stars:2, px:[[0,11,'#f5ecd8'],[0,12,'#d8c8a8']], d:'Clipped to the apron. Reach without looking.', req:{label:'Season 150 dishes lifetime', test:()=>(META.life.seasons||0)>=150}},
   {id:'ashepin', n:'ASHE\'S PIN',       slot:'accessory', stars:6, px:[[4,8,'#c084fc']], d:'She doesn\'t give these. She leaves them.', req:{label:'Make Vivian Ashe a patron', test:()=>!!(META.vips.ashe&&META.vips.ashe.patron)}},
-  {id:'starredtq',n:'THE STARRED TOQUE', slot:'hat', stars:8, hatRows:['..WWWWWWWW..','.WWW*WWWWWW.','.GGGGGGGGGG.','..WWWWWWWW..'], pal:{W:'#fbfbf6','*':'#ffd84d',G:'#d4af37'}, d:'White toque, gold band, one gold star. Status you wear.', req:{label:'Guide rating ≥ 1 star', test:()=>((META.guide&&META.guide.rating)||0)>=1}},
+  {id:'starredtq',n:'THE STARRED TOQUE', slot:'hat', stars:8, chefOnly:true, hatRows:['..WWWWWWWW..','.WWW*WWWWWW.','.GGGGGGGGGG.','..WWWWWWWW..'], pal:{W:'#fbfbf6','*':'#ffd84d',G:'#d4af37'}, d:'White toque, gold band, one gold star. Status you wear.', req:{label:'Guide rating ≥ 1 star', test:()=>((META.guide&&META.guide.rating)||0)>=1}},
 ];
 const CORE_SLOTS=['hat','face','body','hand'];               // the original 4 — DRESSED TO KILL uses this
 const SLOTS=[...CORE_SLOTS,'shoes','tattoo','accessory'];    // the UI dresses all 7
@@ -657,6 +657,16 @@ const UPGRADES = [
   {id:'train2',    n:'COOK TRAINING II',e:'🎓', cost:500, req:'train1', d:'Near-instant reactions across the brigade.'},
   {id:'expoT',     n:'EXPO DRILLS',    e:'⏱️', cost:400, req:'hire_expo', d:'Your expo plates the instant a ticket is ready.'},
   {id:'hostT',     n:'HOST CHARM SCHOOL', e:'✨', cost:400, req:'hire_host', d:'Your host saves furious tables more often.'},
+  /* v14: the late ladder — for kitchens that bought everything (Jaxon did, twice) */
+  {id:'pan2_grill',n:'4TH GRILL PAN',  e:'🍳', cost:1400, req:'pan_grill', d:'A fourth burner where the ribeyes live.'},
+  {id:'pan2_saute',n:'4TH SAUTÉ PAN',  e:'🍳', cost:1400, req:'pan_saute', d:'The line grows again.'},
+  {id:'pan2_fry',  n:'4TH FRY BASKET', e:'🧺', cost:1300, req:'pan_fry',  d:'Oil for days.'},
+  {id:'pan2_cold', n:'4TH GARDE BOARD',e:'🔪', cost:1200, req:'pan_cold', d:'Cold side, full width.'},
+  {id:'wheel',     n:'EXPO WHEEL',     e:'🎡', cost:900,  d:'A real ticket wheel — the rail holds one more before the room feels it.'},
+  {id:'finishT',   n:'FINISHING TOUCH',e:'🖌️', cost:1100, d:'Plating practice — every FINISH pass window 20% wider.'},
+  {id:'garnish',   n:'GARNISH STATION',e:'🌿', cost:1200, d:'Micro herbs, flake salt, a tweezer you pretend not to own. Every plate +5%.'},
+  {id:'walkin2',   n:'WALK-IN II',     e:'❄️', cost:900,  req:'walkin', d:'Even fresher product — another half-second before a dish burns.'},
+  {id:'train3',    n:'COOK TRAINING III', e:'🏅', cost:800, req:'train2', d:'The brigade reads your mind. They almost never space out.'},
 ];
 const REPEATS = [
   {id:'menuDev',  n:'MENU DEVELOPMENT',  e:'🧪', base:300, growth:1.6, d:'+4% plate prices per level. New dish, new price.'},
@@ -687,6 +697,11 @@ function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)
 function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,flips:0,banked:0,seasons:0,mastered:0,
   cleanNights:0,cleanStreak:0,bestCombo:0,criticFloors:0,weeds60:false,zeroWaste:false,survived86:false,friClean:false,
   byStation:{grill:0,saute:0,fry:0,cold:0},dishes:{}}; }
+/* v14: YOU. The chef is a character now — always on the pass, dressed in the
+   locker room, first name on the door. Some gear only the chef can wear. */
+function freshChef(){ return {role:'chef', name:'CHEF', skin:SKINS[1], hair:HAIRS[1],
+  hatStyle:'toque', hat:'#f4f4f4', coat:'#f4f4f4', apron:'#1e293b', gear:{}}; }
+const STAGE_SPOTS=['NOMA','LE BERNARDIN','ATELIER LUX','THE FRENCH ROOM','SAISON'];
 function freshVips(){ return {
   duvall:{v:0,s:0,patron:false,off:false},
   rosa:{v:0,s:0,patron:false,off:false},
@@ -698,7 +713,7 @@ function freshVips(){ return {
   ashe:{v:0,s:0,patron:false,off:false}}; }
 let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}, life:freshLife(), wk:null, buff:null,
             vips:freshVips(), guide:{rating:0,score:0}, deeBuff:0, deeBad:0,
-            rival:{won:0,lost:0,beaten:false,wk:null}, rivalUntil:0, tut:{}};
+            rival:{won:0,lost:0,beaten:false,wk:null}, rivalUntil:0, tut:{}, chef:freshChef()};
 function loadMeta(){
   try{
     const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
@@ -723,6 +738,10 @@ function loadMeta(){
       if(!META.guide) META.guide={rating:0,score:0};
       if(typeof META.deeBuff!=='number') META.deeBuff=0;
       if(typeof META.deeBad!=='number') META.deeBad=0;
+      // v14: the chef character + stages
+      if(!META.chef) META.chef=freshChef();
+      if(!META.chef.gear) META.chef.gear={};
+      META.chef.role='chef';
       // v13: the coach remembers what it has taught — and never lectures a
       // veteran on a verb their lifetime stats prove they already use
       if(!META.tut) META.tut={};
@@ -753,12 +772,13 @@ function saveMeta(){ try{ localStorage.setItem('pass_meta',JSON.stringify(META))
 loadMeta();
 
 function cooks(){ return META.crew.filter(m=>m.role==='cook'); }
+function activeCooks(){ return cooks().filter(m=>!m.stage); }   // v14: staged cooks are away learning
 function expo(){ return META.crew.find(m=>m.role==='expo'); }
 function host(){ return META.crew.find(m=>m.role==='host'); }
-function crewWith(qid){ return META.crew.filter(m=>m.quirk===qid).length; }
+function crewWith(qid){ return META.crew.filter(m=>m.quirk===qid&&!m.stage).length; }
 
 /* Endless Rush is the FAIR kitchen: no upgrades, no crew, everyone identical. */
-function panCount(stId){ if(G.endless) return 2; return 2 + (META.up['pan_'+stId]?1:0); }
+function panCount(stId){ if(G.endless) return 2; return 2 + (META.up['pan_'+stId]?1:0) + (META.up['pan2_'+stId]?1:0); }
 function cookTime(m){
   if(G.endless) return m.cook;
   let c=m.cook;
@@ -776,12 +796,12 @@ function winTime(m, stId){
   if(cooks().some(c=>c.station===stId&&c.quirk==='loud')) w*=1.1;
   return w;
 }
-function burnGrace(){ if(G.endless) return BURN_GRACE; return BURN_GRACE+(META.up.walkin?.5:0); }
+function burnGrace(){ if(G.endless) return BURN_GRACE; return BURN_GRACE+(META.up.walkin?.5:0)+(META.up.walkin2?.5:0); }
 function holdTime(){ if(G.endless) return HOLD; return HOLD*(META.up.lamps?1.5:1); }
 function endlessMult(){ return 1+Math.min(2.5, G.t/160); }
 function nightMult(){ return Math.min(2.8, 1+(META.night-1)*.15); }
 function patienceFactor(){ return Math.max(.68, 1-(META.night-1)*.035); }
-function cookSkill(){ return (META.up.train1?1:0)+(META.up.train2?1:0); }
+function cookSkill(){ return (META.up.train1?1:0)+(META.up.train2?1:0)+(META.up.train3?1:0); }
 
 /* ============================== STATE ============================== */
 const G = {
@@ -1138,7 +1158,7 @@ function buildLine(){
   let ki=0;
   stationsLive().forEach(st=>{
     const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
-    const here=G.endless?[]:cooks().filter(c=>c.station===st.id);
+    const here=G.endless?[]:activeCooks().filter(c=>c.station===st.id);
     col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em>
       ${here.map(c=>`<span class="sousBadge">${memberFig(c)}<span class="nm">${c.name}</span></span>`).join('')}</div>`;
     const wrap=document.createElement('div'); wrap.className='pans';
@@ -1161,7 +1181,8 @@ function buildLine(){
     }
     col.appendChild(wrap); lineEl.appendChild(col);
   });
-  const dock=$('#crewDock'); dock.innerHTML='';
+  const dock=$('#crewDock');
+  dock.innerHTML=`<span class="dockM">${memberFig(META.chef)}<span class="nm">${META.chef.name} · CHEF</span></span>`;
   if(!G.endless){
     const e=expo(), h=host();
     if(e) dock.innerHTML+=`<span class="dockM">📣${memberFig(e)}<span class="nm">${e.name} · EXPO</span></span>`;
@@ -1352,7 +1373,7 @@ function fire(tk,idx){
   pan.item=it; pan.ticket=tk; pan.t=0; pan.sousDecided=false; pan.sousSkip=false;
   const fin = it.stage===1 && it.m.tech;   // the finish pass cooks its own numbers
   pan.cookNeed = fin ? cookTime({cook:it.m.tech.cook, st:it.m.st}) : cookTime(it.m);
-  pan.winLen   = fin ? winTime({win:it.m.tech.win}, pan.st) : winTime(it.m, pan.st);
+  pan.winLen   = fin ? winTime({win:it.m.tech.win*(!G.endless&&META.up.finishT?1.2:1)}, pan.st) : winTime(it.m, pan.st);
   pan.grace=burnGrace();
   pan.el.classList.remove('empty'); pan.el.classList.add('live');
   pan.big.className='panBig'; pan.trk.style.display='';
@@ -1508,6 +1529,7 @@ function plate(tk, byExpo=false){
   if(!G.endless) base*=(1+.04*(META.up.menuDev||0));
   if(!G.endless) base*=(1+.12*(META.tier||0));   // renovated rooms charge renovated prices
   if(!G.endless) base*=guideMult();              // a rated room charges rated prices
+  if(!G.endless&&META.up.garnish) base*=1.05;
   const age=G.t-tk.born;
   const speed = age<25?1.2 : age<45?1.05 : age<65?.92 : .8;
   let tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
@@ -1626,13 +1648,13 @@ function refreshTicket(tk){
 function crewStep(){
   if(G.endless) return;   // endless = just you, chef
   const skill=cookSkill();
-  for(const c of cooks()){
+  for(const c of activeCooks()){
     if(stationDown(c.station)) continue;
-    let react=.55-.16*skill;
+    let react=(.55-.16*skill)*(1-.07*(c.skill||0));   // staged cooks come back sharper
     if(c.quirk==='owl' && G.t>120) react*=.8;
     if(c.quirk==='clutch' && G.weeds) react*=.75;
     if(c.quirk==='slow' && G.t<60) react*=1.3;
-    let spaceOut=[.18,.09,.03][skill];
+    let spaceOut=[.18,.09,.03,.01][skill];
     if(c.quirk==='steady') spaceOut*=.5;
     for(const pan of G.pans){
       if(pan.st!==c.station || !pan.item || pan.sousSkip) continue;
@@ -1680,6 +1702,8 @@ function step(dt){
 
   if(G.endless){
     if(G.walkouts>=3){ finishEndless(); return; }
+  } else if(G.walkouts>=6){
+    failNight(); return;                    // v14: the room empties — the night is LOST
   } else if(!G.closing){
     G.clock-=dt;
     if(G.clock<=0){ G.clock=0; G.closing=true; toast('LAST CALL — CLEAR THE RAIL','var(--hot)'); }
@@ -2017,11 +2041,33 @@ function renderShop(container){
     const q=quirkOf(m);
     const d=document.createElement('div'); d.className='upg crewCard';
     const roleLabel=m.role==='cook'?STATIONS.find(s=>s.id===m.station).name+' COOK':m.role.toUpperCase();
-    d.innerHTML=`<b>${memberFig(m)} ${m.name} — ${roleLabel}</b>
-      <small><span class="quirkTag">◈ ${q?q.n:''}</span> ${q?q.d:''}</small>`;
-    const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
-    b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container,d));
-    d.appendChild(b); crewGrid.appendChild(d);
+    d.innerHTML=`<b>${memberFig(m)} ${m.name} — ${roleLabel}${m.skill?' <span style="color:var(--gold)">'+'★'.repeat(m.skill)+'</span>':''}</b>
+      <small><span class="quirkTag">◈ ${q?q.n:''}</span> ${q?q.d:''}${m.skill?' · staged ×'+m.skill+' (+'+(m.skill*7)+'% hands)':''}</small>`;
+    if(m.stage){
+      const sb=document.createElement('button'); sb.disabled=true;
+      sb.textContent='ON STAGE AT '+m.stage.at+' — BACK NIGHT '+m.stage.until;
+      d.appendChild(sb);
+    } else {
+      const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
+      b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container,d));
+      d.appendChild(b);
+      /* v14: the stage — three nights unpaid somewhere great, back sharper */
+      if(m.role==='cook'&&(m.skill||0)<3){
+        const sb=document.createElement('button'); sb.style.marginTop='4px';
+        sb.textContent='SEND ON STAGE — $500 (3 NIGHTS)';
+        sb.disabled=META.bank<500;
+        sb.addEventListener('click',()=>{
+          if(META.bank<500) return;
+          META.bank-=500;
+          m.stage={until:META.night+3, at:STAGE_SPOTS[(Math.random()*STAGE_SPOTS.length)|0]};
+          saveMeta(); SFX.buy();
+          toast(m.name+' LEFT TO STAGE AT '+m.stage.at+' — BACK IN 3 NIGHTS','#5ad1e6');
+          renderShop(container);
+        });
+        d.appendChild(sb);
+      }
+    }
+    crewGrid.appendChild(d);
   });
   const hires=[];
   if(cooks().length<3) hires.push({role:'cook', n:(['HIRE A SOUS CHEF','HIRE A 2ND COOK','HIRE A 3RD COOK'])[cooks().length], e:'🧑‍🍳',
@@ -2104,7 +2150,7 @@ function wardCard(w,rerender){
   if(w.req){ try{ reqOk=!!w.req.test(); }catch(e){ reqOk=false; } }
   const d=document.createElement('div'); d.className='upg wardCard'+(owned?' owned':'');
   if(!owned&&!reqOk) d.style.opacity=.55;
-  d.innerHTML=`<b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}</em>${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
+  d.innerHTML=`<b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}${w.chefOnly?' · <span style="color:var(--gold)">CHEF ONLY</span>':''}</em>${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
   const b=document.createElement('button');
   b.textContent=owned?'UNLOCKED':'⭐'+w.stars;
   b.disabled=owned||META.stars<w.stars||!reqOk;
@@ -2128,8 +2174,22 @@ function renderLocker(){
     <div id="lkWard"></div>
     <div id="modeBtns"><button id="lkBack" style="background:transparent;color:var(--txt);border:1px solid var(--line2)">◂ BACK TO THE PASS</button></div>`;
   const crewBox=card.querySelector('#lkCrew');
+  /* v14: YOU first. The chef's locker is the big one. */
+  const meHead=document.createElement('div'); meHead.className='crewHead'; meHead.style.color='var(--gold)';
+  meHead.innerHTML='<span>THE CHEF — YOU</span>';
+  crewBox.appendChild(meHead);
+  const meGrid=document.createElement('div'); meGrid.className='crewGrid';
+  const meCard=document.createElement('div'); meCard.className='upg'; meCard.style.borderColor='var(--gold)';
+  meCard.innerHTML=`<div style="text-align:center;padding:10px 0"><img class="chefImg" src="${chefURL(META.chef,9)}" alt="${META.chef.name}"></div>
+    <b style="text-align:center">${META.chef.name} — CHEF DE CUISINE</b>
+    <small style="text-align:center">Your name on the door. CROWN, STARRED TOQUE and THE HALO fit only you.</small>`;
+  const meBtn=document.createElement('button'); meBtn.textContent='CUSTOMIZE ▸';
+  meBtn.addEventListener('click',()=>renderMemberCfg(meGrid,META.chef,null,meCard));
+  meCard.appendChild(meBtn); meGrid.appendChild(meCard); crewBox.appendChild(meGrid);
   if(!META.crew.length){
-    crewBox.innerHTML='<p style="color:var(--dim)">Nobody on staff yet — it\'s just you out there. Hire a brigade in the back office, then come dress them.</p>';
+    const none=document.createElement('p'); none.style.color='var(--dim)';
+    none.textContent='Nobody else on staff yet. Hire a brigade in the back office, then come dress them.';
+    crewBox.appendChild(none);
   } else {
     const head=document.createElement('div'); head.className='crewHead'; head.innerHTML='<span>THE BRIGADE — CLICK TO DRESS</span>';
     crewBox.appendChild(head);
@@ -2164,7 +2224,7 @@ function renderMemberCfg(grid,m,container,afterEl){
   const old=grid.querySelector('#sousCfg'); if(old){ old.remove(); if(old._for===m) return; }
   const cfg=document.createElement('div'); cfg.id='sousCfg'; cfg._for=m;
   const gearSel=slot=>{
-    const owned=WARDROBE.filter(w=>w.slot===slot&&META.ward[w.id]);
+    const owned=WARDROBE.filter(w=>w.slot===slot&&META.ward[w.id]&&(!w.chefOnly||m.role==='chef'));
     if(!owned.length) return `<span style="font-size:9px;color:var(--dim)">no ${slot} gear unlocked</span>`;
     return `<select data-slot="${slot}" class="gearSel">
       <option value="">— no ${slot} gear —</option>
@@ -2243,6 +2303,7 @@ function start(endless=false){
     if(G.mod&&G.mod.id==='inspector'){ G.inspAt=90+Math.random()*60; }
     if(G.mod&&G.mod.id==='overbook'){ G.railCap=13; }
   }
+  if(!endless&&META.up.wheel) G.railCap+=1;
   G.wd=null;
   const wd = endless?null:weekdayFor(META.night);
   if(wd){
@@ -2346,6 +2407,36 @@ function finishEndless(){
   SFX.end();
 }
 
+/* v14: FAILURE. Six walkouts and the doors close early. No tips bank, the
+   night does not advance — you run it back until you win it. Career finally
+   has a floor: you can't sleepwalk through 40 nights anymore. */
+function failNight(){
+  G.running=false; G.over=true;
+  document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
+  hideCoach();
+  const lost=G.tips;
+  card.innerHTML=`<h1><small>NIGHT ${META.night} — SERVICE COLLAPSED</small>DOORS CLOSED EARLY</h1>
+    <div id="grade" style="color:var(--bad)">✕</div>
+    <div id="scores">
+      <div><b style="color:var(--bad)">6</b><span>WALKOUTS</span></div>
+      <div><b style="color:var(--bad)">$${lost}</b><span>TIPS — GONE</span></div>
+      <div><b>${G.covers}</b><span>COVERS BEFORE IT BROKE</span></div>
+    </div>
+    <p>The sixth table walked and the room read it on every face on the way out. Comps, apologies, an empty dining room by nine. Tonight banks NOTHING and the calendar doesn't move — night ${META.night} isn't over until you close it standing up.</p>
+    <div class="modLine" style="border-left-color:var(--bad)"><b style="color:var(--bad)">RUN IT BACK</b><br>
+      <span>Fire earlier. Plate the oldest ticket first. If the rail stacks past six, stop firing new dishes and CLEAR it — walkouts kill nights now, cold plates just sting.</span></div>
+    <div id="shopBoxFail"></div>
+    <div id="modeBtns">
+      <button id="start">RUN NIGHT ${META.night} BACK ▸</button>
+      <button id="startEndless">ENDLESS RUSH ∞</button>
+    </div>`;
+  renderShop(card.querySelector('#shopBoxFail'));
+  overlay.classList.remove('hide');
+  card.querySelector('#start').addEventListener('click',()=>start(false));
+  card.querySelector('#startEndless').addEventListener('click',()=>start(true));
+  SFX.walk();
+}
+
 function starHaul(grade){
   const earns=[];
   if(grade==='S') earns.push([3,'S-grade service']);
@@ -2391,7 +2482,7 @@ function finish(){
   if(G.covers>0&&G.waste===0) L.zeroWaste=true;
   if(G.downSchedule.some(ev=>ev.fired)) L.survived86=true;
   if(clean){ L.cleanNights++; L.cleanStreak++; } else L.cleanStreak=0;
-  META.crew.forEach(m=>{ m.services=(m.services||0)+1; });
+  META.crew.forEach(m=>{ if(!m.stage) m.services=(m.services||0)+1; });
 
   /* v11: Deacon's habit — plate him inside 60s, six nights running */
   let weekLine='';
@@ -2447,6 +2538,14 @@ function finish(){
 
   META.night++;
   if(META.buff&&META.night>META.buff.until) META.buff=null;
+  /* v14: stagiaires come home sharper */
+  META.crew.forEach(m=>{
+    if(m.stage&&META.night>=m.stage.until){
+      m.skill=Math.min(3,(m.skill||0)+1);
+      weekLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage.at}</b> — new scars, faster hands. ${'★'.repeat(m.skill)} (+${m.skill*7}% reaction, permanent)</div>`;
+      delete m.stage;
+    }
+  });
   const freshAchs=checkAchs({mode:'career',grade});
   saveMeta();
   if(earned||freshAchs.length) SFX.star();

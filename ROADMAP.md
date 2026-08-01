@@ -127,11 +127,38 @@ Jaxon's ask: a tutorial for the beginning and for every new-thing debut.
 - [x] Everything remembered in META.tut; veterans pre-seeded from lifetime
       stats so the coach never lectures someone who already flips/seasons
 
-## v14 — next
+## v14 — STAKES, YOU, AND THE LATE LADDER (SHIPPED 2026-08-01)
+Jaxon's batch: difficulty relief, real failure, his own character, stages.
+- [x] FAILURE: 6 walkouts in a career night = DOORS CLOSED EARLY — tips
+      gone, calendar frozen, run the night back until you close it standing.
+      (Design call: nights stay CONTINUOUS — the restaurant's service
+      history, not levels. Redo exists only through failure, so nobody can
+      farm easy Tuesdays. Jaxon can override.)
+- [x] THE CHEF: you are a character now — always on the pass dock, first
+      locker in the locker room, CROWN / STARRED TOQUE / HALO are CHEF ONLY
+- [x] STAGES: send a cook out for 3 nights ($500, line runs short) — they
+      return with a permanent ★ (+7% hands, stacks to 3). NOMA, LE
+      BERNARDIN, ATELIER LUX, THE FRENCH ROOM, SAISON.
+- [x] 9 late-ladder upgrades: 4th pan all four stations (16 pan keys now:
+      1-0 q w e r t y), EXPO WHEEL (+1 rail), FINISHING TOUCH (finish
+      windows +20%), GARNISH STATION (+5% plates), WALK-IN II, TRAINING III
+
+## v15 — CREWS (multiplayer, the honest path)
+"Guild-like things" = crews. Needs the backend the leaderboard needs — one
+Supabase project covers both (J4 research picked it; Jaxon owns the account).
+1. Global leaderboard first (endless scores, name + crew tag field)
+2. CREWS v1 — async guilds: create/join by code, crew tag shows on the
+   board, crew score = sum of members' weekly best, weekly crew ladder
+3. CREW ACTIVITIES — same-seed challenge night (everyone cooks the same
+   service, compare grades), crew goals (collective covers this week)
+4. Live co-op service stays in "Later" — netcode after there are players
+The chef character (v14) is the identity that travels: your chef + name +
+crew tag is what other players see.
+
+## v16 — next
 - [ ] Prestige seasons (endgame doc §6) — the go-around-again layer
 - [ ] Crew morale + staff storylines (endgame doc §4)
 - [ ] Per-station verb identities (grill sear marks, fry shake, garde compose)
-- [ ] Global leaderboard backend (Supabase — J4 research)
 
 ## Later / earn-it list
 - True multiplayer (live co-op service, split stations) — real netcode + a
