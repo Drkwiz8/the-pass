@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE PASS — pick a number</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0c0e;color:#e8eef2;font-family:ui-monospace,Menlo,Consolas,monospace;padding:22px}
+h1{font-size:20px;letter-spacing:-.5px}
+h1 small{display:block;font-size:10px;letter-spacing:4px;color:#ff6a1a;margin-bottom:6px}
+p{color:#8996a1;font-size:12px;margin:6px 0 18px;max-width:620px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px;max-width:760px}
+.v{background:#14181c;border:1px solid #3d474f;border-radius:5px;padding:12px;text-align:center}
+.v b{font-size:26px;color:#ffd84d}
+.v em{font-style:normal;font-size:9px;color:#8996a1;letter-spacing:1px;display:block;margin-top:4px}
+.figs{display:flex;gap:10px;align-items:flex-end;justify-content:center;margin-top:6px}
+canvas{image-rendering:pixelated;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<h1><small>THE PASS — FINAL LINEUP</small>Pick a number, chef</h1>
+<p>Three hats (tall toque / short toque / bandana) × three faces (two-tone eyes + mouth /
+clean solid eyes / slim eyes + brows). Same body on all nine. Say a number and he's canon.
+No wrong answers — and "none, let's look tomorrow" is also a real answer.</p>
+<div class="grid" id="grid"></div>
+<script>
+'use strict';
+const HATS=[
+ {n:'tall toque', rows:['....HHHHHHHHHH....','...HHHHHHHHHHHH...','...HHHHHHHHHHHH...','...HHHHHHHHHHHH...','...hhhhhhhhhhhh...']},
+ {n:'short toque', rows:['...HHHHHHHHHHHH...','...HHHHHHHHHHHH...','...hhhhhhhhhhhh...']},
+ {n:'bandana', rows:['....HHHHHHHHHH....','...HHHHHHHHHHHHh..','...hhhhhhhhhhhh...']},
+];
+const FACES=[
+ {n:'two-tone + mouth', rows:['...RRRRRRRRRRRR...','...RSSSSSSSSSSR...','...SSWWSSSSWWSS...','...SSEESSSSEESS...','...SSSSSSSSSSSS...','...SSSSSssSSSSS...','...SSSSSSSSSSSS...','....SSSSSSSSSS....']},
+ {n:'clean solid eyes', rows:['...RRRRRRRRRRRR...','...RSSSSSSSSSSR...','...SSEESSSSEESS...','...SSEESSSSEESS...','...SSSSSSSSSSSS...','...SSSSSSSSSSSS...','....SSSSSSSSSS....']},
+ {n:'slim eyes + brows', rows:['...RRRRRRRRRRRR...','...RSSSSSSSSSSR...','...SSRRSSSSRRSS...','...SSEESSSSEESS...','...SSSSSSSSSSSS...','...SSSSSssSSSSS...','....SSSSSSSSSS....']},
+];
+const BODY=['...CCCCCCCCCCCC...','..CC.CCCCCCCC.CC..','..CC.CAAAAAAC.CC..','..SS.CAAAAAAC.SS..','.....CAAAAAAC.....','.....CCCCCCCC.....','.....PPP..PPP.....','.....PPP..PPP.....','....OOOO..OOOO....','....OOOO..OOOO....'];
+const PAL={H:'#f6f6f4',h:'#c2c2bd',R:'#3b2a1a',S:'#eac086',s:'#b98a5a',E:'#1c130c',W:'#ffffff',
+  C:'#f2f2ef',c:'#bdbdb8',A:'#c0392b',a:'#8e2a1f',P:'#232a31',O:'#101317'};
+function shade(hex,f){
+  const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const m=c=>Math.max(0,Math.min(255,Math.round(c*(1+f))));
+  return '#'+((1<<24)+(m(r)<<16)+(m(g)<<8)+m(b)).toString(16).slice(1);
+}
+function draw(rows,px){
+  const W=18,H=rows.length;
+  const cv=document.createElement('canvas');
+  cv.width=(W+2)*px; cv.height=(H+2)*px;
+  const x=cv.getContext('2d');
+  const at=(cx,cy)=>(cx<0||cy<0||cx>=W||cy>=H)?null:(rows[cy][cx]==='.'?null:(PAL[rows[cy][cx]]||'#f0f'));
+  x.fillStyle='#0a0c0f';
+  for(let cy=-1;cy<=H;cy++) for(let cx=-1;cx<=W;cx++){
+    if(at(cx,cy)) continue;
+    if(at(cx+1,cy)||at(cx-1,cy)||at(cx,cy+1)||at(cx,cy-1)) x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
+    const c=at(cx,cy); if(!c) continue;
+    const edge=!at(cx+1,cy)||!at(cx,cy+1);
+    x.fillStyle= edge&&c!==PAL.E&&c!==PAL.W ? shade(c,-.16) : c;
+    x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  return cv;
+}
+const grid=document.getElementById('grid');
+let n=1;
+HATS.forEach(h=>{
+  FACES.forEach(f=>{
+    const rows=[...h.rows,...f.rows,...BODY];
+    const d=document.createElement('div'); d.className='v';
+    d.innerHTML=`<b>${n}</b>`;
+    const figs=document.createElement('div'); figs.className='figs';
+    figs.appendChild(draw(rows,5)); figs.appendChild(draw(rows,2));
+    d.appendChild(figs);
+    const em=document.createElement('em'); em.textContent=h.n+' · '+f.n;
+    d.appendChild(em);
+    grid.appendChild(d); n++;
+  });
+});
+</script>
+</body>
+</html>
