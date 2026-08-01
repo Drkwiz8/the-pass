@@ -117,6 +117,14 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .zoneF{position:absolute;top:0;bottom:0;background:rgba(250,204,21,.3);border-left:1px solid var(--warn);border-right:1px solid var(--warn)}
 .pan.flipwin{border-color:var(--warn);box-shadow:inset 0 0 0 1px var(--warn),0 0 14px rgba(250,204,21,.25)}
 .pan.flipwin .panEmo{animation:flipTease .3s ease-in-out infinite alternate}
+.zoneS{position:absolute;top:0;bottom:0;background:rgba(90,209,230,.3);border-left:1px solid var(--cold);border-right:1px solid var(--cold)}
+.pan.seaswin{border-color:var(--cold);box-shadow:inset 0 0 0 1px var(--cold),0 0 14px rgba(90,209,230,.25)}
+.chit.duel{background:#2b2326;border-top-color:#ff5330;color:#efe2c4;box-shadow:0 3px 0 rgba(0,0,0,.6),0 8px 22px rgba(255,83,48,.22)}
+.chit.duel .chHead{color:#b09a8a}
+.chit.duel .chHead .tbl{color:#ff8a6a}
+.chit.duel .item{background:rgba(255,255,255,.06)}
+.chit.duel .item.todo{outline-color:rgba(255,255,255,.25)}
+.chit.duel .timerTrk{background:#4a3a34}
 @keyframes flipTease{to{transform:rotate(14deg) translateY(-2px)}}
 @keyframes flipSpin{to{transform:rotate(360deg)}}
 #combo b{color:var(--warn)}
@@ -300,7 +308,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v11</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v12</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -364,27 +372,27 @@ const MENU = [
   {n:'BEETS',       e:'🍠', st:'cold',  cook:3.8, win:1.76, price:14, unl:1},
   {n:'SALMON',      e:'🐟', st:'saute', cook:7.0, win:1.44, price:27, unl:2},
   {n:'SHROOMS',     e:'🍄', st:'saute', cook:5.4, win:1.76, price:12, unl:2},
-  {n:'SCALLOPS',    e:'🍥', st:'saute', cook:4.6, win:1.04, price:28, unl:3},
+  {n:'SCALLOPS',    e:'🍥', st:'saute', cook:4.6, win:1.04, price:28, unl:3, tech:{n:'BASTE', cook:2.0, win:.9}},
   {n:'FRIES',       e:'🍟', st:'fry',   cook:5.0, win:1.92, price:9,  unl:4},
   {n:'CALAMARI',    e:'🦑', st:'fry',   cook:4.2, win:1.20, price:16, unl:4},
-  {n:'RISOTTO',     e:'🍚', st:'saute', cook:8.6, win:1.60, price:21, unl:5},
+  {n:'RISOTTO',     e:'🍚', st:'saute', cook:8.6, win:1.60, price:21, unl:5, tech:{n:'MANTECARE', cook:2.4, win:1.0}},
   {n:'OCTOPUS',     e:'🐙', st:'grill', cook:5.0, win:1.12, price:22, unl:5},
   {n:'CRUDO',       e:'🍣', st:'cold',  cook:4.4, win:1.28, price:24, unl:6},
   {n:'CHX KATSU',   e:'🍗', st:'fry',   cook:7.4, win:1.44, price:23, unl:7},
   {n:'OYSTERS',     e:'🦪', st:'cold',  cook:5.2, win:1.52, price:20, unl:8},
   {n:'BEIGNETS',    e:'🍩', st:'fry',   cook:6.0, win:1.28, price:11, unl:9},
-  {n:'RIBEYE',      e:'🥩', st:'grill', cook:9.5, win:1.20, price:34, unl:10},
+  {n:'RIBEYE',      e:'🥩', st:'grill', cook:9.5, win:1.20, price:34, unl:10, tech:{n:'REST', cook:2.8, win:1.5}},
   {n:'TARTARE',     e:'🧆', st:'cold',  cook:4.0, win:1.10, price:29, unl:11},
-  {n:'DUCK BREAST', e:'🦆', st:'saute', cook:8.8, win:1.16, price:32, unl:12},
-  {n:'WAGYU',       e:'🐄', st:'grill', cook:10.5,win:1.00, price:48, unl:13},
+  {n:'DUCK BREAST', e:'🦆', st:'saute', cook:8.8, win:1.16, price:32, unl:12, tech:{n:'CRISP', cook:2.4, win:.8}},
+  {n:'WAGYU',       e:'🐄', st:'grill', cook:10.5,win:1.00, price:48, unl:13, tech:{n:'REST', cook:3.0, win:1.3}},
   {n:'TEMPURA',     e:'🍤', st:'fry',   cook:4.8, win:1.08, price:25, unl:13},
   {n:'CEVICHE',     e:'🍋', st:'cold',  cook:4.6, win:1.20, price:26, unl:14},
-  {n:'LOBSTER TAIL',e:'🦞', st:'grill', cook:7.6, win:1.04, price:44, unl:15},
+  {n:'LOBSTER TAIL',e:'🦞', st:'grill', cook:7.6, win:1.04, price:44, unl:15, tech:{n:'BUTTER BASTE', cook:2.2, win:.9}},
   {n:'GNOCCHI',     e:'🥟', st:'saute', cook:6.4, win:1.40, price:23, unl:16},
   {n:'WINGS',       e:'🪽', st:'fry',   cook:6.8, win:1.60, price:15, unl:16},
 ];
 /* mechanic debut nights (career; endless = all on) */
-const DEBUT = {flip:3, combo:5, vip:6, bus:7, mods:8, down:9, critic:10, fourtop:12};
+const DEBUT = {flip:3, season:4, combo:5, vip:6, bus:7, mods:8, down:9, critic:10, fourtop:12, tech:14};
 function mechOn(id){ return G.endless || META.night>=DEBUT[id]; }
 function stationsLive(){ return G.endless ? STATIONS : STATIONS.filter(s=>META.night>=s.unl); }
 function menuLive(){
@@ -400,7 +408,10 @@ function nightNews(n){
   const mech={17:'THE WEEK BEGINS — nights have days now. Regulars book Tuesdays. Saturday grades the week.',
     23:'THE GUIDE: Vivian Ashe eats here this week — unmarked, any night, any ticket. Rated Saturday.',
     3:'NEW SKILL: THE FLIP — tap the yellow window mid-cook for +20%',
+    4:'NEW SKILL: SEASON — tap the cyan window early in the cook for +10%',
     5:'NEW SKILL: COMBO HEAT — chain perfect pulls, multiply your tips',
+    14:'NEW SKILL: THE FINISH — premium dishes take a second pass now. Sear it, rest it, baste it. Both passes perfect = MASTERED.',
+    29:'THE COOK-OFF: Meridian challenged you. Six rounds, one a night, first to four. The street is watching.',
     6:'THE ROOM CHANGES: VIPs start booking — double tips, short fuses',
     7:'bus tours start hitting the rail',8:'special conditions begin — every night is different now',
     9:"equipment starts failing — stations can go 86'd",10:'THE CRITIC now dines here',
@@ -471,11 +482,30 @@ const VIPS = [
    in:'@PLATEDBYDEE IS FILMING YOUR PASS — EVERY PLATE GETS POSTED',
    good:'THE CLIP IS UP. TOMORROW WILL BE BUSY.', bad:'THE CLIP IS UP. IT\'S NOT GOOD.',
    perk:'THE ALGORITHM — her audience books every night: +25% volume, permanently'},
+  /* --- v12: the rest of the book --- */
+  {id:'kenji',  n:'KENJI SATO',   t:'KENJI',   arc:true, day:'Wednesdays',
+   in:'KENJI SATO IS IN — MERIDIAN\'S BEST LINE COOK, EATING ON HIS NIGHT OFF. HE ORDERS WHAT HE CAN\'T MAKE.',
+   good:'KENJI PHOTOGRAPHED THE PLATE. STUDY MATERIAL.', bad:'KENJI SAW THE SHORTCUT. COOKS ALWAYS DO.',
+   perk:'THE WHETSTONE — Kenji preps with your crew: every pull window 8% wider'},
+  {id:'leona',  n:'MS. LEONA PRICE', t:'LEONA', arc:true, day:'Thursdays',
+   in:'MS. LEONA IS AT T4 — THIRTY YEARS FEEDING THIS BLOCK FROM A CART. SHE KNOWS.',
+   good:'LEONA: "NOW THAT\'S DINNER."', bad:'LEONA SAID NOTHING. THAT\'S WORSE.',
+   perk:'THE BLESSING — the room settles around her: weeds drain patience 20% slower'},
+  {id:'adrian', n:'ADRIAN VOSS',  t:'ADRIAN',  arc:true, day:'Fridays',
+   in:'ADRIAN VOSS BOOKED FRIDAY — HE FUNDS RESTAURANTS. OR DOESN\'T.',
+   good:'VOSS NEVER CHECKED HIS PHONE. THAT\'S THE WHOLE MEETING.', bad:'VOSS LEFT EARLY. HIS OFFICE WILL "CIRCLE BACK."',
+   perk:'VOSS CAPITAL — construction money: renovations cost 20% less'},
+  {id:'ashe',   n:'VIVIAN ASHE',  t:'V. ASHE', arc:true, day:'Saturdays',
+   in:'VIVIAN ASHE BOOKED — IN THE OPEN THIS TIME. TABLE FOR ONE, THREE COURSES, NO NOTES UNTIL THE END.',
+   good:'ASHE WROTE SOMETHING DOWN. GOOD INK.', bad:'ASHE CLOSED THE NOTEBOOK EARLY.',
+   perk:'THE SECOND LOOK — she re-rates the room: Guide rating +1★, permanent'},
 ];
 const POZOLE_DISH = {n:'POZOLE', e:'🍲', st:'saute', cook:7.0, win:1.9, price:30, unl:1};
 function vipRec(id){ return META.vips && META.vips[id]; }
 function guideMult(){ return 1 + [0,.25,.6,1.2][(META.guide&&META.guide.rating)||0]; }
 function guideWeek(){ return weekNoFor(META.night)===1; }   // nights 23-28: Vivian Ashe is in the room
+/* v12: THE COOK-OFF — every other week from night 29 until Meridian is beaten */
+function isCookoffWeek(n){ const w=weekNoFor(n); return w>=2 && w%2===0 && !(META.rival&&META.rival.beaten); }
 
 const QUIRKS = [
   {id:'owl',    n:'NIGHT OWL',      d:'20% faster hands once the rush hits'},
@@ -510,6 +540,9 @@ const ACHS = [
   {id:'heat15',   n:'HEAT x15',         d:'Build a 15-pull perfect combo.', test:c=>G.comboMax>=15},
   {id:'renov',    n:'NEW PAINT',        d:'Renovate the restaurant for the first time.', test:c=>(META.tier||0)>=1},
   {id:'michelin', n:'THE ROOM',         d:'Reach the Michelin Room (tier 5).', test:c=>(META.tier||0)>=5},
+  {id:'season10', n:'SEASONED',         d:'Season 10 dishes in one service.', test:c=>(G.seasonsCt||0)>=10},
+  {id:'master',   n:'THE FINISH',       d:'Master a two-pass dish — both passes perfect.', test:c=>(G.masteredCt||0)>0},
+  {id:'rivaldown',n:'RIVAL DOWN',       d:'Beat Meridian in the Cook-Off.', test:c=>!!(META.rival&&META.rival.beaten)},
 ];
 function checkAchs(ctx){
   const fresh=[];
@@ -579,6 +612,9 @@ const WARDROBE = [
   {id:'tatflame',n:'FLAME SLEEVE',     slot:'tattoo', stars:5, px:[[1,10,'#e25822'],[1,11,'#f2a13c'],[10,10,'#e25822'],[10,11,'#f2a13c']], d:'Both forearms. Zero regrets.', req:{label:'Land 50 lifetime flips', test:()=>META.life.flips>=50}},
   {id:'cig',     n:'CIGARETTE BEHIND THE EAR', slot:'accessory', stars:2, px:[[9,4,'#f8fafc'],[10,4,'#e25822']], d:'Never lit during service.', req:{label:'10 lifetime clean nights (zero walkouts)', test:()=>META.life.cleanNights>=10}},
   {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6}},
+  {id:'champjkt',n:'CHAMPION\'S JACKET', slot:'body', stars:5, px:[[2,8,'#d4af37'],[4,8,'#d4af37'],[7,8,'#d4af37'],[9,8,'#d4af37']], d:'Gold on the shoulders. Meridian knows exactly where you got it.', req:{label:'Beat Meridian in the Cook-Off', test:()=>!!(META.rival&&META.rival.beaten)}},
+  {id:'saltcell',n:'THE SALT CELLAR',   slot:'accessory', stars:2, px:[[0,11,'#f5ecd8'],[0,12,'#d8c8a8']], d:'Clipped to the apron. Reach without looking.', req:{label:'Season 150 dishes lifetime', test:()=>(META.life.seasons||0)>=150}},
+  {id:'ashepin', n:'ASHE\'S PIN',       slot:'accessory', stars:6, px:[[4,8,'#c084fc']], d:'She doesn\'t give these. She leaves them.', req:{label:'Make Vivian Ashe a patron', test:()=>!!(META.vips.ashe&&META.vips.ashe.patron)}},
   {id:'starredtq',n:'THE STARRED TOQUE', slot:'hat', stars:8, hatRows:['..WWWWWWWW..','.WWW*WWWWWW.','.GGGGGGGGGG.','..WWWWWWWW..'], pal:{W:'#fbfbf6','*':'#ffd84d',G:'#d4af37'}, d:'White toque, gold band, one gold star. Status you wear.', req:{label:'Guide rating ≥ 1 star', test:()=>((META.guide&&META.guide.rating)||0)>=1}},
 ];
 const CORE_SLOTS=['hat','face','body','hand'];               // the original 4 — DRESSED TO KILL uses this
@@ -632,16 +668,21 @@ const TIERS = [
 function tierName(){ return TIERS[Math.min(META.tier||0,TIERS.length-1)].n; }
 function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)+1] : null; }
 
-function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,flips:0,banked:0,
+function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,flips:0,banked:0,seasons:0,mastered:0,
   cleanNights:0,cleanStreak:0,bestCombo:0,criticFloors:0,weeds60:false,zeroWaste:false,survived86:false,friClean:false,
   byStation:{grill:0,saute:0,fry:0,cold:0},dishes:{}}; }
 function freshVips(){ return {
   duvall:{v:0,s:0,patron:false,off:false},
   rosa:{v:0,s:0,patron:false,off:false},
   deacon:{v:0,s:0,patron:false,off:false,streak:0},
-  dee:{v:0,s:0,patron:false,off:false}}; }
+  dee:{v:0,s:0,patron:false,off:false},
+  kenji:{v:0,s:0,patron:false,off:false},
+  leona:{v:0,s:0,patron:false,off:false},
+  adrian:{v:0,s:0,patron:false,off:false},
+  ashe:{v:0,s:0,patron:false,off:false}}; }
 let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}, life:freshLife(), wk:null, buff:null,
-            vips:freshVips(), guide:{rating:0,score:0}, deeBuff:0, deeBad:0};
+            vips:freshVips(), guide:{rating:0,score:0}, deeBuff:0, deeBad:0,
+            rival:{won:0,lost:0,beaten:false,wk:null}, rivalUntil:0};
 function loadMeta(){
   try{
     const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
@@ -666,6 +707,11 @@ function loadMeta(){
       if(!META.guide) META.guide={rating:0,score:0};
       if(typeof META.deeBuff!=='number') META.deeBuff=0;
       if(typeof META.deeBad!=='number') META.deeBad=0;
+      // v12 migration: the rivalry + new lifetime counters
+      if(!META.rival) META.rival={won:0,lost:0,beaten:false,wk:null};
+      if(typeof META.rivalUntil!=='number') META.rivalUntil=0;
+      if(typeof META.life.seasons!=='number') META.life.seasons=0;
+      if(typeof META.life.mastered!=='number') META.life.mastered=0;
       if(m.sous && !META.crew.length){
         META.crew.push({role:'cook', name:m.sous.name, hat:m.sous.hat,
           apron:m.sous.apron, station:m.sous.station, quirk:rollQuirk()});
@@ -702,6 +748,7 @@ function winTime(m, stId){
   if(G.endless) return m.win;
   let w=m.win*(META.up.expo?1.2:1);
   if(META.up.goldpans) w*=1.1;
+  if(META.vips.kenji&&META.vips.kenji.patron) w*=1.08;   // THE WHETSTONE
   if(G.mod && G.mod.id==='fragile') w*=.75;
   if(cooks().some(c=>c.station===stId&&c.quirk==='loud')) w*=1.1;
   return w;
@@ -756,6 +803,7 @@ const SFX = {
   perfect(){ tone(1320,.13,'triangle',.16); tone(1980,.12,'sine',.08); },
   sous(){ tone(1046,.08,'triangle',.1); setTimeout(()=>tone(1568,.1,'sine',.07),60); },
   flip(){ noise(.12,.12); tone(740,.1,'triangle',.13,980); },
+  season(){ noise(.16,.09); tone(1400,.05,'triangle',.08); },
   combo(n){ tone(Math.min(2400,880+n*70),.1,'triangle',.13); },
   over(){ tone(430,.16,'square',.1,330); },
   raw(){ tone(190,.16,'sine',.15,120); },
@@ -1078,10 +1126,10 @@ function buildLine(){
         <div class="panTop"><div class="panDish"></div><div class="panTicket"></div></div>
         <span class="panEmo"></span><span class="panFx"></span>
         <div class="panBig idle">EMPTY</div>
-        <div class="cookTrk" style="display:none"><div class="cookFill"></div><div class="zone"></div><div class="zoneF"></div></div>`;
+        <div class="cookTrk" style="display:none"><div class="cookFill"></div><div class="zone"></div><div class="zoneF"></div><div class="zoneS" style="display:none"></div></div>`;
       const pan={ st:st.id, key:keyLabel, el, item:null, ticket:null, t:0, cookNeed:0, winLen:0, grace:BURN_GRACE,
         dead:false, sousDecided:false, sousSkip:false,
-        fill:el.querySelector('.cookFill'), zone:el.querySelector('.zone'), zoneF:el.querySelector('.zoneF'),
+        fill:el.querySelector('.cookFill'), zone:el.querySelector('.zone'), zoneF:el.querySelector('.zoneF'), zoneS:el.querySelector('.zoneS'),
         trk:el.querySelector('.cookTrk'), emo:el.querySelector('.panEmo'), fx:el.querySelector('.panFx'),
         dish:el.querySelector('.panDish'), tk:el.querySelector('.panTicket'),
         big:el.querySelector('.panBig') };
@@ -1121,25 +1169,30 @@ function spawnTicket(opts={}){
   if(G.endless && G.t>200 && Math.random()<.15) count++;
   if(opts.critic) count=3;
   if(opts.big) count=opts.big;
+  if(opts.duel) count=3;
   const VD = opts.vipId ? VIPS.find(v=>v.id===opts.vipId) : null;
-  if(VD) count = VD.id==='rosa'?5 : VD.id==='dee'?2 : 1;
+  if(VD) count = VD.id==='rosa'?5 : VD.id==='ashe'?3 : ['dee','kenji','leona','adrian'].includes(VD.id)?2 : 1;
   if(opts.furious) count=1;
-  const pool=menuLive();
+  let pool=menuLive();
+  if(opts.duel) pool=[...pool].sort((a,b)=>b.price-a.price).slice(0,Math.max(6,(pool.length/2)|0));   // Meridian orders hard
   const items=[], used=[];
   for(let i=0;i<count;i++){
     let m, guard=0;
     do{ m=pool[(Math.random()*pool.length)|0]; guard++; }while(used.includes(m.n)&&guard<12);
     if(VD&&VD.id==='duvall') m=[...pool].sort((a,b)=>b.price-a.price)[0];   // he orders your best
     if(VD&&VD.id==='deacon') m=[...pool].sort((a,b)=>a.price-b.price)[0];   // the $9 ticket
+    if(VD&&VD.id==='adrian') m=[...pool].sort((a,b)=>b.price-a.price)[i]||m; // the two priciest
+    if(VD&&VD.id==='leona')  m=[...pool].sort((a,b)=>a.price-b.price)[i]||m; // comfort food
+    if(VD&&VD.id==='kenji'){ const srt=[...pool].sort((a,b)=>b.price-a.price).filter(d=>!used.includes(d.n)); m=srt[0]||m; } // what he can't make
     used.push(m.n);
-    items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null, flipped:false});
+    items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null, flipped:false, seasoned:false, stage:0, q1:null, mastered:false});
   }
   let vipChance = G.endless ? (G.t>60?.1:0) : (mechOn('vip') ? .12 : 0);
   if(G.mod && G.mod.id==='vipnight') vipChance=.36;
   if(!G.endless && G.wd==='TUE') vipChance=Math.max(vipChance,.3);
   if(!G.endless && G.wd==='SAT') vipChance=Math.max(vipChance,.2);
   const vip = VD ? VD.id!=='deacon'
-    : (!opts.critic && !opts.big && !opts.furious && Math.random()<vipChance);
+    : (!opts.critic && !opts.big && !opts.furious && !opts.duel && Math.random()<vipChance);
   let wdPat = G.wd==='WED' ? .9 : G.wd==='MON' ? 1.1 : 1;
   if(buffActive('staff')) wdPat*=1.08;
   const baseLimit = G.endless
@@ -1148,28 +1201,33 @@ function spawnTicket(opts={}){
   const tk={
     id:++G.ticketNo,
     table: VD?VD.t : opts.critic?'CRITIC★' : opts.big?'PARTY×'+count
-      : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
+      : opts.duel?'⚔ MERIDIAN' : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
     items, born:G.t, el:null, dead:false, readyAt:0, saved:false,
-    vip, critic:!!opts.critic, party:!!opts.big,
+    vip, critic:!!opts.critic, party:!!opts.big, duel:!!opts.duel,
     limit:baseLimit,
   };
   if(vip) tk.limit*=.62;
   if(tk.critic) tk.limit=Math.max(tk.limit,62);
   if(tk.party) tk.limit*=1.45;
+  if(tk.duel) tk.limit=Math.max(tk.limit,66);
   if(VD){
     tk.vipId=VD.id;
     if(VD.id==='rosa')   tk.limit=baseLimit*1.5;            // the family is patient; six plates aren't
     if(VD.id==='dee')    tk.limit*=.85;                     // content waits for no one
     if(VD.id==='deacon') tk.limit=Math.max(tk.limit,150);   // he's not going anywhere
+    if(VD.id==='adrian') tk.limit*=.75;                     // his time is money. literally.
+    if(VD.id==='leona')  tk.limit*=1.25;                    // she's seen worse rushes than yours
+    if(VD.id==='ashe')   tk.limit*=.9;
   }
   if(opts.furious) tk.limit*=.35;
   /* THE GUIDE: some night this week, one ordinary ticket is secretly hers */
-  if(!G.endless && guideWeek() && !G.asheSet && !VD && !opts.critic && !opts.big && !opts.furious && G.t>50){
+  if(!G.endless && guideWeek() && !G.asheSet && !VD && !opts.critic && !opts.big && !opts.furious && !opts.duel && G.t>50){
     tk.ashe=true; G.asheSet=true;
   }
   tk.left=tk.limit;
   G.tickets.push(tk); buildChit(tk);
   if(VD){ toast(VD.in, VD.id==='deacon'?'#5ad1e6':'var(--gold)'); SFX.vip(); }
+  else if(tk.duel){ toast('COOK-OFF ROUND — PERFECT AND HOT, OR THE ROUND IS MERIDIAN\'S','#ff5330'); SFX.vip(); }
   else if(opts.furious){ toast('A FURIOUS TABLE SAT — THEY SAW THE CLIP','var(--bad)'); SFX.walk(); }
   else if(tk.critic){ toast('THE CRITIC IS IN THE ROOM','#c084fc'); SFX.vip(); }
   else if(tk.party){ toast('THE BIG PARTY IS HERE — '+count+' PLATES, ONE WINDOW','#22d3ee'); SFX.vip(); }
@@ -1179,7 +1237,7 @@ function spawnTicket(opts={}){
 
 function buildChit(tk){
   const el=document.createElement('div');
-  el.className='chit'+(tk.vip?' vip':'')+(tk.critic?' critic':'')+(tk.party?' party':'');
+  el.className='chit'+(tk.vip?' vip':'')+(tk.critic?' critic':'')+(tk.party?' party':'')+(tk.duel?' duel':'');
   el.innerHTML=`<div class="chHead"><span>#${String(tk.id).padStart(3,'0')}</span><span class="tbl">${tk.table}</span></div>
     <div class="timerTrk"><div class="timerBar"></div></div><div class="items"></div>`;
   const box=el.querySelector('.items');
@@ -1187,7 +1245,7 @@ function buildChit(tk){
     const st=STATIONS.find(s=>s.id===it.m.st);
     const d=document.createElement('div'); d.className='item todo';
     d.style.borderLeft='3px solid '+st.color;
-    d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${foodTag(it.m.n,'cooked',2,it.m.e)}</span>${it.m.n}</span>
+    d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${foodTag(it.m.n,'cooked',2,it.m.e)}</span>${it.m.n}${it.m.tech&&mechOn('tech')?' <span style="font-size:8px;opacity:.6">×2</span>':''}</span>
         <span class="tag" style="display:none"></span></div>
       <div class="mini" style="display:none"><i></i></div>`;
     d.addEventListener('click',()=>fire(tk,i));
@@ -1217,17 +1275,23 @@ function fire(tk,idx){
   if(!pan){ toast('NO OPEN PAN ON '+st.name,'var(--bad)'); return; }
   it.state='cooking'; it.pan=pan;
   pan.item=it; pan.ticket=tk; pan.t=0; pan.sousDecided=false; pan.sousSkip=false;
-  pan.cookNeed=cookTime(it.m); pan.winLen=winTime(it.m, pan.st); pan.grace=burnGrace();
+  const fin = it.stage===1 && it.m.tech;   // the finish pass cooks its own numbers
+  pan.cookNeed = fin ? cookTime({cook:it.m.tech.cook, st:it.m.st}) : cookTime(it.m);
+  pan.winLen   = fin ? winTime({win:it.m.tech.win}, pan.st) : winTime(it.m, pan.st);
+  pan.grace=burnGrace();
   pan.el.classList.remove('empty'); pan.el.classList.add('live');
   pan.big.className='panBig'; pan.trk.style.display='';
-  pan.dish.textContent=it.m.n; pan.tk.textContent=`#${String(tk.id).padStart(3,'0')} · ${tk.table}`;
-  pan.emo.innerHTML=foodTag(it.m.n,'raw',4,it.m.e); pan.foodState='raw';
+  pan.dish.textContent=it.m.n+(fin?' · '+it.m.tech.n:''); pan.tk.textContent=`#${String(tk.id).padStart(3,'0')} · ${tk.table}`;
+  pan.emo.innerHTML=foodTag(it.m.n,fin?'cooked':'raw',4,it.m.e); pan.foodState=fin?'cooked':'raw';
   const total=pan.cookNeed+pan.winLen+pan.grace;
   pan.zone.style.left=(pan.cookNeed/total*100)+'%';
   pan.zone.style.width=(pan.winLen/total*100)+'%';
-  pan.zoneF.style.display=mechOn('flip')?'':'none';
+  pan.zoneF.style.display=(mechOn('flip')&&!fin)?'':'none';
   pan.zoneF.style.left=(pan.cookNeed*.5/total*100)+'%';
   pan.zoneF.style.width=(Math.min(.9,pan.cookNeed*.25)/total*100)+'%';
+  pan.zoneS.style.display=(mechOn('season')&&!fin&&!it.seasoned)?'':'none';
+  pan.zoneS.style.left=(pan.cookNeed*.15/total*100)+'%';
+  pan.zoneS.style.width=(Math.min(.9,pan.cookNeed*.2)/total*100)+'%';
   it.el.className='item cooking'; it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent=pan.key;
   it.miniEl.style.display=''; it.barEl.style.background='#1a1512';
   SFX.fire();
@@ -1249,6 +1313,7 @@ function inspFine(reason){
 }
 
 function flipWin(pan){ const fs=pan.cookNeed*.5; return [fs, fs+Math.min(.9,pan.cookNeed*.25)]; }
+function seasonWin(pan){ const ss=pan.cookNeed*.15; return [ss, ss+Math.min(.9,pan.cookNeed*.2)]; }
 
 function pull(pan, byCrew=null){
   if(!G.running||G.paused||!pan.item) return;
@@ -1259,26 +1324,57 @@ function pull(pan, byCrew=null){
     G.miseUsed=true; pan.t=pan.cookNeed+.01;
     floatText(pan.el,"DUVALL'S MISE",'#d4af37');
   }
+  const fin = it.stage===1 && it.m.tech;
   if(pan.t < pan.cookNeed){
-    // Before the pull window: this tap is either a FLIP (new verb) or a raw pull.
+    // Before the pull window: this tap is a SEASON, a FLIP, or a raw pull.
     const [fs,fe]=flipWin(pan);
-    if(mechOn('flip') && !byCrew && !it.flipped && pan.t>=fs && pan.t<=fe){
+    if(mechOn('flip') && !byCrew && !fin && !it.flipped && pan.t>=fs && pan.t<=fe){
       it.flipped=true; G.flips++;
       pan.emo.style.animation='flipSpin .3s ease';
       setTimeout(()=>{ pan.emo.style.animation=''; },320);
       floatText(pan.el,'🔄 FLIPPED +20%','#facc15'); SFX.flip();
       return;                                   // keeps cooking — flip is a bonus beat
     }
+    const [ss,se]=seasonWin(pan);
+    if(mechOn('season') && !byCrew && !fin && !it.seasoned && pan.t>=ss && pan.t<=se){
+      it.seasoned=true; G.seasonsCt=(G.seasonsCt||0)+1;
+      pan.zoneS.style.display='none';
+      floatText(pan.el,'🧂 SEASONED +10%','#5ad1e6'); SFX.season();
+      return;                                   // keeps cooking — season is the early beat
+    }
     G.pulls++; G.combo=0;
-    it.state='todo'; it.flipped=false; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
-    toast('RAW — REFIRE '+m.n,'var(--bad)'); floatText(pan.el,'RAW','#ef4444'); SFX.raw();
+    it.state='todo'; if(!fin) it.flipped=false;
+    it.el.className='item todo'; it.miniEl.style.display='none';
+    if(fin){ it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent='↳ '+it.m.tech.n; }
+    else it.tagEl.style.display='none';
+    toast('RAW — REFIRE '+(fin?it.m.tech.n:m.n),'var(--bad)'); floatText(pan.el,'RAW','#ef4444'); SFX.raw();
     inspFine('RAW');
   } else {
     G.pulls++;
     if(!G.endless) META.life.byStation[pan.st]=(META.life.byStation[pan.st]||0)+1;
     const over = pan.t > pan.cookNeed+pan.winLen;
-    it.state='pass'; it.quality = over?'over':'perfect'; it.pulledAt=G.t;
-    it.el.className='item ready'; it.tagEl.className='tag '+(over?'ov':'pf'); it.tagEl.textContent=over?'OVER':'PERF';
+    const q = over?'over':'perfect';
+    /* THE FINISH (v12): two-pass dishes go back to the rail for the second pass */
+    if(it.m.tech && mechOn('tech') && it.stage===0){
+      it.stage=1; it.q1=q;
+      it.state='todo'; it.el.className='item todo';
+      it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent='↳ '+it.m.tech.n;
+      it.miniEl.style.display='none';
+      if(over){ G.combo=0; floatText(pan.el,'OVER — '+it.m.tech.n+' ANYWAY','#facc15'); SFX.over(); }
+      else {
+        G.perfects++;
+        if(mechOn('combo')){ G.combo++; G.comboMax=Math.max(G.comboMax,G.combo); }
+        if(byCrew) G.crewPulls++;
+        floatText(pan.el,'↳ NOW: '+it.m.tech.n,'#5ad1e6');
+        G.combo>=3 ? SFX.combo(G.combo) : SFX.perfect();
+      }
+      clearPan(pan); refreshTicket(tk); return;
+    }
+    it.state='pass'; it.quality=q; it.pulledAt=G.t;
+    it.mastered = fin && it.q1==='perfect' && q==='perfect';
+    if(it.mastered) G.masteredCt=(G.masteredCt||0)+1;
+    it.el.className='item ready'; it.tagEl.className='tag '+(over?'ov':'pf');
+    it.tagEl.textContent=over?'OVER':(it.mastered?'MSTR★':'PERF');
     it.miniEl.className='mini heat'; it.miniEl.style.display=''; it.barEl.style.background='';
     if(over){ G.combo=0; floatText(pan.el,'OVER','#facc15'); SFX.over(); }
     else {
@@ -1286,7 +1382,7 @@ function pull(pan, byCrew=null){
       if(mechOn('combo')){ G.combo++; G.comboMax=Math.max(G.comboMax,G.combo); }
       if(byCrew){ G.crewPulls++; floatText(pan.el,'✋ '+byCrew.name,'#5ad1e6'); SFX.sous(); }
       else {
-        floatText(pan.el, G.combo>=3 ? 'x'+G.combo+' 🔥' : it.m.e+' PERFECT','#41d67f');
+        floatText(pan.el, it.mastered ? '★ MASTERED +25%' : G.combo>=3 ? 'x'+G.combo+' 🔥' : it.m.e+' PERFECT', it.mastered?'#ffd84d':'#41d67f');
         G.combo>=3 ? SFX.combo(G.combo) : SFX.perfect();
       }
     }
@@ -1305,7 +1401,8 @@ function clearPan(pan){
 
 function burnPan(pan){
   const it=pan.item, tk=pan.ticket;
-  it.state='todo'; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
+  it.state='todo'; it.stage=0; it.q1=null; it.flipped=false; it.seasoned=false;   // burnt = start the dish over
+  it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
   G.waste++; G.combo=0;
   if(!(!G.endless&&META.up.salamander)) G.tips=Math.max(0,G.tips-Math.round(it.m.price*.4));
   toast('BURNT — '+it.m.n+' IN THE BIN','var(--bad)'); floatText(pan.el,'🔥 BURNT','#ef4444'); SFX.burn();
@@ -1321,7 +1418,7 @@ function plate(tk, byExpo=false){
   if(!G.running||G.paused||tk.dead||!ready(tk)) return;
   let base=0, qual=0, minHeat=1, allPerfect=true;
   tk.items.forEach(it=>{
-    base+=it.m.price*(it.flipped?1.2:1);
+    base+=it.m.price*(it.flipped?1.2:1)*(it.seasoned?1.1:1)*(it.mastered?1.25:1);
     qual+= it.quality==='perfect'?1.15:.6;
     if(it.quality!=='perfect') allPerfect=false;
     minHeat=Math.min(minHeat,heatOf(it));
@@ -1357,6 +1454,15 @@ function plate(tk, byExpo=false){
   else if(minHeat<.6) toast('SENT COLD — TABLE NOTICED','var(--warn)');
   /* THE GUIDE: her ticket is scored in silence */
   if(!G.endless && tk.ashe) META.guide.score += (allPerfect&&minHeat>.7) ? 1 : -1;
+  /* THE COOK-OFF: the round is scored the moment the plates land */
+  if(!G.endless && tk.duel){
+    const win=allPerfect&&minHeat>.7, R=META.rival;
+    R.wk=R.wk||{no:weekNoFor(META.night),won:0,played:0};
+    R.wk.played++;
+    if(win){ R.won++; R.wk.won++; toast('ROUND WON — THE STREET HEARD ABOUT IT ('+R.wk.won+'/'+R.wk.played+')','var(--good)'); floatText(tk.el,'⚔ ROUND WON','#41d67f'); }
+    else { R.lost++; toast('MERIDIAN TAKES THE ROUND — "cute."','var(--bad)'); floatText(tk.el,'⚔ ROUND LOST','#ef4444'); }
+    saveMeta();
+  }
   /* THE REGULARS: they remember this plate */
   if(!G.endless && tk.vipId){
     const rec=META.vips[tk.vipId], V=VIPS.find(v=>v.id===tk.vipId);
@@ -1371,6 +1477,7 @@ function plate(tk, byExpo=false){
         if(V.good) toast(V.good,'var(--gold)');
         if(rec.s>=3&&!rec.patron){
           rec.patron=true; META.stars+=2; SFX.star();
+          if(tk.vipId==='ashe') META.guide.rating=Math.min(3,(META.guide.rating||0)+1);   // THE SECOND LOOK
           setTimeout(()=>toast('★ '+V.n+' IS A PATRON — '+V.perk,'var(--gold)'),1700);
         }
       } else if(minHeat<.6){
@@ -1405,6 +1512,13 @@ function killTicket(tk,cls){
 function walkout(tk){
   G.walkouts++;
   if(!G.endless && tk.ashe) META.guide.score-=2;
+  if(!G.endless && tk.duel){
+    const R=META.rival;
+    R.wk=R.wk||{no:weekNoFor(META.night),won:0,played:0};
+    R.wk.played++; R.lost++;
+    toast('THE COOK-OFF ORDER WALKED — MERIDIAN TAKES THE ROUND','var(--bad)');
+    saveMeta();
+  }
   if(!G.endless && tk.vipId && tk.vipId!=='deacon'){
     const rec=META.vips[tk.vipId], V=VIPS.find(v=>v.id===tk.vipId);
     rec.s=Math.max(-2,rec.s-1);
@@ -1520,6 +1634,10 @@ function step(dt){
     G.partyDone=true; spawnTicket({big:5});
   }
 
+  /* v12: Meridian's challenge order lands mid-service */
+  if(G.duelAt && !G.duelDone && G.t>=G.duelAt && !G.closing && G.tickets.length<G.railCap){
+    G.duelDone=true; spawnTicket({duel:true});
+  }
   /* v11: named regulars walk in on schedule */
   for(const ev of (G.vipSpawns||[])){
     if(!ev.fired && G.t>=ev.at && !G.closing && G.tickets.length<G.railCap){
@@ -1557,6 +1675,7 @@ function step(dt){
       if(G.wd==='WED') iv*=(G.t<60?1.8:.8);             // industry: dead, then the slam
       if(G.wd==='THU') iv*=.85;                         // the book is full
       if(G.deeBuff) iv*=.8;                             // @platedbydee's audience showed up
+      if(!G.endless&&META.rivalUntil&&META.night<=META.rivalUntil) iv*=1.15;   // Meridian's write-up thins the book
       G.nextSpawn=iv;
     }
   }
@@ -1576,6 +1695,7 @@ function step(dt){
 
   let drain = G.weeds?((!G.endless&&META.up.skin)?1.2:1.35):1;
   if(!G.endless&&host()) drain*=.92;
+  if(!G.endless&&G.weeds&&META.vips.leona&&META.vips.leona.patron) drain*=.8;   // THE BLESSING
   for(const tk of G.tickets.slice()){
     tk.left-=dt*drain;
     if(tk.left<=0) walkout(tk);
@@ -1614,21 +1734,26 @@ function render(){
     pan.fill.style.width=Math.min(100,pan.t/total*100)+'%';
     const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
     const over  = pan.t>pan.cookNeed+pan.winLen;
+    const fin = pan.item.stage===1 && pan.item.m.tech;
     const [ffs,ffe]=flipWin(pan);
-    const inFlip = mechOn('flip') && !inWin && !over && !pan.item.flipped && pan.t>=ffs && pan.t<=ffe;
+    const inFlip = mechOn('flip') && !fin && !inWin && !over && !pan.item.flipped && pan.t>=ffs && pan.t<=ffe;
+    const [sfs,sfe]=seasonWin(pan);
+    const inSeas = mechOn('season') && !fin && !inWin && !over && !inFlip && !pan.item.seasoned && pan.t>=sfs && pan.t<=sfe;
     pan.el.classList.toggle('perfect',inWin);
     pan.el.classList.toggle('flipwin',inFlip);
+    pan.el.classList.toggle('seaswin',inSeas);
     pan.el.classList.toggle('over',over && pan.t<pan.cookNeed+pan.winLen+1.5);
     pan.el.classList.toggle('burning',pan.t>=pan.cookNeed+pan.winLen+1.5);
-    pan.big.className = 'panBig'+(inWin||over||inFlip?' callout':'');
-    pan.big.textContent = inWin?'PULL NOW' : over?'BURNING!' : inFlip?'FLIP! 🔄' : (pan.cookNeed-pan.t).toFixed(1);
-    pan.big.style.color = inWin?'var(--good)' : over?'var(--bad)' : inFlip?'var(--warn)'
+    pan.big.className = 'panBig'+(inWin||over||inFlip||inSeas?' callout':'');
+    pan.big.textContent = inWin?'PULL NOW' : over?'BURNING!' : inFlip?'FLIP! 🔄' : inSeas?'SEASON! 🧂' : (pan.cookNeed-pan.t).toFixed(1);
+    pan.big.style.color = inWin?'var(--good)' : over?'var(--bad)' : inFlip?'var(--warn)' : inSeas?'var(--cold)'
       : (pan.cookNeed-pan.t)<1.5?'var(--warn)':'var(--txt)';
     pan.fill.style.background = over?'linear-gradient(90deg,#7a1414,#ef4444)'
       : inWin?'linear-gradient(90deg,#1c7a45,#41d67f)' : 'linear-gradient(90deg,#8a3a12,#ff6a1a)';
     pan.fx.textContent = pan.el.classList.contains('burning')?'🔥' : inWin?'♨️' : '';
-    /* v10: the food itself is the doneness readout — raw, cooked, charred sprites */
-    const wantState = pan.el.classList.contains('burning') ? 'burnt' : (inWin||over) ? 'cooked' : 'raw';
+    /* v10: the food itself is the doneness readout — raw, cooked, charred sprites.
+       A finish pass starts cooked — it only goes one way from there. */
+    const wantState = pan.el.classList.contains('burning') ? 'burnt' : (fin||inWin||over) ? 'cooked' : 'raw';
     if(pan.foodState!==wantState){
       pan.foodState=wantState;
       const im=pan.emo.querySelector('img');
@@ -1707,13 +1832,15 @@ function renderShop(container){
   box.appendChild(rHead);
   const rCard=document.createElement('div'); rCard.className='upg'; rCard.style.borderColor='var(--hot)';
   if(nt){
+    const voss=META.vips.adrian&&META.vips.adrian.patron;
+    const rcost=Math.round(nt.cost*(voss?.8:1));
     rCard.innerHTML=`<b>🏗️ RENOVATE → ${nt.n.replace('THE PASS — ','')}</b>
-      <small>Close for a night of construction, open something greater. Permanent +12% menu prices per tier, +1⭐, and a room worth the grind. This is the ladder that never ends.</small>`;
-    const b=document.createElement('button'); b.textContent='RENOVATE — $'+nt.cost.toLocaleString();
-    b.disabled=META.bank<nt.cost;
+      <small>Close for a night of construction, open something greater. Permanent +12% menu prices per tier, +1⭐, and a room worth the grind. This is the ladder that never ends.${voss?' <em style="color:var(--gold)">VOSS CAPITAL: −20%</em>':''}</small>`;
+    const b=document.createElement('button'); b.textContent='RENOVATE — $'+rcost.toLocaleString();
+    b.disabled=META.bank<rcost;
     b.addEventListener('click',()=>{
-      if(META.bank<nt.cost) return;
-      META.bank-=nt.cost; META.tier=(META.tier||0)+1; META.stars+=1; saveMeta(); SFX.star();
+      if(META.bank<rcost) return;
+      META.bank-=rcost; META.tier=(META.tier||0)+1; META.stars+=1; saveMeta(); SFX.star();
       toast('GRAND REOPENING — '+tierName(),'var(--hot)');
       renderShop(container);
     });
@@ -1735,7 +1862,8 @@ function renderShop(container){
       const status = r.off ? 'GONE — books at Meridian now.'
         : r.patron ? '★ PATRON — '+v.perk
         : v.id==='deacon' ? 'On his stool every night. Fed fast '+ (r.streak||0)+'/6 nights running.'
-        : '●'.repeat(Math.max(0,r.s))+'○'.repeat(3-Math.max(0,r.s))+(r.s<0?' — you\'re on thin ice':' — books Tuesdays');
+        : v.id==='ashe'&&(META.guide.rating||0)<1 ? 'Not booking. A star on the door would change that.'
+        : '●'.repeat(Math.max(0,r.s))+'○'.repeat(3-Math.max(0,r.s))+(r.s<0?' — you\'re on thin ice':' — books '+(v.day||'Tuesdays'));
       const d=document.createElement('div'); d.className='upg';
       d.style.borderColor = r.off?'var(--bad)' : r.patron?'var(--gold)' : 'var(--line)';
       if(r.off) d.style.opacity=.55;
@@ -1743,6 +1871,21 @@ function renderShop(container){
       vGrid.appendChild(d);
     });
     box.appendChild(vGrid);
+  }
+
+  /* v12: the rivalry */
+  if(META.night>=29 || (META.rival&&(META.rival.won+META.rival.lost>0||META.rival.beaten))){
+    const rvHead=document.createElement('div'); rvHead.className='crewHead'; rvHead.style.color='#ff5330';
+    rvHead.innerHTML='<span>THE RIVALRY — MERIDIAN</span>';
+    box.appendChild(rvHead);
+    const R=META.rival, wk=R.wk;
+    const rv=document.createElement('div'); rv.className='upg'; rv.style.borderColor='#ff5330';
+    rv.innerHTML = R.beaten
+      ? `<b>🏆 MERIDIAN WENT QUIET</b><small>All-time rounds ${R.won}–${R.lost}. They stopped sending orders. The street noticed that too.</small>`
+      : isCookoffWeek(META.night)
+      ? `<b>⚔ COOK-OFF WEEK — ${wk?wk.won:0} WON OF ${wk?wk.played:0} PLAYED</b><small>One challenge order a night, resolved Saturday. Four wins takes the street — and brings home every regular they stole.</small>`
+      : `<b>⚔ MERIDIAN</b><small>All-time rounds ${R.won}–${R.lost}.${META.rivalUntil>=META.night?' Their write-up is thinning your book this week.':''} They keep a table open for your regulars. The next Cook-Off week is coming.</small>`;
+    box.appendChild(rv);
   }
 
   const bHead=document.createElement('div'); bHead.className='crewHead'; bHead.innerHTML=`<span>YOUR BRIGADE — ${META.crew.length?META.crew.length+' ON STAFF':'NOBODY YET. IT\'S JUST YOU.'}</span>`;
@@ -1952,6 +2095,7 @@ function start(endless=false){
   Object.assign(G,{running:true,over:false,paused:false,endless,t:0,clock:SERVICE,closing:false,closeT:0,
     tips:0,covers:0,walkouts:0,waste:0,perfects:0,pulls:0,weeds:false,weedsTime:0,
     crewPulls:0,expoPlates:0,hostSaves:0,hostCd:0,criticFloored:false,partyPlated:false,fines:0,
+    seasonsCt:0,masteredCt:0,duelAt:0,duelDone:true,
     nextSpawn:2.2,ticketNo:0,tickets:[],mod:endless?null:modFor(META.night),railCap:MAX_RAIL,
     inspAt:0,inspUntil:0,
     downUntil:{},downSchedule:[],criticAt:0,criticDone:false,
@@ -1989,11 +2133,24 @@ function start(endless=false){
       if(!V.rosa.off   && !V.rosa.patron)   G.vipSpawns.push({at:95+Math.random()*25,id:'rosa',fired:false});
       if(!V.dee.off    && !V.dee.patron)    G.vipSpawns.push({at:148+Math.random()*25,id:'dee',fired:false});
     }
+    /* v12: the rest of the book fills the week */
+    if(G.wd==='WED' && !V.kenji.off  && !V.kenji.patron)  G.vipSpawns.push({at:70+Math.random()*30,id:'kenji',fired:false});
+    if(G.wd==='THU' && !V.leona.off  && !V.leona.patron)  G.vipSpawns.push({at:60+Math.random()*30,id:'leona',fired:false});
+    if(G.wd==='FRI' && !V.adrian.off && !V.adrian.patron) G.vipSpawns.push({at:80+Math.random()*40,id:'adrian',fired:false});
+    if(G.wd==='SAT' && (META.guide.rating||0)>=1 && !V.ashe.off && !V.ashe.patron)
+      G.vipSpawns.push({at:90+Math.random()*40,id:'ashe',fired:false});
     if(V.dee.patron || META.deeBuff) G.deeBuff=1;          // the algorithm delivers
     if(META.deeBad){                                        // the clip went viral the wrong way
       G.vipSpawns.push({at:6,id:'_furious',fired:false},{at:11,id:'_furious',fired:false});
     }
     META.deeBuff=0; META.deeBad=0;
+    /* v12: THE COOK-OFF — one round a night, all cook-off week */
+    if(isCookoffWeek(META.night)){
+      if(!META.rival.wk || META.rival.wk.no!==weekNoFor(META.night)){
+        META.rival.wk={no:weekNoFor(META.night),won:0,played:0}; saveMeta();
+      }
+      G.duelAt=100+Math.random()*60; G.duelDone=false;
+    }
   }
   railEl.innerHTML='<div id="railEmpty">RAIL CLEAR</div>';
   buildLine();
@@ -2007,6 +2164,7 @@ function start(endless=false){
   else {
     let delay=600;
     if(wd){ setTimeout(()=>toast(wd.d+' — '+wd.n,'var(--cold)'),delay); delay+=1700; }
+    if(G.duelAt){ setTimeout(()=>toast('COOK-OFF WEEK — MERIDIAN ROUND '+((META.rival.wk?META.rival.wk.played:0)+1)+'/6 TONIGHT. FIRST TO FOUR.','#ff5330'),delay); delay+=1700; }
     if(G.mod){ setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),delay); delay+=1700; }
     const news=nightNews(META.night);
     if(news.length) setTimeout(()=>toast(news[0],'var(--good)'),delay);
@@ -2094,6 +2252,7 @@ function finish(){
   const L=META.life, clean=G.walkouts===0&&G.covers>0;
   L.services++; L.pulls+=G.pulls; L.perfects+=G.perfects; L.waste+=G.waste;
   L.covers+=G.covers; L.flips+=G.flips; L.banked+=G.tips;
+  L.seasons=(L.seasons||0)+(G.seasonsCt||0); L.mastered=(L.mastered||0)+(G.masteredCt||0);
   L.bestCombo=Math.max(L.bestCombo,G.comboMax);
   if(G.criticFloored) L.criticFloors++;
   if(G.weedsTime>=60) L.weeds60=true;
@@ -2122,6 +2281,19 @@ function finish(){
     META.guide.rating = sc>=5?3 : sc>=3?2 : sc>=1?1 : 0;
     const r=META.guide.rating;
     weekLine+=`<div class="starLine" style="border-left-color:#c084fc"><b style="color:#c084fc">THE GUIDE HAS SPOKEN: ${r?'★'.repeat(r):'NO STARS'}</b> — Vivian Ashe ate here six times, unmarked. ${r?'Menu prices +'+Math.round((guideMult()-1)*100)+'%, permanent. Wear it.':'No mention this year. She was here, though. She\'ll be back.'}${r>=1?' The STARRED TOQUE is unlocked in the wardrobe.':''}</div>`;
+  }
+
+  /* v12: THE COOK-OFF resolves on its Saturday */
+  if(wdClosed&&wdClosed.d==='SAT'&&isCookoffWeek(closedNight)){
+    const wk=META.rival.wk||{won:0,played:0};
+    if(wk.won>=4){
+      META.rival.beaten=true; META.stars+=5; META.bank+=2500;
+      Object.values(META.vips).forEach(r=>{ if(r.off){ r.off=false; r.s=0; } });
+      weekLine+=`<div class="starLine" style="border-left-color:#ff5330"><b style="color:#ff5330">YOU BEAT MERIDIAN ${wk.won}–${wk.played-wk.won}</b> — the street picked a side. +5 ⭐, +$2,500, and every regular they stole came home. The CHAMPION'S JACKET is unlocked in the wardrobe.</div>`;
+    } else {
+      META.rivalUntil=closedNight+7;
+      weekLine+=`<div class="starLine" style="border-left-color:var(--bad)"><b style="color:var(--bad)">MERIDIAN TAKES THE WEEK ${wk.won}–${wk.played-wk.won}</b> — their write-up runs all week and your book will feel it. The rematch comes.</div>`;
+    }
   }
 
   /* v9: the week grade — consistency becomes the skill */

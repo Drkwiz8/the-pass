@@ -85,12 +85,30 @@ Built from hermes-air's ENDGAME + WARDROBE-40 design docs (#handoffs).
 - [x] REGULARS BOOK panel in the back office; tier ladder retuned to
       $45k/$90k/$180k (LEGEND was ~200 nights away — now spans seasons)
 
-## v12 — the cooking process + rivalry (next)
-- [ ] Deeper cook interactions per station (the "actual cooking process":
-      prep steps, sear/flip/rest verbs beyond the current flip)
-- [ ] Meridian rival + crew morale/storylines + Cook-Off week + prestige
-- [ ] Remaining 4 VIPs from the endgame doc (Ashe as bookable patron, Kenji,
-      Leona, Adrian)
+## v12 — THE FINISH + MERIDIAN (SHIPPED 2026-07-31)
+- [x] SEASON: a second universal verb — early cyan tap window on every cook
+      (night 4+), +10% on the plate; lifetime counter + SALT CELLAR gear
+- [x] THE FINISH (night 14+): six premium dishes are two-pass now — pull the
+      cook, re-fire for the finish (SCALLOPS baste, RISOTTO mantecare, RIBEYE
+      + WAGYU rest, DUCK crisp, LOBSTER butter baste). Both passes perfect =
+      MASTERED ★ +25%. Rest windows are wide, bastes are tight.
+- [x] THE COOK-OFF: every other week from night 29 (until beaten), Meridian
+      sends one 3-plate challenge order a night — black chit, hard dishes,
+      perfect + hot or lose the round. 4 of 6 by SAT beats them: +5⭐,
+      +$2,500, stolen regulars come home, CHAMPION'S JACKET. Lose: their
+      write-up thins your book for a week. Rivalry panel in the back office.
+- [x] The book fills the week — 4 new regulars with arcs + patron perks:
+      KENJI SATO (WED, Meridian's cook: pull windows +8%), MS. LEONA PRICE
+      (THU: weeds drain −20%), ADRIAN VOSS (FRI, short fuse, priciest order:
+      renovations −20%), VIVIAN ASHE (SAT once Guide-rated; patron = Guide
+      rating +1★ permanent)
+- [x] 3 new earned wardrobe pieces, 3 new achievements
+
+## v13 — next
+- [ ] Prestige seasons (endgame doc §6) — the go-around-again layer
+- [ ] Crew morale + staff storylines (endgame doc §4)
+- [ ] Per-station verb identities (grill sear marks, fry shake, garde compose)
+- [ ] Global leaderboard backend (Supabase — J4 research)
 
 ## Later / earn-it list
 - True multiplayer (live co-op service, split stations) — real netcode + a
