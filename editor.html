@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE PASS — chef sculptor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0c0e;color:#e8eef2;font-family:ui-monospace,Menlo,Consolas,monospace;padding:20px;user-select:none}
+h1{font-size:20px;letter-spacing:-.5px}
+h1 small{display:block;font-size:10px;letter-spacing:4px;color:#ff6a1a;margin-bottom:6px}
+p{color:#8996a1;font-size:12px;margin:6px 0 14px;max-width:640px;line-height:1.5}
+#wrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+#grid{touch-action:none;cursor:crosshair;image-rendering:pixelated;border:1px solid #3d474f;border-radius:4px;background:#101418}
+#side{display:flex;flex-direction:column;gap:12px;min-width:210px}
+#pal{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.sw{height:34px;border:2px solid #2b333a;border-radius:4px;cursor:pointer;position:relative}
+.sw.sel{border-color:#ffd84d;box-shadow:0 0 0 2px #ffd84d}
+.sw span{position:absolute;bottom:1px;left:3px;font-size:8px;letter-spacing:.5px;color:#fff;text-shadow:0 1px 2px #000}
+.sw.eraser{background:repeating-linear-gradient(45deg,#1b2126 0 6px,#2b333a 6px 12px)}
+#preview{background:#14181c;border:1px solid #3d474f;border-radius:4px;padding:12px;text-align:center}
+#preview em{font-style:normal;font-size:9px;color:#8996a1;letter-spacing:1px;display:block;margin-top:6px}
+#pv{display:flex;gap:12px;align-items:flex-end;justify-content:center}
+button{background:#1b2126;border:1px solid #3d474f;color:#e8eef2;font-family:inherit;font-size:11px;
+  letter-spacing:1px;padding:8px 10px;border-radius:4px;cursor:pointer}
+button:hover{border-color:#8996a1}
+button.hot{background:#ff6a1a;color:#150c05;border:0;font-weight:700}
+#btns{display:flex;gap:8px;flex-wrap:wrap}
+#out{width:100%;height:120px;background:#101418;color:#41d67f;border:1px solid #3d474f;border-radius:4px;
+  font-family:inherit;font-size:10px;padding:8px;display:none}
+canvas.pv{image-rendering:pixelated;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+</style>
+</head>
+<body>
+<h1><small>THE PASS — CHEF SCULPTOR</small>Make the lil guy yours</h1>
+<p>Left-click/drag paints the selected color. Right-click (or ERASER) clears. The previews update live —
+the tiny one is exactly how he'll look on the line. When he's right, hit EXPORT and send Cowork the text.</p>
+<div id="wrap">
+  <canvas id="grid"></canvas>
+  <div id="side">
+    <div id="pal"></div>
+    <div id="btns">
+      <button id="undo">UNDO</button>
+      <button id="reset">RESET TO TEMPLATE</button>
+      <button id="clear">CLEAR ALL</button>
+      <button id="exp" class="hot">EXPORT ▸</button>
+    </div>
+    <div id="preview"><div id="pv"></div><em>live: shop size · line size</em></div>
+    <textarea id="out" readonly></textarea>
+  </div>
+</div>
+<script>
+'use strict';
+const W=20,H=26,PX=20;
+/* palette: key -> [color, label] ; template uses these keys */
+const PAL={
+  H:['#f6f6f4','HAT'], h:['#c2c2bd','HAT²'], R:['#3b2a1a','HAIR'], S:['#eac086','SKIN'], s:['#b98a5a','SKIN²'],
+  E:['#1c130c','EYE'], W:['#ffffff','WHITE'], C:['#f2f2ef','COAT'], c:['#bdbdb8','COAT²'],
+  A:['#c0392b','APRON'], a:['#8e2a1f','APRON²'], P:['#232a31','PANTS'], O:['#101317','SHOE'], T:['#eef2f7','TOWEL'],
+};
+const TEMPLATE=[
+'.....HHHHHHHHHH.....',
+'...HHHHHHHHHHHHHH...',
+'...HHHHHHHHHHHHHH...',
+'...HhHHhHHhHHhHHH...',
+'...HHHHHHHHHHHHHH...',
+'...hhhhhhhhhhhhhh...',
+'...RSSSSSSSSSSSSR...',
+'...SRRRSSSSSSRRRS...',
+'...SWWESSSSSSWWES...',
+'...SWWESSSSSSWWES...',
+'...SSSSSSssSSSSSS...',
+'...SSSSSssssSSSSS...',
+'...SSSSSSSSSSSSSS...',
+'.....ssssssssss.....',
+'....CCCCCCCCCCCC....',
+'...WCCCCcCCcCCCCW...',
+'...SCCAAAAAAAACCS...',
+'...SCCAAAAAAAACCS...',
+'...SCCAaaaaaaACCTT..',
+'...SCCAaaaaaaACCTT..',
+'....CCAAAAAAAACC....',
+'....PPP......PPP....',
+'....PPP......PPP....',
+'...OOOO......OOOO...',
+'....................',
+'....................',
+];
+let cells=[], history=[];
+function loadTemplate(){
+  cells=[];
+  for(let y=0;y<H;y++){ const row=[]; for(let x=0;x<W;x++){ row.push((TEMPLATE[y]&&TEMPLATE[y][x]&&TEMPLATE[y][x]!=='.')?TEMPLATE[y][x]:null); } cells.push(row); }
+}
+loadTemplate();
+
+const grid=document.getElementById('grid');
+grid.width=W*PX; grid.height=H*PX;
+const gx=grid.getContext('2d');
+
+function shade(hex,f){
+  const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const m=c=>Math.max(0,Math.min(255,Math.round(c*(1+f))));
+  return '#'+((1<<24)+(m(r)<<16)+(m(g)<<8)+m(b)).toString(16).slice(1);
+}
+function drawGrid(){
+  gx.clearRect(0,0,grid.width,grid.height);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    gx.fillStyle=(x+y)%2?'#12161a':'#101418';
+    gx.fillRect(x*PX,y*PX,PX,PX);
+    const k=cells[y][x];
+    if(k){ gx.fillStyle=PAL[k][0]; gx.fillRect(x*PX,y*PX,PX,PX); }
+  }
+  gx.strokeStyle='rgba(255,255,255,.05)';
+  for(let x=0;x<=W;x++){ gx.beginPath(); gx.moveTo(x*PX,0); gx.lineTo(x*PX,H*PX); gx.stroke(); }
+  for(let y=0;y<=H;y++){ gx.beginPath(); gx.moveTo(0,y*PX); gx.lineTo(W*PX,y*PX); gx.stroke(); }
+  drawPreviews();
+}
+function renderChef(px){
+  const cv=document.createElement('canvas'); cv.className='pv';
+  cv.width=(W+2)*px; cv.height=(H+2)*px;
+  const x=cv.getContext('2d');
+  const at=(cx,cy)=>(cx<0||cy<0||cx>=W||cy>=H)?null:(cells[cy][cx]?PAL[cells[cy][cx]][0]:null);
+  x.fillStyle='#0a0c0f';
+  for(let cy=-1;cy<=H;cy++) for(let cx=-1;cx<=W;cx++){
+    if(at(cx,cy)) continue;
+    if(at(cx+1,cy)||at(cx-1,cy)||at(cx,cy+1)||at(cx,cy-1)) x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
+    const c=at(cx,cy); if(!c) continue;
+    const edge=!at(cx+1,cy)||!at(cx,cy+1);
+    x.fillStyle= edge&&c!==PAL.E[0]&&c!==PAL.W[0] ? shade(c,-.16) : c;
+    x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  return cv;
+}
+function drawPreviews(){
+  const pv=document.getElementById('pv'); pv.innerHTML='';
+  pv.appendChild(renderChef(5)); pv.appendChild(renderChef(2));
+}
+
+let sel='S';
+const palEl=document.getElementById('pal');
+Object.entries(PAL).forEach(([k,[c,label]])=>{
+  const b=document.createElement('div'); b.className='sw'+(k===sel?' sel':''); b.style.background=c;
+  b.innerHTML=`<span>${label}</span>`; b.dataset.k=k;
+  b.addEventListener('click',()=>{ sel=k; document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('sel',x===b)); });
+  palEl.appendChild(b);
+});
+const er=document.createElement('div'); er.className='sw eraser'; er.innerHTML='<span>ERASE</span>';
+er.addEventListener('click',()=>{ sel=null; document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('sel',x===er)); });
+palEl.appendChild(er);
+
+let painting=false;
+function paint(e){
+  const r=grid.getBoundingClientRect();
+  const pt=e.touches?e.touches[0]:e;
+  const x=Math.floor((pt.clientX-r.left)/(r.width/W));
+  const y=Math.floor((pt.clientY-r.top)/(r.height/H));
+  if(x<0||y<0||x>=W||y>=H) return;
+  const erase = e.buttons===2 || sel===null;
+  const nv = erase?null:sel;
+  if(cells[y][x]!==nv){ cells[y][x]=nv; drawGrid(); }
+}
+grid.addEventListener('pointerdown',e=>{ history.push(cells.map(r=>r.slice())); if(history.length>60)history.shift(); painting=true; paint(e); });
+grid.addEventListener('pointermove',e=>{ if(painting) paint(e); });
+window.addEventListener('pointerup',()=>painting=false);
+grid.addEventListener('contextmenu',e=>e.preventDefault());
+grid.addEventListener('touchstart',e=>e.preventDefault());
+
+document.getElementById('undo').addEventListener('click',()=>{ const h=history.pop(); if(h){ cells=h; drawGrid(); } });
+document.getElementById('reset').addEventListener('click',()=>{ history.push(cells.map(r=>r.slice())); loadTemplate(); drawGrid(); });
+document.getElementById('clear').addEventListener('click',()=>{ history.push(cells.map(r=>r.slice())); cells=cells.map(r=>r.map(()=>null)); drawGrid(); });
+document.getElementById('exp').addEventListener('click',()=>{
+  const out=document.getElementById('out');
+  const txt=cells.map(r=>r.map(k=>k||'.').join('')).join('\n');
+  out.style.display='block'; out.value=txt;
+  out.select();
+  try{ navigator.clipboard.writeText(txt); document.getElementById('exp').textContent='COPIED — SEND IT TO COWORK'; }catch(e){}
+});
+
+drawGrid();
+</script>
+</body>
+</html>
