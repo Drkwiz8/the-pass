@@ -179,14 +179,15 @@ Jaxon: still stuck on 24; "if you end the service it just moves you on";
 - [x] Mercy deepened: cap 3 → 6 stacks, and at 2+ one less thing breaks,
       at 4+ nothing breaks at all ("the tech finally came by")
 
-## v14.4 — NEVER A WALL (SHIPPED 2026-08-01)
-Jaxon: "im already stuck on 25 because of the bug and i cant beat it."
-- [x] CALL IT A NIGHT: after two failed attempts at the same night, the fail
-      card offers to write it off — the night closes as a D, nothing banks,
-      no stars, the D goes on the week grade, and the calendar MOVES. A
-      permanent wall is worse design than any difficulty; a real kitchen's
-      disaster night still ends with tomorrow. Failure still stings without
-      ever being terminal.
+## v14.4 — CALL IT A NIGHT (SHIPPED then REVERTED in v15.1)
+Added a concede option after two failed attempts (write the night off as a D,
+calendar moves). Jaxon: "i dont like the feature to just take the d."
+REMOVED in v15.1 — see below. Kept in the log because the reasoning matters:
+the feature was written when night 25 was genuinely unwinnable due to the 86
+station-selection bug. Once that bug was fixed (v14.3), a concede button was
+solving a problem that no longer existed, and it let a player buy past a
+night they were equipped to beat. The mercy ramp is the honest version of
+the same mercy.
 
 ## v14.5 — DISCOVERABILITY (SHIPPED 2026-08-01)
 Jaxon: "i didnt know i could push f to fire tickets and doing that i was able
@@ -269,6 +270,14 @@ actions but no decisions.
 - [x] Tight passes weight triple in the grade's CRAFT component; 2 new
       achievements (ON THE PASS, EXPEDITER) and THE EXPO'S TOWEL at 100
       lifetime tight passes
+
+## v15.1 — CONCEDE REMOVED (SHIPPED 2026-08-01)
+Jaxon: "i dont like the feature to just take the d."
+- [x] TAKE THE D / concedeNight fully removed. A failed night has exactly one
+      answer again: run it back. The mercy ramp still carries you (+8%
+      patience and slower tickets per fail to 6 stacks, equipment failures
+      off at 4+), so being stuck still eases — you just have to actually
+      cook your way out of it.
 
 ## v16 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
