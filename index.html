@@ -194,15 +194,24 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 /* v22.3: raised again — the band bottoms out at 34px now, well above the
    bar's 7-17px strip, and overflow is clipped so a big number can never spill
    down over it however short the pan gets. */
-.panBig{position:absolute;left:8px;right:9px;top:22px;bottom:34px;
+.panBig{position:absolute;left:46%;right:9px;top:22px;bottom:34px;
   display:flex;align-items:center;justify-content:flex-end;overflow:hidden;
   font-size:23px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;
   line-height:1;pointer-events:none;z-index:6}
 .panBig.idle{justify-content:center;font-size:10px;letter-spacing:3px;color:#4a555e;font-weight:400}
-.panBig.callout{justify-content:center;font-size:18px;letter-spacing:1.5px}
+.panBig.callout{left:8px;justify-content:center;font-size:18px;letter-spacing:1.5px}
 @media (max-width:900px){ .panBig{font-size:17px;top:20px;bottom:30px} .panBig.callout{font-size:12px;letter-spacing:1px} }
-.panEmo{position:absolute;left:8px;bottom:34px;font-size:34px;line-height:1;opacity:.92;filter:drop-shadow(0 3px 5px rgba(0,0,0,.6));display:none;z-index:2}
-.pan.live .panEmo{display:block;animation:sizzle 1.1s ease-in-out infinite}
+/* v22.6 (Jaxon: "the picture of the dish is over the name in the cooking area
+   too"). The food sprite was anchored to the pan's BOTTOM, so on a short pan
+   it rode up into the dish name. It now lives in the same band as the
+   countdown — below the name, above the bar — pinned left while the number
+   sits right, so the three never collide at any pan height. */
+.panEmo{position:absolute;left:8px;top:22px;bottom:34px;width:44%;
+  display:none;align-items:center;justify-content:flex-start;overflow:hidden;
+  font-size:30px;line-height:1;opacity:.94;filter:drop-shadow(0 3px 5px rgba(0,0,0,.6));z-index:3}
+.pan.live .panEmo{display:flex}
+@media (max-width:900px){ .panEmo{top:20px;bottom:30px;font-size:22px} }
+.pan.live .panEmo{animation:sizzle 1.1s ease-in-out infinite}
 .pan.perfect .panEmo{animation:sizzleHot .45s ease-in-out infinite}
 .pan.burning .panEmo{animation:sizzleHot .22s ease-in-out infinite}
 .panFx{position:absolute;right:8px;bottom:36px;font-size:19px;display:none;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
@@ -622,7 +631,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22.5</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22.6</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
