@@ -44,6 +44,27 @@ Client-only JS means vibes-based anti-cheat only — accept it at this scale.
 - [ ] CrazyGames submission (SDK integration, no exclusivity)
 - [ ] Build-in-public clips: Jaxon filming dev + kitchen = the marketing
 
+## v9 — THE WEEK + earned gear (SHIPPED 2026-07-31)
+Built from hermes-air's ENDGAME + WARDROBE-40 design docs (#handoffs).
+- [x] Week system: nights 17+ are MON-SAT with distinct identities (Staff Meal /
+      Regulars / Industry Night / The Book Is Full / The Push / The Big One)
+- [x] Week grade at SAT close (S-D avg of six nights) pays stars + bank bonus
+- [x] DARK MONDAY after nights 22/28/34/40: staff dinner / R&D day / press
+      dinner — bank vs people
+- [x] META.life lifetime ledger (pulls, perfects, waste, flips, banked,
+      per-station, dishes served, clean streaks) + per-member m.services
+- [x] 30 new wardrobe items, 3 new slots (shoes/tattoo/accessory), unlock
+      CONDITIONS on gear (visible while locked) — gear is a record, not a receipt
+- [x] LOCKER ROOM: dedicated full-screen customization page off the title card
+- [x] Food visibly cooks in the pan (raw → golden → charred stage filters)
+
+## v10 — PIXEL FOOD + the cooking process (next)
+- [ ] All 24 dishes as pixel sprites in the chef art style (outline+shade),
+      with raw/perfect/burnt palette states — replaces emoji in pans
+- [ ] Deeper cook interactions per station (the "actual cooking process")
+- [ ] Remaining endgame doc systems: named VIP arcs, Meridian rival, crew
+      morale/storylines, Cook-Off week, The Guide rating, prestige
+
 ## Later / earn-it list
 - True multiplayer (live co-op service, split stations) — real netcode + a
   server + an actual player base first. Async competition (leaderboard +

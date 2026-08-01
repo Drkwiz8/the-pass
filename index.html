@@ -237,6 +237,9 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 #shareBtn{margin-top:10px;width:100%;background:transparent;border:1px solid var(--cold);color:var(--cold);
   font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:2px;padding:8px 0;border-radius:3px;cursor:pointer}
 #shareBtn:hover{background:rgba(90,209,230,.12)}
+#lockerBtn{margin-top:10px;width:100%;background:transparent;border:1px solid var(--star);color:var(--star);
+  font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:2px;padding:8px 0;border-radius:3px;cursor:pointer}
+#lockerBtn:hover{background:rgba(250,204,21,.1)}
 
 /* ---------- mobile ---------- */
 body{touch-action:manipulation}
@@ -294,7 +297,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v7.2</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v9</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -321,6 +324,7 @@ body{touch-action:manipulation}
       <button id="start">CAREER ▸</button>
       <button id="startEndless">ENDLESS RUSH ∞</button>
     </div>
+    <button id="lockerBtn">🧥 LOCKER ROOM — DRESS YOUR BRIGADE</button>
     <div id="best"></div>
   </div>
 </div>
@@ -413,6 +417,30 @@ const MODS = [
 ];
 function modFor(n){ return n>=8 ? MODS[(n*13+5)%MODS.length] : null; }
 
+/* ============================== THE WEEK (nights 17+) ==============================
+   The endgame stops being "night N" and becomes days of a week. Six services,
+   then the restaurant goes dark for a decision beat. Career only. */
+const WEEKDAYS = [
+  {d:'MON', n:'STAFF MEAL',       desc:'The breather. Light book, soft tips — and R&D is 25% off in tonight\'s office.'},
+  {d:'TUE', n:'REGULARS NIGHT',   desc:'The regulars book. VIPs everywhere — short fuses, double tips.'},
+  {d:'WED', n:'INDUSTRY NIGHT',   desc:'Dead for a minute, then every off-duty cook in town. Impatient. Generous.'},
+  {d:'THU', n:'THE BOOK IS FULL', desc:'The host double-sat the whole night. Bigger rail, faster tickets.'},
+  {d:'FRI', n:'THE PUSH',         desc:'Bus tours guaranteed. The biggest raw volume of the week.'},
+  {d:'SAT', n:'THE BIG ONE',      desc:'Everything at once — and the week is GRADED at close.'},
+];
+const REGULAR_TABLES=['DUVALL','ROSA ×6','DEACON','DEE 📱','KENJI','LEONA','ADRIAN'];
+function weekdayFor(n){ return n>=17 ? WEEKDAYS[(n-17)%6] : null; }
+function weekNoFor(n){ return n>=17 ? Math.floor((n-17)/6) : -1; }
+function isDarkAfter(n){ return n>=17 && (n-16)%6===0; }   // true after nights 22, 28, 34, 40…
+function weekPayout(avg){
+  if(avg>=3.5) return {g:'S', stars:5, pct:.25};
+  if(avg>=2.8) return {g:'A', stars:3, pct:.15};
+  if(avg>=2.0) return {g:'B', stars:2, pct:.08};
+  if(avg>=1.2) return {g:'C', stars:1, pct:0};
+  return {g:'D', stars:0, pct:0};
+}
+function buffActive(id){ return META.buff && META.buff.id===id && META.night<=META.buff.until; }
+
 const QUIRKS = [
   {id:'owl',    n:'NIGHT OWL',      d:'20% faster hands once the rush hits'},
   {id:'steady', n:'STEADY HANDS',   d:'Half as likely to space out'},
@@ -432,7 +460,8 @@ const ACHS = [
   {id:'n500',     n:'$500 NIGHT',       d:'Bank $500 in tips in one career night.', test:c=>c.mode==='career'&&G.tips>=500},
   {id:'n1000',    n:'$1,000 NIGHT',     d:'Bank $1,000 in tips in one career night.', test:c=>c.mode==='career'&&G.tips>=1000},
   {id:'brigade5', n:'FULL HOUSE',       d:'Have 5 crew on staff (3 cooks, expo, host).', test:c=>META.crew.length>=5},
-  {id:'dressed',  n:'DRESSED TO KILL',  d:'Fully gear one crew member (all 4 slots).', test:c=>META.crew.some(m=>m.gear&&SLOTS.every(s=>m.gear[s]))},
+  {id:'dressed',  n:'DRESSED TO KILL',  d:'Fully gear one crew member (all 4 core slots).', test:c=>META.crew.some(m=>m.gear&&CORE_SLOTS.every(s=>m.gear[s]))},
+  {id:'fullkit',  n:'FULL KIT',         d:'All 7 slots — shoes, ink and all — on one member.', test:c=>META.crew.some(m=>m.gear&&SLOTS.every(s=>m.gear[s]))},
   {id:'critic',   n:'FLOOR THE CRITIC', d:'A perfect, hot plate for the critic.', test:c=>G.criticFloored},
   {id:'party',    n:'FEED THE BUS',     d:'Plate the big party ticket.', test:c=>G.partyPlated},
   {id:'night10',  n:'TEN DEEP',         d:'Reach night 10 in career.', test:c=>META.night>=10},
@@ -483,8 +512,40 @@ const WARDROBE = [
   {id:'bowtie',  n:'BOW TIE',          slot:'body', stars:3, px:[[4,8,'#7f1d1d'],[5,8,'#b91c1c'],[6,8,'#b91c1c'],[7,8,'#7f1d1d']], d:'Fine dining. Allegedly.'},
   {id:'spatula', n:'SPATULA',          slot:'hand', stars:2, px:[[11,8,'#d1d5db'],[11,9,'#9ca3af'],[11,10,'#6b7280'],[10,8,'#d1d5db']], d:'An extension of the arm.'},
   {id:'knife',   n:'CHEF\'S KNIFE',    slot:'hand', stars:3, px:[[11,8,'#f1f5f9'],[11,9,'#e2e8f0'],[11,10,'#78350f'],[10,8,'#f1f5f9']], d:'Sharpened. Named. Loved.'},
+  /* --- v9: earned gear. req = unlock condition (visible while locked) --- */
+  {id:'hairnet', n:'HAIRNET',          slot:'hat', stars:1, hatRows:['............','..RRRRRRRR..','.NRNRNRNRNR.','.RNRNRNRNRN.'], pal:{N:'#c7cdd4'}, d:'The inspector\'s favorite look. Wear it and mean it.', req:{label:'Survive an inspection with zero fines', test:()=>!!META.ach.spotless}},
+  {id:'dorag',   n:'DO-RAG',           slot:'hat', stars:2, hatRows:['............','..KKKKKKKK..','.KKKKKKKKKK.','..KKKKKKKKK.'], pal:{K:'HATC'}, d:'Tied once, at 4pm, and forgotten about.', req:{label:'Close 20 career services', test:()=>META.life.services>=20}},
+  {id:'flatcap', n:'FLAT CAP',         slot:'hat', stars:3, hatRows:['............','............','.KKKKKKKKK..','..KKKKKKKKKK'], pal:{K:'HATC'}, d:'Owner energy. You have people now.', req:{label:'Have 5 crew on staff', test:()=>!!META.ach.brigade5}},
+  {id:'bucket',  n:'BUCKET HAT',       slot:'hat', stars:3, hatRows:['............','...KKKKKK...','..KKKKKKKK..','.KKKKKKKKKK.'], pal:{K:'HATC'}, d:'Ridiculous. Undefeated.', req:{label:'A clean night on THE PUSH (Friday)', test:()=>!!META.life.friClean}},
+  {id:'burnttq', n:'THE BURNT TOQUE',  slot:'hat', stars:4, hatRows:['..TTTTTTBB..','.TTTTTTTBBB.','.TTTTTTTTBB.','..TTTTTTTT..'], pal:{T:'#f4f4f4',B:'#4a3a2c'}, d:'Scorched up one side. You\'ve earned the right to be honest about it.', req:{label:'Waste 100 dishes lifetime', test:()=>META.life.waste>=100}},
+  {id:'viking',  n:'VIKING HELM',      slot:'hat', stars:5, hatRows:['.VV......VV.','.MMMMMMMMMM.','.MMMMMMMMMM.','..MMMMMMMM..'], pal:{V:'#e6d8b8',M:'#8a8f98'}, d:'Horns fit in four rows. Barely. So did you.', req:{label:'Build a 30-pull perfect combo', test:()=>META.life.bestCombo>=30}},
+  {id:'sweat',   n:'SWEAT',            slot:'face', stars:1, px:[[2,5,'#bfe3f2'],[9,6,'#bfe3f2']], d:'Cosmetic honesty.', req:{label:'Spend 60s in the weeds in one service', test:()=>!!META.life.weeds60}},
+  {id:'eyebags', n:'EYE BAGS',         slot:'face', stars:2, px:[[3,6,'#7d6a5a'],[8,6,'#7d6a5a']], d:'Twenty-five services deep. It shows.', req:{label:'Reach night 25', test:()=>META.night>=25}},
+  {id:'goatee',  n:'GOATEE',           slot:'face', stars:2, px:[[5,7,'HAIR'],[6,7,'HAIR']], d:'The third option you unlock by owning the first two.', req:{label:'Own MUSTACHE and FULL BEARD', test:()=>!!(META.ward.stache&&META.ward.beard)}},
+  {id:'goggles', n:'SAFETY GOGGLES',   slot:'face', stars:3, px:[[2,5,'#f2c94c'],[3,5,'#3a3f45'],[4,5,'#f2c94c'],[7,5,'#f2c94c'],[8,5,'#3a3f45'],[9,5,'#f2c94c']], d:'Because the fry basket has opinions.', req:{label:'200 lifetime pulls off the FRY station', test:()=>(META.life.byStation.fry||0)>=200}},
+  {id:'monocle', n:'MONOCLE',          slot:'face', stars:4, px:[[8,5,'#d8dee5'],[9,6,'#c9a227'],[9,7,'#c9a227']], d:'Insufferable. Deserved.', req:{label:'Floor the critic 3 times', test:()=>META.life.criticFloors>=3}},
+  {id:'goldtooth',n:'GOLD TOOTH',      slot:'face', stars:6, px:[[5,6,'#d4af37']], d:'Six stars for one pixel — and it\'s the pixel they\'ll notice.', req:{label:'Bank $50,000 lifetime', test:()=>META.life.banked>=50000}},
+  {id:'stained', n:'STAINED APRON',    slot:'body', stars:1, px:[[4,12,'#8a6a4a'],[6,13,'#7a5a3a'],[5,10,'#8a6a4a']], d:'Earned by the person wearing it.', req:{label:'A crew member with 10 services worked', test:()=>META.crew.some(m=>(m.services||0)>=10)}},
+  {id:'thermals',n:'THERMAL BLUES',    slot:'body', stars:2, px:[[3,8,'#2563eb'],[4,8,'#2563eb'],[7,8,'#2563eb'],[8,8,'#2563eb']], d:'The line-cook tee under the coat.', req:{label:'Serve 25 covers in one service', test:()=>!!META.ach.covers25}},
+  {id:'dblbreast',n:'DOUBLE-BREASTED WHITES', slot:'body', stars:3, px:[[4,9,'#d1d5db'],[7,9,'#d1d5db'],[4,11,'#d1d5db'],[7,11,'#d1d5db'],[4,13,'#d1d5db'],[7,13,'#d1d5db']], d:'Two button columns. Zero excuses.', req:{label:'Reach tier 2 — THE BISTRO', test:()=>(META.tier||0)>=2}},
+  {id:'embroider',n:'THE EMBROIDERED COAT', slot:'body', stars:4, px:[[3,9,'#c9a227'],[3,10,'#c9a227']], d:'Their name on the chest. The gear you give someone who stayed.', req:{label:'A crew member with 20 services worked', test:()=>META.crew.some(m=>(m.services||0)>=20)}},
+  {id:'tongs',   n:'TONGS',            slot:'hand', stars:1, px:[[10,8,'#c7cdd4'],[11,8,'#c7cdd4'],[11,9,'#9aa4ad'],[11,10,'#c7cdd4']], d:'The universal remote.', req:{label:'100 lifetime pulls', test:()=>META.life.pulls>=100}},
+  {id:'cleaver', n:'THE CLEAVER',      slot:'hand', stars:3, px:[[10,8,'#d8dee5'],[11,8,'#d8dee5'],[10,9,'#d8dee5'],[11,9,'#d8dee5'],[11,10,'#78350f']], d:'Heavy. Honest.', req:{label:'200 lifetime GRILL pulls', test:()=>(META.life.byStation.grill||0)>=200}},
+  {id:'spike',   n:'TICKET SPIKE',     slot:'hand', stars:4, px:[[11,9,'#9aa4ad'],[11,10,'#efe2c4'],[11,11,'#8a8f98']], d:'Every one of these was a person.', req:{label:'500 lifetime covers', test:()=>META.life.covers>=500}},
+  {id:'torch',   n:'BLOWTORCH',        slot:'hand', stars:5, px:[[11,8,'#38bdf8'],[11,9,'#3a3f45'],[11,10,'#3a3f45']], d:'For the brûlée. Officially.', req:{label:'Own the SALAMANDER upgrade', test:()=>!!META.up.salamander}},
+  {id:'clogs',   n:'CLOGS',            slot:'shoes', stars:1, px:[[1,16,'#a5673f'],[2,16,'#a5673f'],[9,16,'#a5673f'],[10,16,'#a5673f']], d:'The uniform of people who stand for eleven hours.', req:{label:'Close 5 career services', test:()=>META.life.services>=5}},
+  {id:'steeltoe',n:'STEEL TOES',       slot:'shoes', stars:2, px:[[1,16,'#9aa4ad'],[2,16,'#3a3f45'],[9,16,'#3a3f45'],[10,16,'#9aa4ad']], d:'Grey cap on the toe. You know why.', req:{label:'Finish a night where a station went 86\'d', test:()=>!!META.life.survived86}},
+  {id:'whites',  n:'WHITE SNEAKERS',   slot:'shoes', stars:3, px:[[1,16,'#f8fafc'],[2,16,'#f8fafc'],[9,16,'#f8fafc'],[10,16,'#f8fafc'],[1,15,'#e2e8f0'],[10,15,'#e2e8f0']], d:'Pristine. And the joke is they stay pristine forever.', req:{label:'A night with zero waste', test:()=>!!META.life.zeroWaste}},
+  {id:'dress',   n:'DRESS SHOES',      slot:'shoes', stars:5, px:[[1,16,'#1a1512'],[2,16,'#1a1512'],[9,16,'#1a1512'],[10,16,'#1a1512']], d:'You don\'t cook in these. You OWN in these.', req:{label:'Reach tier 4 — FINE DINING', test:()=>(META.tier||0)>=4}},
+  {id:'crocs',   n:'GOLD CROCS',       slot:'shoes', stars:6, px:[[1,16,'#d4af37'],[2,16,'#d4af37'],[9,16,'#d4af37'],[10,16,'#d4af37'],[1,15,'#b8912a']], d:'Sport mode. Non-negotiable.', req:{label:'Bank $25,000 lifetime', test:()=>META.life.banked>=25000}},
+  {id:'tatknife',n:'THE KNIFE',        slot:'tattoo', stars:3, px:[[10,10,'#334155'],[10,11,'#334155']], d:'The first tattoo everyone on a line gets.', req:{label:'500 lifetime perfect pulls', test:()=>META.life.perfects>=500}},
+  {id:'tatscript',n:'KITCHEN SCRIPT',  slot:'tattoo', stars:4, px:[[1,10,'#334155'],[10,11,'#334155']], d:'It says something. You know what it says.', req:{label:'Serve every dish on the menu', test:()=>MENU.every(d=>META.life.dishes[d.n])}},
+  {id:'tatflame',n:'FLAME SLEEVE',     slot:'tattoo', stars:5, px:[[1,10,'#e25822'],[1,11,'#f2a13c'],[10,10,'#e25822'],[10,11,'#f2a13c']], d:'Both forearms. Zero regrets.', req:{label:'Land 50 lifetime flips', test:()=>META.life.flips>=50}},
+  {id:'cig',     n:'CIGARETTE BEHIND THE EAR', slot:'accessory', stars:2, px:[[9,4,'#f8fafc'],[10,4,'#e25822']], d:'Never lit during service.', req:{label:'10 lifetime clean nights (zero walkouts)', test:()=>META.life.cleanNights>=10}},
+  {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6}},
 ];
-const SLOTS=['hat','face','body','hand'];
+const CORE_SLOTS=['hat','face','body','hand'];               // the original 4 — DRESSED TO KILL uses this
+const SLOTS=[...CORE_SLOTS,'shoes','tattoo','accessory'];    // the UI dresses all 7
 
 /* ============================== CAREER / UPGRADES ============================== */
 const UPGRADES = [
@@ -512,7 +573,13 @@ const REPEATS = [
   {id:'menuDev',  n:'MENU DEVELOPMENT',  e:'🧪', base:300, growth:1.6, d:'+4% plate prices per level. New dish, new price.'},
   {id:'overhaul', n:'KITCHEN OVERHAUL',  e:'🛠️', base:350, growth:1.5, cap:10, d:'+2% cook speed per level (max 10). Better burners, tighter line.'},
 ];
-function repCost(r){ const lvl=META.up[r.id]||0; return Math.round(r.base*Math.pow(r.growth,lvl)); }
+function repCost(r){
+  const lvl=META.up[r.id]||0;
+  let c=r.base*Math.pow(r.growth,lvl);
+  const wd=typeof weekdayFor==='function'?weekdayFor(META.night):null;
+  if(wd&&wd.d==='MON') c*=.75;                 // staff meal: R&D discount tonight
+  return Math.round(c);
+}
 
 /* The renovation ladder — the endgame money sink. Each tier is a whole new
    room: permanent +12% prices, a star, and a name worth grinding for. */
@@ -528,7 +595,10 @@ const TIERS = [
 function tierName(){ return TIERS[Math.min(META.tier||0,TIERS.length-1)].n; }
 function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)+1] : null; }
 
-let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}};
+function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,flips:0,banked:0,
+  cleanNights:0,cleanStreak:0,bestCombo:0,criticFloors:0,weeds60:false,zeroWaste:false,survived86:false,friClean:false,
+  byStation:{grill:0,saute:0,fry:0,cold:0},dishes:{}}; }
+let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}, life:freshLife(), wk:null, buff:null};
 function loadMeta(){
   try{
     const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
@@ -539,6 +609,13 @@ function loadMeta(){
       if(!META.ward) META.ward={};
       if(!META.ach) META.ach={};
       if(typeof META.tier!=='number') META.tier=0;
+      // v9 migration: lifetime counters, week grades, dark-monday buffs
+      if(!META.life) META.life=freshLife();
+      if(!META.life.byStation) META.life.byStation={grill:0,saute:0,fry:0,cold:0};
+      if(!META.life.dishes) META.life.dishes={};
+      if(!('wk' in META)) META.wk=null;
+      if(!('buff' in META)) META.buff=null;
+      META.crew.forEach(c=>{ if(typeof c.services!=='number') c.services=0; });
       if(m.sous && !META.crew.length){
         META.crew.push({role:'cook', name:m.sous.name, hat:m.sous.hat,
           apron:m.sous.apron, station:m.sous.station, quirk:rollQuirk()});
@@ -688,7 +765,7 @@ function chefURL(m,px=3){
   // gear overlay participates in silhouette, outline, and shading
   const overlay={};
   if(m.gear){
-    ['face','body','hand'].forEach(slot=>{
+    SLOTS.filter(s=>s!=='hat').forEach(slot=>{
       const p=m.gear[slot]&&WARDROBE.find(w=>w.id===m.gear[slot]);
       // gear px coords are ABSOLUTE grid rows (hats occupy rows 0-3, eyes row 5)
       if(p&&p.px) p.px.forEach(([gx,gy,c])=>{ overlay[gx+','+gy]= c==='HAIR'?(m.hair||'#3b2a1a'):c; });
@@ -790,13 +867,19 @@ function spawnTicket(opts={}){
   }
   let vipChance = G.endless ? (G.t>60?.1:0) : (mechOn('vip') ? .12 : 0);
   if(G.mod && G.mod.id==='vipnight') vipChance=.36;
+  if(!G.endless && G.wd==='TUE') vipChance=Math.max(vipChance,.3);
+  if(!G.endless && G.wd==='SAT') vipChance=Math.max(vipChance,.2);
   const vip = !opts.critic && !opts.big && Math.random()<vipChance;
+  let wdPat = G.wd==='WED' ? .9 : G.wd==='MON' ? 1.1 : 1;
+  if(buffActive('staff')) wdPat*=1.08;
   const baseLimit = G.endless
     ? (78-32*p)*Math.max(.6, 1-G.t/700*.4)
-    : (78-32*p)*(META.up.regs?1.15:1)*patienceFactor()*(host()?1.08:1);
+    : (78-32*p)*(META.up.regs?1.15:1)*patienceFactor()*(host()?1.08:1)*wdPat;
   const tk={
     id:++G.ticketNo,
-    table: opts.critic?'CRITIC★' : opts.big?'PARTY×'+count : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
+    table: opts.critic?'CRITIC★' : opts.big?'PARTY×'+count
+      : vip?(G.wd==='TUE'?REGULAR_TABLES[(Math.random()*REGULAR_TABLES.length)|0]:'VIP★')
+      : TABLES[(Math.random()*TABLES.length)|0],
     items, born:G.t, el:null, dead:false, readyAt:0, saved:false,
     vip, critic:!!opts.critic, party:!!opts.big,
     limit:baseLimit,
@@ -904,6 +987,7 @@ function pull(pan, byCrew=null){
     inspFine('RAW');
   } else {
     G.pulls++;
+    if(!G.endless) META.life.byStation[pan.st]=(META.life.byStation[pan.st]||0)+1;
     const over = pan.t > pan.cookNeed+pan.winLen;
     it.state='pass'; it.quality = over?'over':'perfect'; it.pulledAt=G.t;
     it.el.className='item ready'; it.tagEl.className='tag '+(over?'ov':'pf'); it.tagEl.textContent=over?'OVER':'PERF';
@@ -964,7 +1048,11 @@ function plate(tk, byExpo=false){
   if(tk.vip) tip*=2;
   if(tk.party) tip=Math.round(tip*1.3);
   if(!G.endless) tip=Math.round(tip*(1+.03*crewWith('fav')));
+  if(G.wd==='MON') tip=Math.round(tip*.8);            // staff meal: soft tips
+  if(G.wd==='WED') tip=Math.round(tip*1.5);           // industry night: your peers tip
+  if(!G.endless && buffActive('press')) tip=Math.round(tip*1.1);
   tip=Math.round(tip*(1+Math.min(.6,G.combo*.03)));   // heat pays on every plate
+  if(!G.endless) tk.items.forEach(it=>{ META.life.dishes[it.m.n]=1; });
   G.tips+=tip; G.covers++;
   if(byExpo){ G.expoPlates++; floatText(tk.el,'📣 +$'+tip,'#5ad1e6'); }
   else floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
@@ -1113,8 +1201,10 @@ function step(dt){
     G.nextSpawn-=dt;
     if(G.nextSpawn<=0){
       const p=difficulty(), nm=G.endless?endlessMult():nightMult();
-      const busChance = G.endless ? (G.t>90?.08:0)
+      let busChance = G.endless ? (G.t>90?.08:0)
         : (G.mod&&G.mod.id==='rush') ? .16 : (mechOn('bus') ? .08 : 0);
+      if(G.wd==='FRI') busChance=Math.max(busChance,.2);
+      if(G.wd==='SAT') busChance=Math.max(busChance,.12);
       if(Math.random()<busChance && G.tickets.length<=G.railCap-3){
         toast('A BUS JUST PULLED UP — 3 TOPS AT ONCE','var(--hot)');
         for(let i=0;i<3;i++) spawnTicket();
@@ -1122,6 +1212,9 @@ function step(dt){
       let iv=((7.6-5.6*p)/nm)*(0.8+Math.random()*0.45);
       if(G.mod&&G.mod.id==='overbook') iv/=1.15;
       if(!G.endless&&META.night<=2) iv*=1.3;   // opening nights breathe — you're learning
+      if(G.wd==='MON') iv*=1.45;                        // staff meal: light book
+      if(G.wd==='WED') iv*=(G.t<60?1.8:.8);             // industry: dead, then the slam
+      if(G.wd==='THU') iv*=.85;                         // the book is full
       G.nextSpawn=iv;
     }
   }
@@ -1192,6 +1285,14 @@ function render(){
     pan.fill.style.background = over?'linear-gradient(90deg,#7a1414,#ef4444)'
       : inWin?'linear-gradient(90deg,#1c7a45,#41d67f)' : 'linear-gradient(90deg,#8a3a12,#ff6a1a)';
     pan.fx.textContent = pan.el.classList.contains('burning')?'🔥' : inWin?'♨️' : '';
+    /* v9: the food visibly cooks — pale raw, golden in the window, charred past it */
+    const prog=pan.t/pan.cookNeed;
+    pan.emo.style.filter =
+      pan.el.classList.contains('burning') ? 'brightness(.4) sepia(1) hue-rotate(-35deg) saturate(2)'
+      : over  ? 'brightness(.7) sepia(.5) hue-rotate(-20deg)'
+      : inWin ? 'saturate(1.5) brightness(1.1) drop-shadow(0 0 6px rgba(255,164,31,.8))'
+      : prog<.45 ? 'grayscale(.55) brightness(1.2) opacity(.85)'
+      : 'saturate(1.1)';
   }
 
   const blackout = G.mod&&G.mod.id==='blackout';
@@ -1315,20 +1416,7 @@ function renderShop(container){
   wHead.innerHTML=`<span>THE WARDROBE — EARNED, NEVER BOUGHT</span><span>⭐${META.stars}</span>`;
   box.appendChild(wHead);
   const wGrid=document.createElement('div'); wGrid.className='wardGrid';
-  WARDROBE.forEach(w=>{
-    const owned=!!META.ward[w.id];
-    const d=document.createElement('div'); d.className='upg wardCard'+(owned?' owned':'');
-    d.innerHTML=`<b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}</em></small>`;
-    const b=document.createElement('button');
-    b.textContent=owned?'UNLOCKED':'⭐'+w.stars;
-    b.disabled=owned||META.stars<w.stars;
-    b.addEventListener('click',()=>{
-      if(owned||META.stars<w.stars) return;
-      META.stars-=w.stars; META.ward[w.id]=true; saveMeta(); SFX.star();
-      renderShop(container);
-    });
-    d.appendChild(b); wGrid.appendChild(d);
-  });
+  WARDROBE.forEach(w=>wGrid.appendChild(wardCard(w,()=>renderShop(container))));
   box.appendChild(wGrid);
 
   const uHead=document.createElement('div'); uHead.className='crewHead'; uHead.style.color='var(--gold)'; uHead.innerHTML='<span>THE LINE</span>';
@@ -1369,6 +1457,68 @@ function renderShop(container){
   box.appendChild(grid); container.appendChild(box);
 }
 
+function wardCard(w,rerender){
+  const owned=!!META.ward[w.id];
+  let reqOk=true;
+  if(w.req){ try{ reqOk=!!w.req.test(); }catch(e){ reqOk=false; } }
+  const d=document.createElement('div'); d.className='upg wardCard'+(owned?' owned':'');
+  if(!owned&&!reqOk) d.style.opacity=.55;
+  d.innerHTML=`<b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}</em>${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
+  const b=document.createElement('button');
+  b.textContent=owned?'UNLOCKED':'⭐'+w.stars;
+  b.disabled=owned||META.stars<w.stars||!reqOk;
+  b.addEventListener('click',()=>{
+    if(owned||META.stars<w.stars||!reqOk) return;
+    META.stars-=w.stars; META.ward[w.id]=true; saveMeta(); SFX.star();
+    rerender();
+  });
+  d.appendChild(b);
+  return d;
+}
+
+/* v9: THE LOCKER ROOM — a whole screen for the brigade. Big previews, every
+   slot, every piece, unlock conditions readable. Reached from the title card. */
+function renderLocker(){
+  const ownedCt=WARDROBE.filter(w=>META.ward[w.id]).length;
+  card.innerHTML=`<h1><small>THE PASS</small>LOCKER ROOM</h1>
+    <p>Everything in here is earned, never bought with money. Stars pay for it — the condition unlocks it. One purchase opens a piece for the whole brigade; who actually wears it is your call.</p>
+    <div class="nightLine"><b style="color:var(--star)">⭐ ${META.stars} TO SPEND</b><span>${ownedCt}/${WARDROBE.length} PIECES OWNED</span></div>
+    <div id="lkCrew"></div>
+    <div id="lkWard"></div>
+    <div id="modeBtns"><button id="lkBack" style="background:transparent;color:var(--txt);border:1px solid var(--line2)">◂ BACK TO THE PASS</button></div>`;
+  const crewBox=card.querySelector('#lkCrew');
+  if(!META.crew.length){
+    crewBox.innerHTML='<p style="color:var(--dim)">Nobody on staff yet — it\'s just you out there. Hire a brigade in the back office, then come dress them.</p>';
+  } else {
+    const head=document.createElement('div'); head.className='crewHead'; head.innerHTML='<span>THE BRIGADE — CLICK TO DRESS</span>';
+    crewBox.appendChild(head);
+    const grid=document.createElement('div'); grid.className='crewGrid';
+    META.crew.forEach(m=>{
+      const d=document.createElement('div'); d.className='upg crewCard';
+      const roleLabel=m.role==='cook'?STATIONS.find(s=>s.id===m.station).name+' COOK':m.role.toUpperCase();
+      d.innerHTML=`<div style="text-align:center;padding:8px 0"><img class="chefImg" src="${chefURL(m,7)}" alt="${m.name}"></div>
+        <b style="text-align:center">${m.name} — ${roleLabel}</b>
+        <small style="text-align:center">${(m.services||0)} services on your line</small>`;
+      const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
+      b.addEventListener('click',()=>renderMemberCfg(grid,m,null));
+      d.appendChild(b); grid.appendChild(d);
+    });
+    crewBox.appendChild(grid);
+  }
+  const wBox=card.querySelector('#lkWard');
+  SLOTS.forEach(slot=>{
+    const items=WARDROBE.filter(w=>w.slot===slot);
+    if(!items.length) return;
+    const head=document.createElement('div'); head.className='wardHead';
+    head.innerHTML=`<span>${slot.toUpperCase()} — ${items.filter(w=>META.ward[w.id]).length}/${items.length}</span>`;
+    wBox.appendChild(head);
+    const grid=document.createElement('div'); grid.className='wardGrid';
+    items.forEach(w=>grid.appendChild(wardCard(w,renderLocker)));
+    wBox.appendChild(grid);
+  });
+  card.querySelector('#lkBack').addEventListener('click',renderTitle);
+}
+
 function renderMemberCfg(grid,m,container){
   const old=grid.querySelector('#sousCfg'); if(old){ old.remove(); if(old._for===m) return; }
   const cfg=document.createElement('div'); cfg.id='sousCfg'; cfg._for=m;
@@ -1388,7 +1538,7 @@ function renderMemberCfg(grid,m,container){
     <div class="row"><label>HAT</label><span id="sHs"></span><input type="color" value="${m.hat}" id="sH" title="hat color"></div>
     <div class="row"><label>COAT</label><input type="color" value="${m.coat||'#f4f4f4'}" id="sC">
       <label style="min-width:0">APRON</label><input type="color" value="${m.apron}" id="sA"></div>
-    <div class="row"><label>GEAR</label>${gearSel('hat')} ${gearSel('face')} ${gearSel('body')} ${gearSel('hand')}</div>
+    <div class="row"><label>GEAR</label>${SLOTS.map(s=>gearSel(s)).join(' ')}</div>
     ${m.role==='cook'?`<div class="row"><label>STATION</label><select id="sS">${STATIONS.map(st=>`<option value="${st.id}"${st.id===m.station?' selected':''}>${st.emo} ${st.name}</option>`).join('')}</select></div>`:''}`;
   const sync=()=>{ saveMeta(); cfg.querySelector('#sPrev').innerHTML=memberFig(m,true); };
   const skBox=cfg.querySelector('#sSk');
@@ -1450,6 +1600,16 @@ function start(endless=false){
     if(G.mod&&G.mod.id==='inspector'){ G.inspAt=90+Math.random()*60; }
     if(G.mod&&G.mod.id==='overbook'){ G.railCap=13; }
   }
+  G.wd=null;
+  const wd = endless?null:weekdayFor(META.night);
+  if(wd){
+    G.wd=wd.d;
+    if(wd.d==='THU') G.railCap=Math.max(G.railCap,MAX_RAIL+2);
+    if(wd.d==='SAT'){
+      G.railCap=Math.max(G.railCap,MAX_RAIL+1);
+      if(!G.partyAt){ G.partyAt=95+Math.random()*45; G.partyDone=false; }
+    }
+  }
   railEl.innerHTML='<div id="railEmpty">RAIL CLEAR</div>';
   buildLine();
   if(G.mod&&G.mod.id==='short'){
@@ -1460,9 +1620,11 @@ function start(endless=false){
   overlay.classList.add('hide');
   if(endless) setTimeout(()=>toast('ENDLESS RUSH — 3 WALKOUTS AND THE NIGHT IS OVER','var(--cold)'),600);
   else {
-    if(G.mod) setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),600);
+    let delay=600;
+    if(wd){ setTimeout(()=>toast(wd.d+' — '+wd.n,'var(--cold)'),delay); delay+=1700; }
+    if(G.mod){ setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),delay); delay+=1700; }
     const news=nightNews(META.night);
-    if(news.length) setTimeout(()=>toast(news[0],'var(--good)'),G.mod?2300:600);
+    if(news.length) setTimeout(()=>toast(news[0],'var(--good)'),delay);
   }
   ac(); last=performance.now();
 }
@@ -1542,7 +1704,40 @@ function finish(){
   META.stars+=earned;
   META.bank+=G.tips;
   const closedNight=META.night;
+
+  /* v9: the lifetime ledger — the game remembers everything now */
+  const L=META.life, clean=G.walkouts===0&&G.covers>0;
+  L.services++; L.pulls+=G.pulls; L.perfects+=G.perfects; L.waste+=G.waste;
+  L.covers+=G.covers; L.flips+=G.flips; L.banked+=G.tips;
+  L.bestCombo=Math.max(L.bestCombo,G.comboMax);
+  if(G.criticFloored) L.criticFloors++;
+  if(G.weedsTime>=60) L.weeds60=true;
+  if(G.covers>0&&G.waste===0) L.zeroWaste=true;
+  if(G.downSchedule.some(ev=>ev.fired)) L.survived86=true;
+  if(clean){ L.cleanNights++; L.cleanStreak++; } else L.cleanStreak=0;
+  META.crew.forEach(m=>{ m.services=(m.services||0)+1; });
+
+  /* v9: the week grade — consistency becomes the skill */
+  const wdClosed=weekdayFor(closedNight);
+  let weekLine='';
+  if(wdClosed){
+    if(wdClosed.d==='FRI'&&clean) L.friClean=true;
+    if(!META.wk||META.wk.no!==weekNoFor(closedNight)) META.wk={no:weekNoFor(closedNight),g:[],tips:0};
+    META.wk.g.push({S:4,A:3,B:2,C:1,D:0}[grade]);
+    META.wk.tips+=G.tips;
+    if(wdClosed.d==='SAT'){
+      const avg=META.wk.g.reduce((a,b)=>a+b,0)/META.wk.g.length;
+      const pay=weekPayout(avg);
+      const bonus=Math.round(META.wk.tips*pay.pct);
+      META.stars+=pay.stars; META.bank+=bonus;
+      weekLine=`<div class="starLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WEEK GRADE: ${pay.g}</b> — six services, averaged. ${pay.stars?'+'+pay.stars+' ⭐':'No stars.'}${bonus?' · bank bonus +$'+bonus.toLocaleString()+' ('+Math.round(pay.pct*100)+'% of the week\'s tips)':''}${pay.g==='D'?' The street noticed.':''}</div>`;
+    } else {
+      weekLine=`<div class="starLine" style="border-left-color:var(--cold);color:var(--dim)">WEEK SO FAR: ${META.wk.g.map(v=>'DCBAS'[v]).join(' · ')} — graded Saturday. Consistency is the skill.</div>`;
+    }
+  }
+
   META.night++;
+  if(META.buff&&META.night>META.buff.until) META.buff=null;
   const freshAchs=checkAchs({mode:'career',grade});
   saveMeta();
   if(earned||freshAchs.length) SFX.star();
@@ -1563,6 +1758,7 @@ function finish(){
     </div>
     ${earned?`<div class="starLine"><b style="color:var(--star)">+${earned} ⭐</b> — ${earns.map(e=>e[1]+' (+'+e[0]+')').join(' · ')}</div>`
       :`<div class="starLine" style="border-left-color:var(--line2);color:var(--dim)">No stars tonight — B-grade or better, zero walkouts, or big moments earn them.</div>`}
+    ${weekLine}
     ${freshAchs.length?`<div class="starLine"><b style="color:var(--good)">GOALS HIT:</b> ${freshAchs.map(a=>a.n+' (+1⭐)').join(' · ')}</div>`:''}
     <p>${grade==='S'?'You never blinked. The room never knew how close it got.'
       : grade==='A'?'Solid service. A couple of plates went out cooler than you\'d like.'
@@ -1573,19 +1769,53 @@ function finish(){
     <div id="achBox3"></div>
     ${nightNews(META.night).length?`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW ON NIGHT ${META.night}</b><br>
       <span>${nightNews(META.night).join('<br>')}</span></div>`:''}
-    <div class="modLine"><b>NIGHT ${META.night} — ${Math.round((nightMult()-1)*100)}% HARDER</b><br>
-      <span>${nextMod?nextMod.n+': '+nextMod.d:nightBits(META.night)}</span></div>
+    <div class="modLine"><b>NIGHT ${META.night}${weekdayFor(META.night)?' · '+weekdayFor(META.night).d+' — '+weekdayFor(META.night).n:''} — ${Math.round((nightMult()-1)*100)}% HARDER</b><br>
+      <span>${weekdayFor(META.night)?weekdayFor(META.night).desc+'<br>':''}${nextMod?nextMod.n+': '+nextMod.d:nightBits(META.night)}</span></div>
     <div id="modeBtns">
-      <button id="start">OPEN NIGHT ${META.night} ▸</button>
+      <button id="start">${isDarkAfter(closedNight)?'DARK MONDAY ▸':'OPEN NIGHT '+META.night+' ▸'}</button>
       <button id="startEndless">ENDLESS RUSH ∞</button>
     </div>
     <div id="best">BEST TIPS · $${best}</div>`;
   renderShop(card.querySelector('#shopBox'));
   renderAchs(card.querySelector('#achBox3'));
   overlay.classList.remove('hide');
-  card.querySelector('#start').addEventListener('click',()=>start(false));
+  const goDark=isDarkAfter(closedNight);
+  card.querySelector('#start').addEventListener('click',()=>goDark?renderDark():start(false));
   card.querySelector('#startEndless').addEventListener('click',()=>start(true));
   SFX.end();
+}
+
+/* v9: DARK MONDAY — after nights 22/28/34/40 the restaurant goes dark and you
+   make one call before the week opens. Bank vs people. That's the actual job. */
+function renderDark(){
+  const choices=[
+    {id:'staff', n:'STAFF DINNER', cost:800,  d:'Close the doors and feed your own people for once. Next week every table runs 8% more patient — a room run by a rested crew.'},
+    {id:'rnd',   n:'R&D DAY',      cost:1500, d:'A day of tasting, burning, and arguing. MENU DEVELOPMENT levels up FREE, right now.'},
+    {id:'press', n:'PRESS DINNER', cost:1200, d:'Feed the food writers and let them talk. Next week tips run +10%.'},
+  ];
+  card.innerHTML=`<h1><small>THE RESTAURANT IS DARK</small>DARK MONDAY</h1>
+    <p>Six services down. The line is scrubbed, the crew has gone home, and the room is quiet for the first time all week. One call to make before you open again — money out of the bank, or save it and open cold.</p>
+    <div class="nightLine"><b>NIGHT ${META.night} OPENS THE NEW WEEK</b><span class="bankB">BANK $${META.bank.toLocaleString()}</span></div>
+    <div id="darkChoices"></div>
+    <div id="modeBtns"><button id="start">OPEN NIGHT ${META.night} ▸</button></div>`;
+  const box=card.querySelector('#darkChoices');
+  choices.forEach(c=>{
+    const d=document.createElement('div'); d.className='upg'; d.style.margin='8px 0';
+    d.innerHTML=`<b>${c.n} — $${c.cost.toLocaleString()}</b><small>${c.d}</small>`;
+    const b=document.createElement('button'); b.textContent='SPEND $'+c.cost.toLocaleString();
+    b.disabled=META.bank<c.cost;
+    b.addEventListener('click',()=>{
+      if(META.bank<c.cost) return;
+      META.bank-=c.cost; SFX.buy();
+      if(c.id==='rnd'){ META.up.menuDev=(META.up.menuDev||0)+1; toast('R&D DAY — MENU DEVELOPMENT LV '+META.up.menuDev+', ON THE HOUSE','var(--good)'); }
+      else { META.buff={id:c.id, until:META.night+5}; toast(c.n+' BOOKED — THE WEEK WILL FEEL IT','var(--good)'); }
+      saveMeta();
+      box.querySelectorAll('button').forEach(x=>x.disabled=true);
+      card.querySelector('.nightLine .bankB').textContent='BANK $'+META.bank.toLocaleString();
+    });
+    d.appendChild(b); box.appendChild(d);
+  });
+  card.querySelector('#start').addEventListener('click',()=>start(false));
 }
 
 function nightBits(n){
@@ -1613,22 +1843,27 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&G.running){G.paused=true; toast('PAUSED','var(--hot)');} last=performance.now(); });
 $('#quit').addEventListener('click',()=>{ if(G.running){ G.endless?finishEndless():finish(); } });
-overlay.querySelector('#start').addEventListener('click',()=>start(false));
-overlay.querySelector('#startEndless').addEventListener('click',()=>start(true));
-(function(){
-  try{ const b=+(localStorage.getItem('pass_best')||0); if(b) $('#best').textContent='BEST TIPS · $'+b; }catch(e){}
-  $('#introNight').textContent='NIGHT '+META.night+' · '+tierName().replace('THE PASS — ','');
-  $('#introBank').textContent='BANK $'+META.bank;
-  $('#introStars').textContent='⭐ '+META.stars;
-  const im=$('#introMod'), mod=modFor(META.night), news=nightNews(META.night);
+const TITLE_HTML=card.innerHTML;
+function initTitle(){
+  try{ const b=+(localStorage.getItem('pass_best')||0); if(b) card.querySelector('#best').textContent='BEST TIPS · $'+b; }catch(e){}
+  card.querySelector('#introNight').textContent='NIGHT '+META.night+' · '+tierName().replace('THE PASS — ','');
+  card.querySelector('#introBank').textContent='BANK $'+META.bank;
+  card.querySelector('#introStars').textContent='⭐ '+META.stars;
+  const im=card.querySelector('#introMod'), mod=modFor(META.night), news=nightNews(META.night), wd=weekdayFor(META.night);
   let ih='';
+  if(wd) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">${wd.d} — ${wd.n}</b><br><span>${wd.desc}</span></div>`;
   if(news.length) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW TONIGHT</b><br><span>${news.join('<br>')}</span></div>`;
   if(mod) ih+=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   im.innerHTML=ih;
-  const box=$('#shopBoxIntro');
+  const box=card.querySelector('#shopBoxIntro');
   if(META.bank>0 || Object.keys(META.up).length || META.crew.length || META.stars>0) renderShop(box);
-  renderAchs($('#achBoxIntro'));
-})();
+  renderAchs(card.querySelector('#achBoxIntro'));
+  card.querySelector('#start').addEventListener('click',()=>start(false));
+  card.querySelector('#startEndless').addEventListener('click',()=>start(true));
+  card.querySelector('#lockerBtn').addEventListener('click',renderLocker);
+}
+function renderTitle(){ card.innerHTML=TITLE_HTML; initTitle(); }
+initTitle();
 
 buildLine();
 requestAnimationFrame(frame);
