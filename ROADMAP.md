@@ -114,7 +114,20 @@ Built from hermes-air's ENDGAME + WARDROBE-40 design docs (#handoffs).
       tab sticks, single-column cards + bigger touch targets on mobile.
       Achievements live in the GOALS tab (endless keeps its own board).
 
-## v13 — next
+## v13 — THE COACH (SHIPPED 2026-08-01)
+Jaxon's ask: a tutorial for the beginning and for every new-thing debut.
+- [x] Guided first service (career night 1, once): coach banner walks
+      fire → pull (with raw-pull correction) → plate, gated on actually
+      doing each action; spawns run 60% slower while the coach is talking
+- [x] One-time in-service callouts the first time a FLIP window, SEASON
+      window, or FINISH second pass appears
+- [x] "HOW IT WORKS" explainer block on the pre-night card for every debut
+      night (flip 3, season 4, combo 5, VIPs 6, bus 7, mods 8, 86'd 9,
+      critic 10, 4-tops 12, finish 14, THE WEEK 17, THE GUIDE 23, COOK-OFF 29)
+- [x] Everything remembered in META.tut; veterans pre-seeded from lifetime
+      stats so the coach never lectures someone who already flips/seasons
+
+## v14 — next
 - [ ] Prestige seasons (endgame doc §6) — the go-around-again layer
 - [ ] Crew morale + staff storylines (endgame doc §4)
 - [ ] Per-station verb identities (grill sear marks, fry shake, garde compose)

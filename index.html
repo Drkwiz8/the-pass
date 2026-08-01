@@ -256,6 +256,14 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .shopTab:hover{color:var(--txt)}
 .shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
 .shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
+#coach{position:fixed;left:50%;transform:translateX(-50%);bottom:58px;z-index:45;max-width:min(92vw,560px);
+  background:#101820;border:1px solid var(--cold);border-radius:4px;padding:10px 16px;color:var(--txt);
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.4px;line-height:1.55;
+  box-shadow:0 8px 30px rgba(0,0,0,.65);display:none}
+#coach.on{display:block;animation:coachIn .25s ease}
+#coach b{color:var(--cold);letter-spacing:1.5px}
+@keyframes coachIn{from{transform:translate(-50%,14px);opacity:0}}
+@media (max-width:900px){ #coach{bottom:70px;font-size:11.5px;padding:8px 12px} }
 
 /* ---------- mobile ---------- */
 body{touch-action:manipulation}
@@ -317,7 +325,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v12.2</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v13</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -690,7 +698,7 @@ function freshVips(){ return {
   ashe:{v:0,s:0,patron:false,off:false}}; }
 let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}, life:freshLife(), wk:null, buff:null,
             vips:freshVips(), guide:{rating:0,score:0}, deeBuff:0, deeBad:0,
-            rival:{won:0,lost:0,beaten:false,wk:null}, rivalUntil:0};
+            rival:{won:0,lost:0,beaten:false,wk:null}, rivalUntil:0, tut:{}};
 function loadMeta(){
   try{
     const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
@@ -715,6 +723,13 @@ function loadMeta(){
       if(!META.guide) META.guide={rating:0,score:0};
       if(typeof META.deeBuff!=='number') META.deeBuff=0;
       if(typeof META.deeBad!=='number') META.deeBad=0;
+      // v13: the coach remembers what it has taught — and never lectures a
+      // veteran on a verb their lifetime stats prove they already use
+      if(!META.tut) META.tut={};
+      if(META.night>1) META.tut.basics=1;
+      if(META.life.flips>0) META.tut.flip=1;
+      if(META.life.seasons>0||META.life.seasoned>0) META.tut.season=1;
+      if(META.ach.master) META.tut.finish=1;
       // v12 migration: the rivalry + new lifetime counters
       if(!META.rival) META.rival={won:0,lost:0,beaten:false,wk:null};
       if(typeof META.rivalUntil!=='number') META.rivalUntil=0;
@@ -1165,6 +1180,58 @@ function floatText(el,txt,color){
   floats.appendChild(f); setTimeout(()=>f.remove(),1100);
 }
 
+/* ============================== THE COACH (v13) ==============================
+   Teaching, two ways: a guided first service (fire -> pull -> plate, gated on
+   actually doing it), and one-time callouts the first time a timing window or
+   mechanic appears. Everything seen is remembered in META.tut — the coach
+   never repeats itself. */
+const coachEl=document.createElement('div'); coachEl.id='coach'; document.body.appendChild(coachEl);
+function coach(html,ms){
+  coachEl.innerHTML=html; coachEl.classList.add('on');
+  clearTimeout(coach._h); if(ms) coach._h=setTimeout(hideCoach,ms);
+}
+function hideCoach(){ coachEl.classList.remove('on'); }
+
+function tutStart(){
+  G.tutStep=null;
+  if(G.endless||META.night!==1||META.tut.basics) return;
+  G.tutStep=0;
+  setTimeout(()=>{ if(G.tutStep===0&&G.running) coach('<b>CHEF —</b> a ticket just hit the rail. <b>TAP A DISH on the chit</b> to FIRE it into a pan on its station.'); },1400);
+}
+function tutEvent(ev){
+  if(G.tutStep==null) return;
+  if(ev==='fire'&&G.tutStep===0){ G.tutStep=1;
+    coach('<b>IT\'S COOKING.</b> Watch the bar under the pan — when it enters the <b>GREEN WINDOW</b>, tap the pan (or press its key) to <b>PULL</b>. Too early is raw. Too late burns.');
+  } else if(ev==='rawpull'&&G.tutStep===1){
+    coach('<b>RAW — too early.</b> Tap the dish on the chit to refire, and wait for the bar to reach the <b>GREEN WINDOW</b> this time.');
+  } else if(ev==='pull'&&G.tutStep===1){ G.tutStep=2;
+    coach('<b>PULLED.</b> When every dish on a ticket is pulled, hit <b>PLATE ▸</b> on the chit to send it out. A plate scores on its COLDEST dish — send it hot.');
+  } else if(ev==='plate'&&G.tutStep===2){ G.tutStep=3; META.tut.basics=1; saveMeta();
+    coach('<b>SERVICE.</b> That\'s the whole job: fire, pull in the green, plate hot. Tips bank at close — spend them in the back office. Don\'t let the rail bury you, chef.',9000);
+  }
+}
+
+/* Pre-night explainers: the night something debuts, the card teaches it. */
+const TUT_CARDS={
+  3:{t:'THE FLIP 🔄',h:'Mid-cook, a small YELLOW window appears before the green. Tap the pan inside it: +20% on that dish. Optional — a bonus beat, never required.'},
+  4:{t:'SEASON 🧂',h:'A CYAN window opens EARLY in every cook. Tap it for +10%. Season, flip, then pull the green — that\'s the full chain on one dish.'},
+  5:{t:'COMBO HEAT 🔥',h:'Chain perfect pulls without a miss and every plate pays up to +60% more. One raw pull or burn resets the chain.'},
+  6:{t:'VIPs ★',h:'Gold chits. Double tips, 40% less patience. Feed them first — they do not wait.'},
+  7:{t:'BUS TOURS 🚌',h:'Three tickets land at once, no warning. Keep a pan free per station or the rail buries you.'},
+  8:{t:'NIGHT CONDITIONS',h:'Every night now rolls a condition — read the card before you open. Some nights change all the rules.'},
+  9:{t:"86'D ⚡",h:'Equipment fails mid-service. A downed station cooks nothing — leave its dishes on the rail and work everything else until it\'s back.'},
+  10:{t:'THE CRITIC 🟣',h:'Purple chit, three dishes, patient. ALL perfect and hot = +$150 and stars. Anything less becomes a review you\'ll feel.'},
+  12:{t:'4-TOPS',h:'Four-dish tickets. Fire them across stations in PARALLEL, not one at a time — the plate scores on its coldest dish.'},
+  14:{t:'THE FINISH ↳',h:'Premium dishes take TWO passes now: pull the cook, then RE-FIRE from the ticket for the finish — the rest, the baste, the crisp. Both passes perfect = MASTERED ★ +25%. The brigade won\'t touch this pass. It\'s yours.'},
+  17:{t:'THE WEEK 📅',h:'Nights are days now, MON–SAT, each with its own shape. Saturday averages your six grades into a WEEK GRADE that pays stars and a tip bonus — then DARK MONDAY: one spending decision before the new week.'},
+  23:{t:'THE GUIDE ★',h:'Vivian Ashe eats here every night this week, unmarked — ANY ticket might be hers. Saturday she rates you 0–3 stars, and each star raises every menu price permanently. Cook every ticket like it\'s hers.'},
+  29:{t:'THE COOK-OFF ⚔',h:'Meridian sends one black challenge chit per night this week: hard dishes, perfect AND hot or the round is lost. Win 4 of 6 by Saturday to take the street — and bring your stolen regulars home.'},
+};
+function tutBlock(n){
+  const c=TUT_CARDS[n];
+  return c?`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">HOW IT WORKS — ${c.t}</b><br><span>${c.h}</span></div>`:'';
+}
+
 /* ============================== TICKETS ============================== */
 function difficulty(){ return Math.min(1, G.t/195); }
 
@@ -1301,6 +1368,7 @@ function fire(tk,idx){
   pan.zoneS.style.left=(pan.cookNeed*.15/total*100)+'%';
   pan.zoneS.style.width=(Math.min(.9,pan.cookNeed*.2)/total*100)+'%';
   it.el.className='item cooking'; it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent=pan.key;
+  tutEvent('fire');
   it.miniEl.style.display=''; it.barEl.style.background='#1a1512';
   SFX.fire();
 }
@@ -1357,14 +1425,18 @@ function pull(pan, byCrew=null){
     else it.tagEl.style.display='none';
     toast('RAW — REFIRE '+(fin?it.m.tech.n:m.n),'var(--bad)'); floatText(pan.el,'RAW','#ef4444'); SFX.raw();
     inspFine('RAW');
+    tutEvent('rawpull');
   } else {
     G.pulls++;
     if(!G.endless) META.life.byStation[pan.st]=(META.life.byStation[pan.st]||0)+1;
     const over = pan.t > pan.cookNeed+pan.winLen;
     const q = over?'over':'perfect';
+    tutEvent('pull');
     /* THE FINISH (v12): two-pass dishes go back to the rail for the second pass */
     if(it.m.tech && mechOn('tech') && it.stage===0){
       it.stage=1; it.q1=q;
+      if(!G.endless&&!META.tut.finish){ META.tut.finish=1; saveMeta();
+        coach('<b>THE FINISH ↳</b> First pass pulled — now <b>RE-FIRE it from the ticket</b> (the ↳ tag) for the second pass: the rest, the baste, the crisp. Both passes perfect = <b>MASTERED ★ +25%</b>.',9000); }
       it.state='todo'; it.el.className='item todo';
       it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent='↳ '+it.m.tech.n;
       it.miniEl.style.display='none';
@@ -1496,6 +1568,7 @@ function plate(tk, byExpo=false){
     }
     saveMeta();
   }
+  tutEvent('plate');
   SFX.serve();
   killTicket(tk,'dying');
 }
@@ -1686,6 +1759,7 @@ function step(dt){
       if(G.wd==='THU') iv*=.85;                         // the book is full
       if(G.deeBuff) iv*=.8;                             // @platedbydee's audience showed up
       if(!G.endless&&META.rivalUntil&&META.night<=META.rivalUntil) iv*=1.15;   // Meridian's write-up thins the book
+      if(G.tutStep!=null&&G.tutStep<3) iv*=1.6;         // the coach is talking — let them breathe
       G.nextSpawn=iv;
     }
   }
@@ -1750,6 +1824,12 @@ function render(){
     const [sfs,sfe]=seasonWin(pan);
     const inSeas = mechOn('season') && !fin && !inWin && !over && !inFlip && !pan.item.seasoned && pan.t>=sfs && pan.t<=sfe;
     pan.el.classList.toggle('perfect',inWin);
+    if(!G.endless){
+      if(inFlip&&!META.tut.flip){ META.tut.flip=1; saveMeta();
+        coach('<b>YELLOW WINDOW — THE FLIP 🔄</b> Tap that pan RIGHT NOW, mid-cook: +20% on the plate. It keeps cooking after.',7000); }
+      if(inSeas&&!META.tut.season){ META.tut.season=1; saveMeta();
+        coach('<b>CYAN WINDOW — SEASON 🧂</b> Tap the pan in this early window for +10%. Season, flip, then the green pull — the full chain.',7000); }
+    }
     pan.el.classList.toggle('flipwin',inFlip);
     pan.el.classList.toggle('seaswin',inSeas);
     pan.el.classList.toggle('over',over && pan.t<pan.cookNeed+pan.winLen+1.5);
@@ -2221,6 +2301,7 @@ function start(endless=false){
     if(news.length) setTimeout(()=>toast(news[0],'var(--good)'),delay);
   }
   ac(); last=performance.now();
+  hideCoach(); tutStart();
 }
 
 function finishEndless(){
@@ -2396,6 +2477,7 @@ function finish(){
     <div id="shopBox"></div>
     ${nightNews(META.night).length?`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW ON NIGHT ${META.night}</b><br>
       <span>${nightNews(META.night).join('<br>')}</span></div>`:''}
+    ${tutBlock(META.night)}
     <div class="modLine"><b>NIGHT ${META.night}${weekdayFor(META.night)?' · '+weekdayFor(META.night).d+' — '+weekdayFor(META.night).n:''} — ${Math.round((nightMult()-1)*100)}% HARDER</b><br>
       <span>${weekdayFor(META.night)?weekdayFor(META.night).desc+'<br>':''}${nextMod?nextMod.n+': '+nextMod.d:nightBits(META.night)}</span></div>
     <div id="modeBtns">
@@ -2479,6 +2561,7 @@ function initTitle(){
   let ih='';
   if(wd) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">${wd.d} — ${wd.n}</b><br><span>${wd.desc}</span></div>`;
   if(news.length) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW TONIGHT</b><br><span>${news.join('<br>')}</span></div>`;
+  ih+=tutBlock(META.night);
   if(mod) ih+=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   im.innerHTML=ih;
   renderShop(card.querySelector('#shopBoxIntro'));
