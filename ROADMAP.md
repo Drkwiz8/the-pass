@@ -298,7 +298,43 @@ load, so it collapsed straight back to spam.
       buttons squeezed side by side, rules ran long. Night line stacks,
       buttons go full-width, type scales down.
 
-## v16 — CREWS (multiplayer, the honest path)
+## v16 — IT LOOKS LIKE A KITCHEN (SHIPPED 2026-08-01)
+Jaxon: "i want the play screen to look like a kitchen and every station should
+look like there stations... a lil more of a cooking animation on the meal
+maybe a different one per meal."
+- [x] The line is equipment now, not four grey columns: grill bars over coals,
+      burner rings, an oil surface, a cold steel board — plus a hood over the
+      line, stainless backsplash, and each station's heat colour under its
+      label. Live pans sit in their station's heat.
+- [x] Cooking motion is per station: grill food sears and flares, sauté food
+      tosses in the pan, fry food bobs in oil, garde manger glints cold
+      because it isn't cooking. Pans breathe heat while loaded.
+- [x] Per-dish effects (DISH_FX): steaks throw smoke, scallops/lobster/duck
+      throw butter, risotto and soups steam, fried things bubble, raw bar
+      chills. All 25 dishes covered, station fallback behind it. Burning and
+      the pull window still override — those are gameplay signals.
+
+## THE CAREER — restaurant progression (SPEC WRITTEN 2026-08-01)
+Jaxon's arc: commis on 2 stations → line cook → chef de partie → sous → head
+chef calling the pass → BUY the restaurant (it goes passive) → next restaurant,
+bring one cook, start again with different stations.
+Full spec in **THE-CAREER.md**. Key decisions:
+- Promotion is earned by GRADE, not money — three A-or-better weeks per rank,
+  which makes the v14.6 grade (and CRAFT, the part only the player can do) the
+  spine of progression.
+- HEAD CHEF must PLAY differently or it's a letdown: cooks take every pull,
+  the player works the pass — sequencing, calling tickets, CUT, and a PUSH
+  command to drive a station.
+- Buying the restaurant = prestige with a fiction that makes sense. Keep
+  stars/wardrobe/achievements/chef + ONE cook who follows you. Lose the room,
+  upgrades, menu, rest of the brigade.
+- Restaurants have DIFFERENT stations (izakaya robata/sushi, steakhouse wood
+  grill with doneness windows, bakery oven/proof) so muscle memory rebuilds.
+- Supersedes the old "prestige seasons" idea.
+- BUILD GATE: stations must become per-restaurant DATA instead of the global
+  STATIONS array with `unl:` night numbers. That refactor is v16's real work.
+
+## v17 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).
 1. Global leaderboard first (endless scores, name + crew tag field)
