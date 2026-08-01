@@ -123,6 +123,8 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 #combo.hot b{animation:blink .5s steps(2,end) infinite}
 
 .chefImg{image-rendering:pixelated;display:inline-block;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.foodImg{image-rendering:pixelated;display:inline-block;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.iEmo .foodImg{margin-right:2px}
 .sousBadge{display:inline-flex;align-items:center;gap:5px;margin-left:auto}
 .sousBadge .nm{font-size:8px;letter-spacing:1px;color:var(--dim)}
 .swatch{width:22px;height:22px;border:1px solid var(--line2);border-radius:3px;cursor:pointer;padding:0}
@@ -258,6 +260,7 @@ body{touch-action:manipulation}
   .panBig{font-size:19px}
   .panBig.callout{font-size:14px;letter-spacing:1px}
   .panEmo{font-size:22px;bottom:22px}
+  .panEmo .foodImg{width:24px;height:20px}
   .panKey{display:none}
   .panDish{font-size:11px}
   #keysHelp{display:none}
@@ -297,7 +300,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v9</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v10</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -798,6 +801,213 @@ function memberFig(m,big){
   return `<img class="chefImg" src="${chefURL(m,px)}" alt="${m.name}">`;
 }
 
+/* ============================== PIXEL FOOD (v10) ==============================
+   Every dish drawn in the chef art style — same outline + edge-shade pass —
+   with three palette states: raw, cooked (perfect), burnt. The food in the pan
+   IS the doneness readout now. */
+const FOOD_ART = {
+  // BURGER — stacked bun / lettuce / tomato / patty
+  'BURGER': {
+    rows:['..........','...BBBB...','..BSBBSB..','..LLLLLL..','..TTTTTT..','..PPPPPP..','..BBBBBB..','..........'],
+    pal:{B:'#e8a349',S:'#fde68a',L:'#6fce4e',T:'#e94f3a',P:'#7b4526'},
+    raw:{P:'#c96a72'},
+    burnt:{P:'#241c15',B:'#6b4a26'}
+  },
+  // PORK CHOP — seared chop with white bone along the left edge
+  'PORK CHOP': {
+    rows:['..........','..NMMMMM..','.NNMMMMMM.','.NMMFFMMM.','.NMMMMMMM.','..NMMMMM..','..........','..........'],
+    pal:{M:'#d98a54',N:'#f5ead6',F:'#f7c98b'},
+    raw:{M:'#e89aa0'},
+    burnt:{M:'#3d2c1e',F:'#241a12'}
+  },
+  // CAESAR — pile of romaine with croutons and a dressing fleck
+  'CAESAR': {
+    rows:['..........','...LGLL...','..LLGDLG..','.LGLCLLGL.','.LLLGCLLL.','..LGLLLG..','..........','..........'],
+    pal:{L:'#4faf3f',G:'#8fe05a',C:'#e0b060',D:'#f2f0e4'},
+    raw:{L:'#6fc25f'},
+    burnt:{L:'#3d4a26',G:'#556033'}
+  },
+  // BEETS — magenta roasted beet chunks with a green sprig
+  'BEETS': {
+    rows:['..........','....G.G...','..BBBGBB..','.BBRRBBRB.','.BBBBBBBB.','..BB..BB..','..........','..........'],
+    pal:{B:'#a4245c',R:'#d84a86',G:'#5fbf4a'},
+    raw:{B:'#c05a84'},
+    burnt:{B:'#3a1524',R:'#552038'}
+  },
+  // SALMON — orange fillet with pale flake stripes and dark skin
+  'SALMON': {
+    rows:['..........','..........','..FFFFFF..','.FFWFFWFF.','.FWFFWFFF.','.FFFFFFFF.','.SSSSSSSS.','..........'],
+    pal:{F:'#f4753c',W:'#ffd9b3',S:'#5a5f66'},
+    raw:{F:'#f79a8a',W:'#ffe4d6'},
+    burnt:{F:'#4a2c1a',S:'#1e2022'}
+  },
+  // SHROOMS — sauteed brown caps on pale stems
+  'SHROOMS': {
+    rows:['..........','..MMM.MM..','.MHMMMHMM.','.MMMMMMMM.','..SS..SS..','..SS..SS..','..........','..........'],
+    pal:{M:'#8a5a34',H:'#c89058',S:'#e8d8bd'},
+    raw:{M:'#c7a684',S:'#f5ecdc'},
+    burnt:{M:'#2e2118',S:'#4a3b2b'}
+  },
+  // SCALLOPS — three pale discs with golden seared tops
+  'SCALLOPS': {
+    rows:['..........','..GGG.GGG.','..CCC.CCC.','..CCC.CCC.','....GGG...','....CCC...','....CCC...','..........'],
+    pal:{G:'#d9993f',C:'#f7ecd8'},
+    raw:{G:'#e8d3b3',C:'#f3e9e2'},
+    burnt:{G:'#3c2a16',C:'#8a6a4a'}
+  },
+  // FRIES — golden sticks standing in a red carton
+  'FRIES': {
+    rows:['..........','..F.HF.F..','.FF.FF.FF.','.FF.HF.FF.','.RRRRRRRR.','.RRRRRRRR.','..RRRRRR..','..........'],
+    pal:{F:'#f2c23e',H:'#ffe38a',R:'#d93b3b'},
+    raw:{F:'#f7e9b0',H:'#fdf3cd'},
+    burnt:{F:'#5a3c1c',H:'#3a2812'}
+  },
+  // CALAMARI — fried rings (holes punched through) with a lemon wedge
+  'CALAMARI': {
+    rows:['..........','.RHR..RRR.','.R.R..R.R.','.RRR..RRR.','...RRR.LL.','...R.R.LL.','...RRR....','..........'],
+    pal:{R:'#e8b455',H:'#f9dfa0',L:'#f7e04a'},
+    raw:{R:'#e8d6b8',H:'#f2ead6'},
+    burnt:{R:'#4a3319',H:'#2e2010'}
+  },
+  // RISOTTO — creamy mound with parmesan and herb flecks
+  'RISOTTO': {
+    rows:['..........','..........','...RRRR...','..RRGRRR..','.RYRRRGRR.','.RRRRRRRR.','..........','..........'],
+    pal:{R:'#f2e9d0',G:'#5faf4a',Y:'#e8c95a'},
+    raw:{R:'#dcd6c8'},
+    burnt:{R:'#6a5638',Y:'#3a2f1a'}
+  },
+  // OCTOPUS — grilled tentacle sweeping right, suckers underneath, curled tip
+  'OCTOPUS': {
+    rows:['..........','.OO.......','.OOO...OO.','.OOOOOOOO.','..OSOSOSO.','.......OO.','..........','..........'],
+    pal:{O:'#b23a4a',S:'#f2c9c0'},
+    raw:{O:'#b78ca0',S:'#e8dce0'},
+    burnt:{O:'#3a1f26',S:'#8a6a62'}
+  },
+  // CRUDO — three fanned pink sashimi slices with a garnish leaf
+  'CRUDO': {
+    rows:['..........','....G.....','.CC.CC.CC.','.CW.CW.CW.','.CC.CC.CC.','.CC.CC.CC.','..........','..........'],
+    pal:{C:'#f28a9b',W:'#ffffff',G:'#5fbf4a'},
+    raw:{C:'#f7b8c2'},
+    burnt:{C:'#6a3a42',W:'#8a7a7a'}
+  },
+  // CHX KATSU — golden breaded cutlet, white meat showing at the cut
+  'CHX KATSU': {
+    rows:['..........','..KHKKKK..','.KKKKKKKK.','.WWWWWWWW.','.KKKKKKKK.','..KKKKKK..','..........','..........'],
+    pal:{K:'#e2a844',H:'#f7cf7d',W:'#faf5e8'},
+    raw:{W:'#f2c4c4',K:'#e8d0a0'},
+    burnt:{K:'#3f2c15',W:'#8a7458'}
+  },
+  // OYSTERS — three grey shells with pale flesh inside
+  'OYSTERS': {
+    rows:['..........','.SSSS.SSSS','.SFFS.SFFS','.SSSS.SSSS','...SSSS...','...SFFS...','...SSSS...','..........'],
+    pal:{S:'#7a8896',F:'#e8e2cf'},
+    raw:{F:'#d8dfe0'},
+    burnt:{S:'#3a3f45',F:'#8a7a58'}
+  },
+  // BEIGNETS — puffy golden pillows dusted with powdered sugar
+  'BEIGNETS': {
+    rows:['..........','...BBBB...','...BWWB...','...BBBB...','.BBBB.BBBB','.BWBB.BWBB','.BBBB.BBBB','..........'],
+    pal:{B:'#e8b45c',W:'#ffffff'},
+    raw:{B:'#ecd7ae'},
+    burnt:{B:'#43301a',W:'#b8a88a'}
+  },
+  // RIBEYE — big seared steak, fat cap on top, dark grill marks
+  'RIBEYE': {
+    rows:['..........','..FFFFFF..','.MMMMMMMM.','.MGMMGMMG.','.MMGMMGMM.','..MMMMMM..','..........','..........'],
+    pal:{M:'#9c4a2a',G:'#5c2a16',F:'#f2e6d4'},
+    raw:{M:'#d96a6a',G:'#c95a5a'},
+    burnt:{M:'#2e1c14',F:'#6a5a44'}
+  },
+  // TARTARE — ruby beef mound with caper flecks and an egg yolk dome
+  'TARTARE': {
+    rows:['..........','....YY....','...YYYY...','..TTTTTT..','..TCTTCT..','..TTTTTT..','..........','..........'],
+    pal:{T:'#c94a5a',Y:'#f7b52a',C:'#4a8a3a'},
+    raw:{T:'#e08a96'},
+    burnt:{T:'#4a2028',Y:'#8a641a'}
+  },
+  // DUCK BREAST — three slices: crispy skin, fat line, rosy meat
+  'DUCK BREAST': {
+    rows:['..........','.SS.SS.SS.','.WW.WW.WW.','.PP.PP.PP.','.PP.PP.PP.','.PP.PP.PP.','..........','..........'],
+    pal:{S:'#7a4526',W:'#f2e2c8',P:'#d45f6a'},
+    raw:{P:'#e89aa4',S:'#b88a68'},
+    burnt:{P:'#5a2a30',S:'#241812'}
+  },
+  // WAGYU — seared slab, rosy center webbed with white marbling
+  'WAGYU': {
+    rows:['..........','..........','..SSSSSS..','.SRWRRWRS.','.SRRWRWRS.','.SRWRRWRS.','..SSSSSS..','..........'],
+    pal:{S:'#7a3a20',R:'#c9525a',W:'#f5e8dc'},
+    raw:{S:'#e8a0a8',R:'#e87a86'},
+    burnt:{S:'#241610',R:'#4a2426'}
+  },
+  // TEMPURA — two battered shrimp, craggy golden bodies, pink tails
+  'TEMPURA': {
+    rows:['..........','..PP..PP..','..BB..BB..','.BHB..BHB.','..BB..BB..','.BBB..BBB.','..BB..BB..','..........'],
+    pal:{P:'#f2647a',B:'#efc35e',H:'#fbe6a8'},
+    raw:{B:'#f2e3bd',H:'#f8f0d8'},
+    burnt:{B:'#4a3418',P:'#8a3a46'}
+  },
+  // CEVICHE — pale fish chunks, red onion bits, lime wedge
+  'CEVICHE': {
+    rows:['..........','..........','..CCCC.LL.','.CCRCCC.L.','.CCCCRCC..','..CCCCC...','..........','..........'],
+    pal:{C:'#f5ede2',R:'#c05a8a',L:'#7ad14a'},
+    raw:{C:'#e2dbd8'},
+    burnt:{C:'#8a7458',L:'#4a5a26'}
+  },
+  // LOBSTER TAIL — red shell, white meat poking out top, fanned tail below
+  'LOBSTER TAIL': {
+    rows:['..........','...WWW....','..RWWWR...','..RHRRR...','..RRRRR...','.RRRRRRR..','.RR.RR.RR.','..........'],
+    pal:{R:'#e03a30',H:'#ff7a5a',W:'#f7ead8'},
+    raw:{R:'#7a8896',H:'#9aa8b4',W:'#ddd6cc'},
+    burnt:{R:'#4a1c16',W:'#8a7458'}
+  },
+  // GNOCCHI — five pillowy dumplings, golden seared tops, sage flecks
+  'GNOCCHI': {
+    rows:['..........','....S..S..','.GG.GG.GG.','.NN.NN.NN.','...GG.GG..','...NN.NN..','..........','..........'],
+    pal:{N:'#f2e4c2',G:'#dc9f4a',S:'#5a8a3a'},
+    raw:{N:'#e8e0d6',G:'#e8d8b8'},
+    burnt:{N:'#6a5638',G:'#3a2a16'}
+  },
+  // WINGS — two glazed drumettes with white bone tips
+  'WINGS': {
+    rows:['..........','..NN..NN..','..WW..WW..','.WWWW.WWWW','.WHWW.WHWW','.WWWW.WWWW','..WW...WW.','..........'],
+    pal:{N:'#f2e8d4',W:'#c05a24',H:'#ef9440'},
+    raw:{W:'#e8b8a0',H:'#f2d0b8'},
+    burnt:{W:'#2e1a10',H:'#4a2c16'}
+  }
+};
+const FOOD_CACHE={};
+function foodURL(name,state='cooked',px=4){
+  const key=name+'|'+state+'|'+px;
+  if(FOOD_CACHE[key]) return FOOD_CACHE[key];
+  const art=FOOD_ART[name]; if(!art) return null;
+  const pal=Object.assign({},art.pal, state==='raw'?art.raw:state==='burnt'?art.burnt:{});
+  const W=10,H=8, rows=art.rows;
+  const cv=document.createElement('canvas');
+  cv.width=(W+2)*px; cv.height=(H+2)*px;
+  const x=cv.getContext('2d');
+  const colorAt=(cx,cy)=>{
+    if(cx<0||cy<0||cx>=W||cy>=H) return null;
+    const ch=rows[cy][cx]; return ch==='.'?null:(pal[ch]||'#f0f');
+  };
+  x.fillStyle='#0a0c0f';
+  for(let cy=-1;cy<=H;cy++) for(let cx=-1;cx<=W;cx++){
+    if(colorAt(cx,cy)) continue;
+    if(colorAt(cx+1,cy)||colorAt(cx-1,cy)||colorAt(cx,cy+1)||colorAt(cx,cy-1))
+      x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
+    const c=colorAt(cx,cy); if(!c) continue;
+    const edge = !colorAt(cx+1,cy) || !colorAt(cx,cy+1);
+    x.fillStyle= edge ? shade(c,-.22) : c;
+    x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  return FOOD_CACHE[key]=cv.toDataURL();
+}
+function foodTag(name,state,px,fallback){
+  const u=foodURL(name,state,px);
+  return u?`<img class="foodImg" src="${u}" alt="${name}">`:fallback;
+}
+
 function buildLine(){
   lineEl.innerHTML=''; G.pans.length=0;
   let ki=0;
@@ -905,7 +1115,7 @@ function buildChit(tk){
     const st=STATIONS.find(s=>s.id===it.m.st);
     const d=document.createElement('div'); d.className='item todo';
     d.style.borderLeft='3px solid '+st.color;
-    d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${it.m.e}</span>${it.m.n}</span>
+    d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${foodTag(it.m.n,'cooked',2,it.m.e)}</span>${it.m.n}</span>
         <span class="tag" style="display:none"></span></div>
       <div class="mini" style="display:none"><i></i></div>`;
     d.addEventListener('click',()=>fire(tk,i));
@@ -939,7 +1149,7 @@ function fire(tk,idx){
   pan.el.classList.remove('empty'); pan.el.classList.add('live');
   pan.big.className='panBig'; pan.trk.style.display='';
   pan.dish.textContent=it.m.n; pan.tk.textContent=`#${String(tk.id).padStart(3,'0')} · ${tk.table}`;
-  pan.emo.textContent=it.m.e;
+  pan.emo.innerHTML=foodTag(it.m.n,'raw',4,it.m.e); pan.foodState='raw';
   const total=pan.cookNeed+pan.winLen+pan.grace;
   pan.zone.style.left=(pan.cookNeed/total*100)+'%';
   pan.zone.style.width=(pan.winLen/total*100)+'%';
@@ -1008,7 +1218,7 @@ function pull(pan, byCrew=null){
 }
 
 function clearPan(pan){
-  pan.item=null; pan.ticket=null; pan.t=0; pan.sousDecided=false; pan.sousSkip=false;
+  pan.item=null; pan.ticket=null; pan.t=0; pan.sousDecided=false; pan.sousSkip=false; pan.foodState=null;
   pan.el.className='pan '+(pan.dead?'dead':'empty'); pan.trk.style.display='none';
   pan.big.className='panBig idle'; pan.big.textContent=pan.dead?'OUT':'EMPTY'; pan.big.style.color='';
   pan.dish.textContent=''; pan.tk.textContent=''; pan.fill.style.width='0%';
@@ -1285,14 +1495,17 @@ function render(){
     pan.fill.style.background = over?'linear-gradient(90deg,#7a1414,#ef4444)'
       : inWin?'linear-gradient(90deg,#1c7a45,#41d67f)' : 'linear-gradient(90deg,#8a3a12,#ff6a1a)';
     pan.fx.textContent = pan.el.classList.contains('burning')?'🔥' : inWin?'♨️' : '';
-    /* v9: the food visibly cooks — pale raw, golden in the window, charred past it */
-    const prog=pan.t/pan.cookNeed;
-    pan.emo.style.filter =
-      pan.el.classList.contains('burning') ? 'brightness(.4) sepia(1) hue-rotate(-35deg) saturate(2)'
-      : over  ? 'brightness(.7) sepia(.5) hue-rotate(-20deg)'
-      : inWin ? 'saturate(1.5) brightness(1.1) drop-shadow(0 0 6px rgba(255,164,31,.8))'
-      : prog<.45 ? 'grayscale(.55) brightness(1.2) opacity(.85)'
-      : 'saturate(1.1)';
+    /* v10: the food itself is the doneness readout — raw, cooked, charred sprites */
+    const wantState = pan.el.classList.contains('burning') ? 'burnt' : (inWin||over) ? 'cooked' : 'raw';
+    if(pan.foodState!==wantState){
+      pan.foodState=wantState;
+      const im=pan.emo.querySelector('img');
+      if(im){ const u=foodURL(pan.item.m.n,wantState,4); if(u) im.src=u; }
+      else pan.emo.style.filter = wantState==='burnt'?'brightness(.4) sepia(1) hue-rotate(-35deg)':wantState==='raw'?'grayscale(.55) brightness(1.2)':'';
+    }
+    pan.emo.style.filter = pan.emo.querySelector('img')
+      ? (inWin?'drop-shadow(0 0 6px rgba(255,164,31,.85)) saturate(1.15)':'')
+      : pan.emo.style.filter;
   }
 
   const blackout = G.mod&&G.mod.id==='blackout';
@@ -1388,7 +1601,7 @@ function renderShop(container){
     d.innerHTML=`<b>${memberFig(m)} ${m.name} — ${roleLabel}</b>
       <small><span class="quirkTag">◈ ${q?q.n:''}</span> ${q?q.d:''}</small>`;
     const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
-    b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container));
+    b.addEventListener('click',()=>renderMemberCfg(crewGrid,m,container,d));
     d.appendChild(b); crewGrid.appendChild(d);
   });
   const hires=[];
@@ -1500,7 +1713,7 @@ function renderLocker(){
         <b style="text-align:center">${m.name} — ${roleLabel}</b>
         <small style="text-align:center">${(m.services||0)} services on your line</small>`;
       const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
-      b.addEventListener('click',()=>renderMemberCfg(grid,m,null));
+      b.addEventListener('click',()=>renderMemberCfg(grid,m,null,d));
       d.appendChild(b); grid.appendChild(d);
     });
     crewBox.appendChild(grid);
@@ -1519,7 +1732,7 @@ function renderLocker(){
   card.querySelector('#lkBack').addEventListener('click',renderTitle);
 }
 
-function renderMemberCfg(grid,m,container){
+function renderMemberCfg(grid,m,container,afterEl){
   const old=grid.querySelector('#sousCfg'); if(old){ old.remove(); if(old._for===m) return; }
   const cfg=document.createElement('div'); cfg.id='sousCfg'; cfg._for=m;
   const gearSel=slot=>{
@@ -1575,7 +1788,8 @@ function renderMemberCfg(grid,m,container){
   cfg.querySelector('#sA').addEventListener('input',e=>{ m.apron=e.target.value; sync(); });
   const sel=cfg.querySelector('#sS');
   if(sel) sel.addEventListener('change',e=>{ m.station=e.target.value; sync(); });
-  grid.appendChild(cfg);
+  // open right under the card being customized — no scrolling to the bottom
+  if(afterEl&&afterEl.parentNode===grid) afterEl.after(cfg); else grid.appendChild(cfg);
   cfg.querySelector('#sPrev').innerHTML=memberFig(m,true);
 }
 

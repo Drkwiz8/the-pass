@@ -58,10 +58,20 @@ Built from hermes-air's ENDGAME + WARDROBE-40 design docs (#handoffs).
 - [x] LOCKER ROOM: dedicated full-screen customization page off the title card
 - [x] Food visibly cooks in the pan (raw → golden → charred stage filters)
 
-## v10 — PIXEL FOOD + the cooking process (next)
-- [ ] All 24 dishes as pixel sprites in the chef art style (outline+shade),
-      with raw/perfect/burnt palette states — replaces emoji in pans
-- [ ] Deeper cook interactions per station (the "actual cooking process")
+## v10 — PIXEL FOOD (SHIPPED 2026-07-31)
+- [x] All 24 dishes as 10x8 pixel sprites in the chef art style (same
+      outline + edge-shade pass), embedded as FOOD_ART
+- [x] Three palette states per dish — raw / cooked / burnt — the food in the
+      pan IS the doneness readout now (pink salmon sears orange, lobster
+      shell turns from blue-grey to red, steak chars)
+- [x] Ticket chits show the pixel dish next to its name
+- [x] Customize panel opens under the member being customized (no scrolling)
+- Sprite redesign candidates flagged by the draft pass: RISOTTO (weak
+  silhouette), CEVICHE vs CRUDO similarity, OCTOPUS abstraction
+
+## v11 — the cooking process + endgame systems (next)
+- [ ] Deeper cook interactions per station (the "actual cooking process":
+      prep steps, sear/flip/rest verbs beyond the current flip)
 - [ ] Remaining endgame doc systems: named VIP arcs, Meridian rival, crew
       morale/storylines, Cook-Off week, The Guide rating, prestige
 
