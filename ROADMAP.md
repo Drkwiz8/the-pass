@@ -159,6 +159,26 @@ Jaxon's playtest: night 24 was stalling on VIPs — three high-stakes patrons
       the Guide still eats unmarked. Tuesday in Guide week is now "beat Duvall
       and Rosa" instead of "survive four simultaneous pressure sources."
 
+## v14.3 — WAYS OUT (SHIPPED 2026-08-01)
+Jaxon: still stuck on 24; "if you end the service it just moves you on";
+"25 is unbeatable — i got 86 locked out and tickets just died."
+- [x] BUGFIX: END SERVICE called finish() — it banked the tips AND advanced
+      the night. Walking out counted as closing. Career now abandons the
+      night (confirm prompt, nothing banks, night stays put); endless
+      unchanged. Stagiaires still tick so nothing deadlocks.
+- [x] BUGFIX: the 86 event picked from STATIONS — every station in the game,
+      including ones not on the player's line — and ignored the rail. It
+      could kill the busiest station with four tickets pending. Now it only
+      downs a LIVE station, prefers the least-loaded, and never picks one
+      whose tickets can't survive the outage.
+- [x] THE FIX: tap a downed station's header 4× to bring it back early
+- [x] 86 A DISH: every dish on a chit gets a small 86 button (from night 9).
+      Cut it for a $12 comp — the rest of the ticket still plates and NOBODY
+      WALKS. Cut the last dish and the table is comped out, no walkout.
+      This is the general escape hatch for any dead end, not just outages.
+- [x] Mercy deepened: cap 3 → 6 stacks, and at 2+ one less thing breaks,
+      at 4+ nothing breaks at all ("the tech finally came by")
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).

@@ -256,6 +256,15 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .shopTab:hover{color:var(--txt)}
 .shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
 .shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
+.kill86{background:transparent;border:1px solid var(--line2);color:var(--dim);border-radius:3px;
+  font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 5px;margin-left:6px;cursor:pointer;flex:none}
+.kill86:hover{border-color:var(--bad);color:var(--bad);background:rgba(239,68,68,.12)}
+.item.void{opacity:.4;text-decoration:line-through}
+.item.void .kill86{display:none}
+.station.down .stHead{cursor:pointer}
+.station.fixing{transform:translateY(-2px)}
+.stFix{display:block;font-size:9px;color:var(--warn);letter-spacing:1px;margin-top:2px}
+@media (max-width:900px){ .kill86{padding:3px 8px;font-size:10px} }
 #coach{position:fixed;left:50%;transform:translateX(-50%);bottom:58px;z-index:45;max-width:min(92vw,560px);
   background:#101820;border:1px solid var(--cold);border-radius:4px;padding:10px 16px;color:var(--txt);
   font-family:var(--mono);font-size:12.5px;letter-spacing:.4px;line-height:1.55;
@@ -325,7 +334,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.1</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.3</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -367,6 +376,7 @@ const BURN_GRACE= 1.6;
 const WEEDS_IN  = 6, WEEDS_OUT = 3;
 const MAX_RAIL  = 10;
 const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w','e','r','t','y'];
+const COMP_FEE = 12;      // v14.3: what it costs to 86 a dish and keep the table
 const SKINS = ['#f6d7b0','#eac086','#d29b6c','#a96f44','#7c4a26','#5a3319'];
 const HAIRS = ['#1a1a1a','#3b2a1a','#6b3f1d','#a56a2a','#c9a227','#7a7a7a','#c0392b','#2563eb'];
 const HATSTYLES = ['toque','bandana','beanie','none'];
@@ -1170,7 +1180,9 @@ function buildLine(){
     const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
     const here=G.endless?[]:activeCooks().filter(c=>c.station===st.id);
     col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em>
-      ${here.map(c=>`<span class="sousBadge">${memberFig(c)}<span class="nm">${c.name}</span></span>`).join('')}</div>`;
+      ${here.map(c=>`<span class="sousBadge">${memberFig(c)}<span class="nm">${c.name}</span></span>`).join('')}
+      <span class="stFix"></span></div>`;
+    col.querySelector('.stHead').addEventListener('click',()=>repairTap(st.id));
     const wrap=document.createElement('div'); wrap.className='pans';
     for(let i=0;i<panCount(st.id);i++){
       const keyLabel=KEYS[ki].toUpperCase();
@@ -1250,7 +1262,7 @@ const TUT_CARDS={
   6:{t:'VIPs ★',h:'Gold chits. Double tips, 40% less patience. Feed them first — they do not wait.'},
   7:{t:'BUS TOURS 🚌',h:'Three tickets land at once, no warning. Keep a pan free per station or the rail buries you.'},
   8:{t:'NIGHT CONDITIONS',h:'Every night now rolls a condition — read the card before you open. Some nights change all the rules.'},
-  9:{t:"86'D ⚡",h:'Equipment fails mid-service. A downed station cooks nothing — leave its dishes on the rail and work everything else until it\'s back.'},
+  9:{t:"86'D ⚡",h:'Equipment fails mid-service. A downed station cooks nothing — but you are not stuck: TAP THE STATION HEADER four times to fix it early, or hit the small 86 button on a dish to cut it (costs a $'+COMP_FEE+' comp; the rest of the ticket still plates and nobody walks).'},
   10:{t:'THE CRITIC 🟣',h:'Purple chit, three dishes, patient. ALL perfect and hot = +$150 and stars. Anything less becomes a review you\'ll feel.'},
   12:{t:'4-TOPS',h:'Four-dish tickets. Fire them across stations in PARALLEL, not one at a time — the plate scores on its coldest dish.'},
   14:{t:'THE FINISH ↳',h:'Premium dishes take TWO passes now: pull the cook, then RE-FIRE from the ticket for the finish — the rest, the baste, the crisp. Both passes perfect = MASTERED ★ +25%. The brigade won\'t touch this pass. It\'s yours.'},
@@ -1357,6 +1369,14 @@ function buildChit(tk){
       <div class="mini" style="display:none"><i></i></div>`;
     d.addEventListener('click',()=>fire(tk,i));
     it.el=d; it.tagEl=d.querySelector('.tag'); it.miniEl=d.querySelector('.mini'); it.barEl=d.querySelector('.mini i');
+    /* v14.3: the way out — cut this dish rather than lose the table */
+    if(mechOn('down')){
+      const kb=document.createElement('button'); kb.className='kill86'; kb.textContent='86';
+      kb.title='Cut this dish — comp $'+COMP_FEE+', but the table stays';
+      kb.addEventListener('click',ev=>{ ev.stopPropagation(); void86(tk,i); });
+      d.querySelector('.iRow').appendChild(kb);
+      it.killBtn=kb;
+    }
     box.appendChild(d);
   });
   const btn=document.createElement('button'); btn.className='plate'; btn.textContent='PLATE ▸';
@@ -1370,6 +1390,57 @@ function buildChit(tk){
 /* ============================== ACTIONS ============================== */
 function freePan(stId){ return G.pans.find(p=>p.st===stId && !p.item && !p.dead); }
 function stationDown(stId){ return (G.downUntil[stId]||0) > G.t; }
+
+/* ===================== v14.3: WAYS OUT OF A DEAD END =====================
+   Jaxon, night 25: "i got 86 locked out and tickets just died." A station
+   going down with dishes already on the rail was unwinnable — you could only
+   watch the clock run out. Two real-kitchen verbs fix it:
+
+   THE FIX   — tap the downed station's header to work on it. Four taps and
+               it's back. Agency instead of waiting.
+   86 A DISH — cut a dish you can't cook. You eat its price and a comp, but
+               the ticket plates with what's left and NOBODY WALKS. Cut the
+               last dish and the table is comped out — no walkout either. */
+function repairTap(stId){
+  if(!G.running||G.paused||!stationDown(stId)) return;
+  G.fixTaps[stId]=(G.fixTaps[stId]||0)+1;
+  const need=4, got=G.fixTaps[stId];
+  const col=document.querySelector('.station[data-st="'+stId+'"]');
+  if(got>=need){
+    G.downUntil[stId]=0; G.fixTaps[stId]=0;
+    const st=STATIONS.find(s=>s.id===stId);
+    toast(st.name+' IS BACK — NICE SAVE','var(--good)'); SFX.perfect();
+    if(col) col.classList.remove('down');
+  } else {
+    if(col){ col.classList.add('fixing'); setTimeout(()=>col.classList.remove('fixing'),140); }
+    SFX.tick&&SFX.tick();
+    const hd=col&&col.querySelector('.stFix');
+    if(hd) hd.textContent='🔧 FIXING… '+got+'/'+need;
+  }
+}
+
+function void86(tk,idx){
+  if(!G.running||G.paused||tk.dead) return;
+  const it=tk.items[idx];
+  if(!it||it.state==='void'||it.state==='pass') return;
+  if(it.pan){ clearPan(it.pan); }
+  it.state='void';
+  it.el.className='item void';
+  it.tagEl.style.display=''; it.tagEl.className='tag ov'; it.tagEl.textContent="86'D";
+  it.miniEl.style.display='none';
+  if(it.killBtn) it.killBtn.remove();
+  G.tips=Math.max(0,G.tips-COMP_FEE);
+  G.comps=(G.comps||0)+1;
+  const live=tk.items.filter(i=>i.state!=='void');
+  if(!live.length){
+    toast('TABLE COMPED — THEY LEFT FED, NOT HAPPY','var(--warn)');
+    tk.comped=true; SFX.serve();
+    killTicket(tk,'dying');
+    return;
+  }
+  toast("86'D "+it.m.n+' — REST OF THE TICKET STANDS','var(--warn)');
+  refreshTicket(tk);
+}
 function inspecting(){ return G.inspUntil>G.t; }
 
 function fire(tk,idx){
@@ -1522,20 +1593,24 @@ function burnPan(pan){
   clearPan(pan); refreshTicket(tk);
 }
 
-function ready(tk){ return tk.items.every(i=>i.state==='pass'); }
+function ready(tk){
+  const live=tk.items.filter(i=>i.state!=='void');       // v14.3: 86'd dishes don't hold the ticket
+  return live.length>0 && live.every(i=>i.state==='pass');
+}
 
 function heatOf(it){ return Math.max(HEAT_FLOOR, 1-(G.t-it.pulledAt)/holdTime()*(1-HEAT_FLOOR)); }
 
 function plate(tk, byExpo=false){
   if(!G.running||G.paused||tk.dead||!ready(tk)) return;
   let base=0, qual=0, minHeat=1, allPerfect=true;
-  tk.items.forEach(it=>{
+  tk.items.filter(it=>it.state!=='void').forEach(it=>{
     base+=it.m.price*(it.flipped?1.2:1)*(it.seasoned?1.1:1)*(it.mastered?1.25:1);
     qual+= it.quality==='perfect'?1.15:.6;
     if(it.quality!=='perfect') allPerfect=false;
     minHeat=Math.min(minHeat,heatOf(it));
   });
-  qual/=tk.items.length;
+  qual/=Math.max(1,tk.items.filter(it=>it.state!=='void').length);
+  if(tk.items.some(it=>it.state==='void')) allPerfect=false;   // a cut dish is never a perfect table
   if(!G.endless&&META.up.menu) base*=1.1;
   if(!G.endless) base*=(1+.04*(META.up.menuDev||0));
   if(!G.endless) base*=(1+.12*(META.tier||0));   // renovated rooms charge renovated prices
@@ -1725,15 +1800,34 @@ function step(dt){
 
   for(const ev of G.downSchedule){
     if(!ev.fired && G.t>=ev.at){
+      /* v14.3 BUGFIX: this used to pick from STATIONS — every station in the
+         game, including ones not on your line — and it ignored what was
+         already on the rail. Result (Jaxon, night 25): the busiest station
+         dies with four tickets waiting on it and they all time out. Now it
+         only downs a LIVE station, prefers the least-loaded one, and never
+         downs a station whose tickets can't survive the outage. */
+      const live=stationsLive();
+      const load=st=>G.tickets.filter(t=>!t.dead&&t.items.some(i=>i.state==='todo'&&i.m.st===st.id)).length;
+      const doomed=st=>G.tickets.some(t=>!t.dead&&t.left<ev.dur+8&&t.items.some(i=>i.state==='todo'&&i.m.st===st.id));
+      const safe=live.filter(st=>!doomed(st));
+      const pool=(safe.length?safe:live).slice().sort((a,b)=>load(a)-load(b));
+      const best=pool.filter(st=>load(st)===load(pool[0]));
+      const st=best[(Math.random()*best.length)|0];
       ev.fired=true;
-      const st=STATIONS[(Math.random()*STATIONS.length)|0];
-      G.downUntil[st.id]=G.t+ev.dur;
-      toast("86 — "+st.name+" IS DOWN "+Math.round(ev.dur)+"s",'var(--bad)'); SFX.down();
+      G.downUntil[st.id]=G.t+ev.dur; G.fixTaps[st.id]=0;
+      toast("86 — "+st.name+" IS DOWN. TAP THE HEADER TO FIX IT",'var(--bad)'); SFX.down();
+      if(!META.tut.fix86&&!G.endless){ META.tut.fix86=1; saveMeta();
+        coach('<b>86 — '+st.name+' IS DOWN.</b> Two ways out: <b>tap that station\'s header 4×</b> to fix it early, or hit the small <b>86</b> button on a stuck dish to cut it — you comp $'+COMP_FEE+', but the table stays and nobody walks.',11000); }
     }
   }
   for(const st of STATIONS){
     const col=lineEl.querySelector(`[data-st="${st.id}"]`);
-    if(col) col.classList.toggle('down', stationDown(st.id));
+    if(col){
+      const dn=stationDown(st.id);
+      col.classList.toggle('down', dn);
+      const fx=col.querySelector('.stFix');
+      if(fx) fx.textContent = dn ? '🔧 TAP TO FIX '+(G.fixTaps[st.id]||0)+'/4' : '';
+    }
   }
 
   if(G.inspAt && G.t>=G.inspAt && !G.inspUntil){
@@ -2301,12 +2395,14 @@ function start(endless=false){
     seasonsCt:0,masteredCt:0,duelAt:0,duelDone:true,
     nextSpawn:2.2,ticketNo:0,tickets:[],mod:endless?null:modFor(META.night),railCap:MAX_RAIL,
     inspAt:0,inspUntil:0,
-    downUntil:{},downSchedule:[],criticAt:0,criticDone:false,
+    downUntil:{},downSchedule:[],fixTaps:{},comps:0,criticAt:0,criticDone:false,
     criticAt2:0,criticDone2:true,partyAt:0,partyDone:true});
   document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
   if(!endless){
     if(META.night>=DEBUT.down){
-      const n = META.night>=DEBUT.down+2?2:1;
+      let n = META.night>=DEBUT.down+2?2:1;
+      if(META.mercy>=2) n=Math.max(0,n-1);        // v14.3: word got around — the tech came by
+      if(META.mercy>=4) n=0;                      // ...and fixed everything
       for(let i=0;i<n;i++) G.downSchedule.push({at:45+Math.random()*150, dur:10+Math.random()*5, fired:false});
     }
     if(META.night>=DEBUT.critic) G.criticAt=85+Math.random()*60;
@@ -2431,7 +2527,7 @@ function failNight(){
   const lost=G.tips;
   /* v14.1: a failed night still passes time for a stagiaire, and word gets
      around — every consecutive fail lightens the next attempt's book */
-  META.mercy=Math.min(3,(META.mercy||0)+1);
+  META.mercy=Math.min(6,(META.mercy||0)+1);   // v14.3: 3 stacks wasn't enough to unstick night 24
   let backLine='';
   META.crew.forEach(m=>{
     if(m.stage&&--m.stage.left<=0){
@@ -2453,7 +2549,7 @@ function failNight(){
       <span>Fire earlier. Plate the oldest ticket first. If the rail stacks past six, stop firing new dishes and CLEAR it — walkouts kill nights now, cold plates just sting.</span></div>
     ${backLine}
     <div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WORD GOT AROUND</b><br>
-      <span>A rough night empties tomorrow's book a little. Next attempt: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower. Win the night and the assist resets.</span></div>
+      <span>A rough night empties tomorrow's book a little. Next attempt: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower${META.mercy>=4?', and the equipment tech finally came by — nothing goes down':META.mercy>=2?', and one less thing breaks':''}. Win the night and the assist resets.</span></div>
     <div id="shopBoxFail"></div>
     <div id="modeBtns">
       <button id="start">RUN NIGHT ${META.night} BACK ▸</button>
@@ -2679,7 +2775,46 @@ document.addEventListener('keydown',e=>{
   }
 });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&G.running){G.paused=true; toast('PAUSED','var(--hot)');} last=performance.now(); });
-$('#quit').addEventListener('click',()=>{ if(G.running){ G.endless?finishEndless():finish(); } });
+/* v14.3 BUGFIX (Jaxon): END SERVICE used to call finish() — which banked the
+   tips and ADVANCED THE NIGHT. Walking out mid-service counted as closing the
+   night. Endless has no calendar so it still just ends the run; career now
+   abandons: nothing banks, the night stays put, and it asks first. */
+$('#quit').addEventListener('click',()=>{
+  if(!G.running) return;
+  if(G.endless){ finishEndless(); return; }
+  G.paused=true;
+  if(confirm('WALK OUT OF SERVICE?\n\nNight '+META.night+' does not close. Tonight\'s $'+G.tips+' in tips is lost and you will run this night again.')){
+    abandonNight();
+  } else { G.paused=false; last=performance.now(); }
+});
+
+function abandonNight(){
+  G.running=false; G.over=true; G.paused=false;
+  document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
+  hideCoach();
+  /* an abandoned night still passes time for anyone out on stage */
+  let backLine='';
+  META.crew.forEach(m=>{
+    if(m.stage&&--m.stage.left<=0){
+      m.skill=Math.min(3,(m.skill||0)+1);
+      backLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage.at}</b> — ${'★'.repeat(m.skill)} (+${m.skill*7}% hands).</div>`;
+      delete m.stage;
+    }
+  });
+  saveMeta();
+  card.innerHTML=`<h1><small>NIGHT ${META.night}</small>YOU WALKED</h1>
+    <p>You took off your apron in the middle of service. The night doesn't count — no tips banked, no grade, and night ${META.night} is still sitting there waiting for you.</p>
+    ${backLine}
+    <div id="shopBoxAband"></div>
+    <div id="modeBtns">
+      <button id="start">RUN NIGHT ${META.night} ▸</button>
+      <button id="startEndless">ENDLESS RUSH ∞</button>
+    </div>`;
+  renderShop(card.querySelector('#shopBoxAband'));
+  overlay.classList.remove('hide');
+  card.querySelector('#start').addEventListener('click',()=>start(false));
+  card.querySelector('#startEndless').addEventListener('click',()=>start(true));
+}
 const TITLE_HTML=card.innerHTML;
 function initTitle(){
   try{ const b=+(localStorage.getItem('pass_best')||0); if(b) card.querySelector('#best').textContent='BEST TIPS · $'+b; }catch(e){}
@@ -2691,7 +2826,7 @@ function initTitle(){
   if(wd) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">${wd.d} — ${wd.n}</b><br><span>${wd.desc}</span></div>`;
   if(news.length) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW TONIGHT</b><br><span>${news.join('<br>')}</span></div>`;
   ih+=tutBlock(META.night);
-  if(META.mercy) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WORD GOT AROUND</b><br><span>A lighter book tonight: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower. Close the night to reset it.</span></div>`;
+  if(META.mercy) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WORD GOT AROUND</b><br><span>A lighter book tonight: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower${META.mercy>=4?', and nothing breaks — the tech finally came by':META.mercy>=2?', and one less thing breaks':''}. Close the night to reset it.</span></div>`;
   if(mod) ih+=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   im.innerHTML=ih;
   renderShop(card.querySelector('#shopBoxIntro'));
