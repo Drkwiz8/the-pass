@@ -308,7 +308,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v12</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v12.1</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -410,8 +410,8 @@ function nightNews(n){
     3:'NEW SKILL: THE FLIP — tap the yellow window mid-cook for +20%',
     4:'NEW SKILL: SEASON — tap the cyan window early in the cook for +10%',
     5:'NEW SKILL: COMBO HEAT — chain perfect pulls, multiply your tips',
-    14:'NEW SKILL: THE FINISH — premium dishes take a second pass now. Sear it, rest it, baste it. Both passes perfect = MASTERED.',
-    29:'THE COOK-OFF: Meridian challenged you. Six rounds, one a night, first to four. The street is watching.',
+    14:'NEW SKILL: THE FINISH — premium dishes take a second pass now. Sear it, rest it, baste it. Both passes perfect = MASTERED. The brigade won\'t touch the finish — that pass is yours.',
+    29:'THE COOK-OFF: Meridian challenged you. Six rounds, one a night, first to four. Your hands only — the brigade stands back.',
     6:'THE ROOM CHANGES: VIPs start booking — double tips, short fuses',
     7:'bus tours start hitting the rail',8:'special conditions begin — every night is different now',
     9:"equipment starts failing — stations can go 86'd",10:'THE CRITIC now dines here',
@@ -1227,7 +1227,7 @@ function spawnTicket(opts={}){
   tk.left=tk.limit;
   G.tickets.push(tk); buildChit(tk);
   if(VD){ toast(VD.in, VD.id==='deacon'?'#5ad1e6':'var(--gold)'); SFX.vip(); }
-  else if(tk.duel){ toast('COOK-OFF ROUND — PERFECT AND HOT, OR THE ROUND IS MERIDIAN\'S','#ff5330'); SFX.vip(); }
+  else if(tk.duel){ toast('COOK-OFF ROUND — YOUR HANDS ONLY. PERFECT AND HOT, OR THE ROUND IS MERIDIAN\'S','#ff5330'); SFX.vip(); }
   else if(opts.furious){ toast('A FURIOUS TABLE SAT — THEY SAW THE CLIP','var(--bad)'); SFX.walk(); }
   else if(tk.critic){ toast('THE CRITIC IS IN THE ROOM','#c084fc'); SFX.vip(); }
   else if(tk.party){ toast('THE BIG PARTY IS HERE — '+count+' PLATES, ONE WINDOW','#22d3ee'); SFX.vip(); }
@@ -1555,6 +1555,8 @@ function crewStep(){
     if(c.quirk==='steady') spaceOut*=.5;
     for(const pan of G.pans){
       if(pan.st!==c.station || !pan.item || pan.sousSkip) continue;
+      /* v12.1: the finish pass and the Cook-Off are chef's work — the brigade stands back */
+      if(pan.item.stage===1 || (pan.ticket&&pan.ticket.duel)) continue;
       const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
       if(!inWin) continue;
       if(!pan.sousDecided){
@@ -1568,7 +1570,7 @@ function crewStep(){
   if(e){
     const react=META.up.expoT?.25:.9;
     for(const tk of G.tickets.slice()){
-      if(!tk.dead && tk.readyAt && G.t-tk.readyAt>=react){ plate(tk,true); }
+      if(!tk.dead && !tk.duel && tk.readyAt && G.t-tk.readyAt>=react){ plate(tk,true); }
     }
   }
   const h=host();
@@ -1648,7 +1650,7 @@ function step(dt){
   /* THE HOUSE: patron Deacon calls the pass — hottest ready ticket out every 20s */
   if(!G.endless && META.vips.deacon.patron && G.t>=G.deaconNext){
     G.deaconNext=G.t+20;
-    const rdy=G.tickets.filter(t=>!t.dead&&ready(t));
+    const rdy=G.tickets.filter(t=>!t.dead&&!t.duel&&ready(t));
     if(rdy.length){
       rdy.sort((a,b)=>a.born-b.born);
       toast('DEACON CALLS IT — '+rdy[0].table+' OUT','#5ad1e6');
@@ -1745,7 +1747,7 @@ function render(){
     pan.el.classList.toggle('over',over && pan.t<pan.cookNeed+pan.winLen+1.5);
     pan.el.classList.toggle('burning',pan.t>=pan.cookNeed+pan.winLen+1.5);
     pan.big.className = 'panBig'+(inWin||over||inFlip||inSeas?' callout':'');
-    pan.big.textContent = inWin?'PULL NOW' : over?'BURNING!' : inFlip?'FLIP! 🔄' : inSeas?'SEASON! 🧂' : (pan.cookNeed-pan.t).toFixed(1);
+    pan.big.textContent = inWin?(fin?'FINISH — PULL':'PULL NOW') : over?'BURNING!' : inFlip?'FLIP! 🔄' : inSeas?'SEASON! 🧂' : (pan.cookNeed-pan.t).toFixed(1);
     pan.big.style.color = inWin?'var(--good)' : over?'var(--bad)' : inFlip?'var(--warn)' : inSeas?'var(--cold)'
       : (pan.cookNeed-pan.t)<1.5?'var(--warn)':'var(--txt)';
     pan.fill.style.background = over?'linear-gradient(90deg,#7a1414,#ef4444)'

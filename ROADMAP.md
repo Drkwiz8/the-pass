@@ -103,6 +103,11 @@ Built from hermes-air's ENDGAME + WARDROBE-40 design docs (#handoffs).
       renovations −20%), VIVIAN ASHE (SAT once Guide-rated; patron = Guide
       rating +1★ permanent)
 - [x] 3 new earned wardrobe pieces, 3 new achievements
+- [x] v12.1 (Jaxon playtest note: "verbs feel useless with 3 cooks"): the
+      brigade stands back from chef's work — cooks won't pull finish passes,
+      and nobody (cooks/expo/Deacon) touches the Cook-Off ticket. With a full
+      crew your job becomes: fire everything, work the season/flip windows,
+      personally finish the premium dishes, win the duels.
 
 ## v13 — next
 - [ ] Prestige seasons (endgame doc §6) — the go-around-again layer
