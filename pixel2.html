@@ -19,10 +19,10 @@ canvas{image-rendering:pixelated;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6))}
 </style>
 </head>
 <body>
-<h1><small>THE PASS — PIXEL 2.0</small>Style A, grown up — 18×24</h1>
-<p>The Line Cook you picked, with double the pixels: eyebrows, two-tone eyes, nose, mouth,
-pleated toque, buttons, apron pocket, hip towel — but keeping A's compact proportions.
-Enough canvas that accessories can be shapes, not blocks. Three kits, three sizes.</p>
+<h1><small>THE PASS — PIXEL 2.0</small>Style A — faithful ×1.5</h1>
+<p>The exact Line Cook you picked — mathematically upscaled, not redesigned. Same silhouette,
+same proportions, every region where it was. The ONLY change: eyes have whites now.
+The extra pixels exist so ACCESSORIES can have shapes — the base guy stays himself.</p>
 <div class="row" id="row"></div>
 <div class="pick"><b>If this is the guy</b>, say so and the whole game moves to him — locker room page,
 every wardrobe piece redrawn at this scale, more slots. <b>If he's still not right:</b> name any game
@@ -33,31 +33,34 @@ proportion and shading style exactly. A reference beats ten more guesses.</div>
 /* 22 cols x 30 rows. Keys: H hat, h hat shade, R hair, S skin, s skin shade,
    E eye, W white, C coat, c coat shade/buttons, A apron, a apron shade/pocket,
    P pants, O shoe, T towel */
-/* Style A proportions, 18x24 — "the line cook, grown up" */
+/* Style A x1.5 — a FAITHFUL upscale. Same silhouette, same proportions,
+   nothing redesigned. Only addition: the eyes gain whites (WE). */
 const CHEF=[
-'....HHHHHHHHHH....',
+'...HHHHHHHHHHHH...',
+'...HHHHHHHHHHHH...',
 '..HHHHHHHHHHHHHH..',
 '..HHHHHHHHHHHHHH..',
-'..HhHHhHHhHHhHHH..',
 '..HHHHHHHHHHHHHH..',
-'..hhhhhhhhhhhhhh..',
+'...HHHHHHHHHHHH...',
 '..RSSSSSSSSSSSSR..',
-'..SRRRSSSSSSRRRS..',
-'..SWWESSSSSSWWES..',
-'..SWWESSSSSSWWES..',
-'..SSSSSSssSSSSSS..',
-'..SSSSSssssSSSSS..',
-'..SSSSSSSSSSSSSS..',
-'....ssssssssss....',
+'..RSSSSSSSSSSSSR..',
+'...SWESSSSSSWES...',
+'...SWESSSSSSWES...',
+'...SSSSSSSSSSSS...',
+'....SSSSSSSSSS....',
 '...CCCCCCCCCCCC...',
-'..WCCCCcCCcCCCCW..',
-'..SCCAAAAAAAACCS..',
-'..SCCAAAAAAAACCS..',
-'..SCCAaaaaaaACCTT.',
-'..SCCAaaaaaaACCTT.',
-'...CCAAAAAAAACC...',
+'...CCCCCCCCCCCC...',
+'..WCCCAAAAAACCCW..',
+'..SCCCAAAAAACCCS..',
+'..SCCCAAAAAACCCS..',
+'..SCCCAAAAAACCCS..',
+'...CCCAAAAAACCC...',
+'...CCCAAAAAACCC...',
+'...CCCAAAAAACCC...',
 '...PPP......PPP...',
 '...PPP......PPP...',
+'...PPP......PPP...',
+'..OOOO......OOOO..',
 '..OOOO......OOOO..',
 ];
 function shade(hex,f){
