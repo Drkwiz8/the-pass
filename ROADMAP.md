@@ -380,6 +380,25 @@ only ignored — so the fix recovers it.
       KIRIN reads STANDING BAR / IZAKAYA / COUNTER / KAPPO / OMAKASE. Save id
       stays 'pass' so nothing breaks.
 
+## v17.2 — UPGRADE CLARITY + THE LINE IS PIXEL ART (SHIPPED 2026-08-01)
+- [x] Jaxon: "the ones that have previous buy requirements dont go to being
+      able to be bought or light up." The GATING was correct — the CARD lied.
+      Every locked upgrade read "needs previous training" whatever it actually
+      needed, and locked looked identical to merely-unaffordable. Now each
+      card names its real prerequisite ("needs 3RD GRILL PAN first"), shows
+      "$420 short" when it is only money, lights green with "✓ ready to buy"
+      when it is buyable, and buyable ones sort to the front.
+- [x] All 14 KIRIN dishes get real pixel sprites (38 total now) — same 10x8
+      grid and outline+shade pass as the bistro. The sushi three share a rice
+      base and barely shift between states, because nothing on a sushi board
+      is cooked.
+- [x] Jaxon: "i was talking about the whole cook area being the new pixelated
+      cooking machine not just a lil picture at the top." Correct — the CSS
+      gradients are gone. Each station now tiles a real pixel COOKING SURFACE
+      down its whole column: grate sections over coals, burner rings, a fryer
+      well with an oil line, a chilled steel bay, a binchotan trough, a neta
+      case. The station column IS the machine.
+
 ## v18 — next on the career
 - [ ] HEAD CHEF loop: cooks take all pulls, PUSH command to drive a station
 - [ ] BUY THE RESTAURANT → passive income, LEGACY entry, bring one cook
