@@ -229,6 +229,21 @@ rework the stage training thing again."
 - [x] Crew seasons tracked separately (G.crewSeasons) so they never inflate
       the player's CRAFT score or the lifetime SALT CELLAR count
 
+## v14.7 — HOW STAGING ACTUALLY WORKS (SHIPPED 2026-08-01)
+Jaxon, who cooks for a living: "a chef shouldnt miss a service when they
+stage." Correct, and the old design was fiction: a stage is unpaid MORNING
+work on your days off — you are still on your own line at service that night.
+- [x] Staging cooks stay on the line for all three services and work them
+      TIRED — 55% slower reactions, ~2.2× the slips, and no MISE seasoning
+      while they are running on no sleep. The cost of training is fatigue,
+      not absence, so it can never strand you mid-week.
+- [x] Their service count ticks (they are working), and the copy everywhere
+      reflects mornings-away rather than a disappearance
+- [x] PREVIEWS: every wardrobe card renders the piece on a chef through the
+      real sprite pipeline — locked pieces too, in greyscale, so you can see
+      what you are working toward. Owned pieces no longer render dimmed.
+      (The customize panel already live-previewed the assembled chef.)
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).
