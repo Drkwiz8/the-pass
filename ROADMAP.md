@@ -279,6 +279,25 @@ Jaxon: "i dont like the feature to just take the d."
       off at 4+), so being stuck still eases — you just have to actually
       cook your way out of it.
 
+## v15.2 — THE GAME DOES THE MATH (SHIPPED 2026-08-01)
+Jaxon on v15: "i dont really have time to time the tickets with how many
+stack up so fast i go back to just spamming fire again." The decision was
+right; the EXECUTION was homework. Every other verb in this game is tap-when-
+it-glows — the tight pass was the only one demanding mental arithmetic under
+load, so it collapsed straight back to spam.
+- [x] FIRE CUES: each dish on a multi-dish ticket now shows when to fire it —
+      "▷ 3.2s" while it waits, pulsing gold "▶ FIRE" when due. The game
+      computes the stagger against whatever finishes last on that ticket.
+      Same decision, zero arithmetic.
+- [x] FIRE OLDEST now starts a ticket with its LONGEST dish (the anchor
+      everything syncs to) and prefers dishes whose cue is due — so the panic
+      button sets up a tight pass instead of wrecking one. Landing it still
+      needs the player answering cues: help, not autopilot.
+- [x] MOBILE: the pre-service card was jumbled — the night line was a 3-item
+      space-between row so the tier name collided with stars and bank, mode
+      buttons squeezed side by side, rules ran long. Night line stacks,
+      buttons go full-width, type scales down.
+
 ## v16 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).

@@ -274,6 +274,13 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .shopTab:hover{color:var(--txt)}
 .shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
 .shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
+.fireCue{font-size:8.5px;letter-spacing:.6px;font-weight:700;flex:none;margin-left:4px;white-space:nowrap}
+.item.fireWait .fireCue{color:#7dd3fc}
+.item.fireNow  .fireCue{color:#ffd84d}
+.item.fireNow{border-color:#ffd84d!important;background:rgba(255,216,77,.13);
+  animation:cuePulse .7s ease-in-out infinite}
+.item.fireWait{opacity:.72}
+@keyframes cuePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,216,77,.5)}50%{box-shadow:0 0 0 3px rgba(255,216,77,0)}}
 .cookSecs{font-size:8.5px;color:var(--dim);letter-spacing:.3px;flex:none;margin-left:4px;opacity:.85}
 .item.cooking .cookSecs,.item.ready .cookSecs{display:none}
 .syncLine{font-size:8.5px;letter-spacing:.8px;text-align:center;padding:2px 0;border-radius:2px;margin:3px 0 1px}
@@ -362,6 +369,23 @@ body{touch-action:manipulation}
   #shop,.crewGrid{grid-template-columns:1fr}
   .shopTab{padding:11px 2px;font-size:10px;min-width:56px}
   .upg button{padding:9px 0}
+
+  /* v15.2 (Jaxon): the pre-service card was jumbled on a phone. The night
+     line was a 3-item space-between row, so "NIGHT 24 · THE MICHELIN ROOM"
+     collided with the stars and the bank; the two mode buttons squeezed
+     side by side; and the rules ran long. Stack it all. */
+  .nightLine{flex-direction:column;align-items:flex-start;gap:3px;
+    border-left:2px solid var(--hot);padding:7px 0 7px 10px;margin:10px 0 4px}
+  .nightLine b{font-size:13px;letter-spacing:1.4px;line-height:1.3}
+  .nightLine .starB,.nightLine .bankB{font-size:11.5px;letter-spacing:1px}
+  #card .rules{margin:12px 0;padding-left:10px}
+  #card .rules div{font-size:11.5px;line-height:1.5;margin:7px 0}
+  #card p{font-size:12px;line-height:1.55}
+  #modeBtns{flex-direction:column;gap:7px;margin-top:14px}
+  #modeBtns button{width:100%;font-size:15px;padding:13px 0}
+  #lockerBtn{padding:12px 0;font-size:11px}
+  .modLine{font-size:11.5px;line-height:1.5}
+  #card #best{font-size:10px;margin-top:8px}
 }
 </style>
 </head>
@@ -391,7 +415,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v15.1</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v15.2</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -1385,7 +1409,7 @@ const TUT_CARDS={
   8:{t:'NIGHT CONDITIONS',h:'Every night now rolls a condition — read the card before you open. Some nights change all the rules.'},
   9:{t:"86'D ⚡",h:'Equipment fails mid-service. A downed station cooks nothing — but you are not stuck: TAP THE STATION HEADER four times to fix it early, or hit CUT on a stranded dish to drop it from the ticket (costs a $'+COMP_FEE+' comp; the rest of the ticket still plates and nobody walks).'},
   10:{t:'THE CRITIC 🟣',h:'Purple chit, three dishes, patient. ALL perfect and hot = +$150 and stars. Anything less becomes a review you\'ll feel.'},
-  12:{t:'4-TOPS + THE TIGHT PASS ⟡',h:'Four-dish tickets — and the real job of a pass. Every dish shows its COOK TIME on the chit. Fire so they all finish TOGETHER: a 9s ribeye goes in seven seconds before a 2s plate of oysters. Land a table\'s dishes within 4.5s of each other and the whole ticket pays +40% (⟡ TIGHT PASS). Fire everything at once and the first dish sits under the lamp going cold. Your crew pulls — but YOU fire, so this decision is always yours.'},
+  12:{t:'4-TOPS + THE TIGHT PASS ⟡',h:'Four-dish tickets — and the real job of a pass. You do NOT have to do the math: every dish on a multi-dish ticket tells you when to fire it. <b style="color:#ffd84d">▶ FIRE</b> means drop it now; <b style="color:#7dd3fc">▷ 3.2s</b> means wait that long so it lands with the rest. Get a table\'s dishes inside 4.5s of each other and the whole ticket pays +40%. FIRE OLDEST always starts a ticket with its longest dish, so the button sets you up — you just answer the cues.'},
   14:{t:'THE FINISH ↳',h:'Premium dishes take TWO passes now: pull the cook, then RE-FIRE from the ticket for the finish — the rest, the baste, the crisp. Both passes perfect = MASTERED ★ +25%. The brigade won\'t touch this pass. It\'s yours.'},
   16:{t:'HOW YOU ARE GRADED 📋',h:'Your night grade is execution only — money never counts toward it. PERFECT (40%) pulls inside the window · SERVICE (30%) tables kept · CLEAN (15%) product not burnt · CRAFT (15%) the seasons, flips and finishes YOU did yourself. A trained brigade can carry the first three, but CRAFT is yours alone — which is why an S needs you working the windows, not just owning upgrades.'},
   17:{t:'THE WEEK 📅',h:'Nights are days now, MON–SAT, each with its own shape. Saturday averages your six grades into a WEEK GRADE that pays stars and a tip bonus — then DARK MONDAY: one spending decision before the new week.'},
@@ -1491,11 +1515,13 @@ function buildChit(tk){
        cannot see — this is the number the whole TIGHT PASS decision runs on. */
     const secs=(it.m.cook+(it.m.tech&&mechOn('tech')?it.m.tech.cook:0));
     d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${foodTag(it.m.n,'cooked',2,it.m.e)}</span>${it.m.n}${it.m.tech&&mechOn('tech')?' <span style="font-size:8px;opacity:.6">×2</span>':''}</span>
+        <span class="fireCue"></span>
         <span class="cookSecs">${secs.toFixed(1)}s</span>
         <span class="tag" style="display:none"></span></div>
       <div class="mini" style="display:none"><i></i></div>`;
     d.addEventListener('click',()=>fire(tk,i));
     it.el=d; it.tagEl=d.querySelector('.tag'); it.miniEl=d.querySelector('.mini'); it.barEl=d.querySelector('.mini i');
+    it.cueEl=d.querySelector('.fireCue');
     /* v14.3: the way out — cut this dish rather than lose the table */
     if(mechOn('down')){
       /* v14.5: this said "86" — the same word the game already uses for a
@@ -1519,6 +1545,36 @@ function buildChit(tk){
 
 /* ============================== ACTIONS ============================== */
 function freePan(stId){ return G.pans.find(p=>p.st===stId && !p.item && !p.dead); }
+
+/* v15.2: when should THIS dish go in so it lands with the rest of its table?
+   Returns seconds until it should be fired, or null if there is nothing to
+   sync against (single-dish ticket, or nothing else left to cook).
+
+   The reference point is whatever finishes LAST on this ticket: any dish
+   already cooking, or — if none is — the longest dish still waiting. Fire
+   the long one first, and every shorter dish then counts itself down. */
+function totalCook(m){ return m.cook + (m.tech&&mechOn('tech') ? m.tech.cook : 0); }
+function fireCue(tk,it){
+  const live=tk.items.filter(i=>i.state!=='void');
+  if(live.length<2) return null;
+  const todo=live.filter(i=>i.state==='todo');
+  let latest=0, anchored=false;
+  for(const o of live){
+    if(o.state==='cooking'&&o.pan){
+      latest=Math.max(latest, Math.max(0,o.pan.cookNeed-o.pan.t)
+        + (o.m.tech&&mechOn('tech')&&o.pan.item&&o.pan.item.stage===0 ? o.m.tech.cook : 0));
+      anchored=true;
+    }
+  }
+  if(!anchored){
+    // nothing in a pan yet: the longest dish is the anchor and goes NOW
+    const longest=todo.reduce((a,b)=>totalCook(b.m)>totalCook(a.m)?b:a, todo[0]);
+    if(!longest) return null;
+    if(it===longest) return 0;
+    latest=totalCook(longest.m);
+  }
+  return Math.max(0, latest - totalCook(it.m));
+}
 function stationDown(stId){ return (G.downUntil[stId]||0) > G.t; }
 
 /* ===================== v14.3: WAYS OUT OF A DEAD END =====================
@@ -1606,11 +1662,25 @@ function fire(tk,idx){
   SFX.fire();
 }
 
+/* v15.2: FIRE OLDEST now starts a ticket the RIGHT way — it fires the
+   longest-cooking dish first (the anchor everything else syncs to) instead
+   of whatever happens to be at the top of the chit. So the panic button
+   sets up a tight pass rather than wrecking one; landing it still takes the
+   player hitting the ▶ FIRE cues on the shorter dishes. Help, not autopilot. */
 function fireOldest(){
   for(const tk of G.tickets){
+    if(tk.dead) continue;
+    const ready=[];
     for(let i=0;i<tk.items.length;i++){
-      if(tk.items[i].state==='todo' && !stationDown(tk.items[i].m.st) && freePan(tk.items[i].m.st)){ fire(tk,i); return; }
+      const it=tk.items[i];
+      if(it.state==='todo' && !stationDown(it.m.st) && freePan(it.m.st)) ready.push(i);
     }
+    if(!ready.length) continue;
+    // prefer a dish whose cue says it is due; otherwise take the longest cook
+    const due=ready.filter(i=>{ const t=fireCue(tk,tk.items[i]); return t!==null && t<=.35; });
+    const pool=due.length?due:ready;
+    pool.sort((a,b)=>totalCook(tk.items[b].m)-totalCook(tk.items[a].m));
+    fire(tk,pool[0]); return;
   }
   toast('NOTHING TO FIRE');
 }
@@ -1790,7 +1860,7 @@ function plate(tk, byExpo=false){
   if(tight===1){
     floatText(tk.el,'⟡ TIGHT PASS +40%','#ffd84d'); SFX.star&&SFX.star();
     if(!G.endless&&!META.tut.tight){ META.tut.tight=1; saveMeta();
-      coach('<b>⟡ TIGHT PASS.</b> Every dish on that table hit the window together — <b>+40%</b>. That is the whole job of a pass: a ribeye takes 9s and oysters take 2s, so you fire the ribeye FIRST and the oysters seven seconds later. Fire everything at once and the first dish sits going cold.',13000); }
+      coach('<b>⟡ TIGHT PASS.</b> Every dish on that table hit the window together — <b>+40%</b>. You never have to count: each dish on a multi-dish ticket shows <b style="color:#ffd84d">▶ FIRE</b> when it is time, or <b style="color:#7dd3fc">▷ 3.2s</b> while it waits. Answer the cues and the table lands as one.',12000); }
   } else if(pulls.length>=2 && tight===0 && spread>TIGHT_WIN*2){
     floatText(tk.el,'STRAGGLED — '+spread.toFixed(0)+'s APART','#8a949c');
   }
@@ -2190,6 +2260,19 @@ function render(){
     for(const it of tk.items){
       if(it.state==='todo'){
         it.el.classList.toggle('canfire', !stationDown(it.m.st) && !!freePan(it.m.st));
+        /* ============ v15.2: THE GAME DOES THE MATH ============
+           Jaxon: "i dont really have time to time the tickets with how many
+           stack up so fast i go back to just spamming fire again."
+           Right — v15 asked for arithmetic under pressure ("ribeye is 9.5,
+           oysters are 2, so wait 7.5"). Every other verb in this game is
+           TAP WHEN IT GLOWS; the tight pass was the only one demanding
+           mental math, so under load it collapsed straight back to spam.
+           Now the game computes the stagger and the chit just tells you:
+           a countdown, then FIRE. Same decision, no homework. */
+        const t=fireCue(tk,it);
+        it.el.classList.toggle('fireNow', t!==null && t<=.35);
+        it.el.classList.toggle('fireWait', t!==null && t>.35);
+        if(it.cueEl) it.cueEl.textContent = t===null?'' : t<=.35?'▶ FIRE' : '▷ '+t.toFixed(1)+'s';
       } else if(it.state==='cooking'&&it.pan){
         const t2=it.pan.cookNeed+it.pan.winLen+it.pan.grace;
         it.barEl.style.width=Math.min(100,it.pan.t/t2*100)+'%';
