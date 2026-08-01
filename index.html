@@ -574,7 +574,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v19</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v19.1</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -1675,42 +1675,43 @@ const CHEF_BODY = [
    cuffs, apron ties, and separated shoes — plus room for a highlight pass,
    so materials read as three tones (light / base / shade) instead of two. */
 const CHEF_HATS_HI = {
-  toque:   ['....HHHHHHHHHHHHHHHH....','...HHHHHHHHHHHHHHHHHH...','..HHHHHHHHHHHHHHHHHHHH..','..HHHHHHHHHHHHHHHHHHHH..',
-            '..HHHHHHHHHHHHHHHHHHHH..','...HHHHHHHHHHHHHHHHHH...','...HHHHHHHHHHHHHHHHHH...','....HHHHHHHHHHHHHHHH....'],
+  // 24 wide; every row centred. Toque = puffed crown over a straight band.
+  toque:   ['.....HHHHHHHHHHHHHH.....','....HHHHHHHHHHHHHHHH....','....HHHHHHHHHHHHHHHH....','....HHHHHHHHHHHHHHHH....',
+            '.....HHHHHHHHHHHHHH.....','......HHHHHHHHHHHH......','......HHHHHHHHHHHH......','......HHHHHHHHHHHH......'],
   bandana: ['........................','........................','........................','........................',
-            '....HHHHHHHHHHHHHHHH....','...HHHHHHHHHHHHHHHHHH...','..HHHHHHHHHHHHHHHHHHHH..','..HHHHHHHHHHHHHHHHHHHH..'],
-  beanie:  ['........................','........................','....HHHHHHHHHHHHHHHH....','...HHHHHHHHHHHHHHHHHH...',
-            '..HHHHHHHHHHHHHHHHHHHH..','..HHHHHHHHHHHHHHHHHHHH..','..HHHHHHHHHHHHHHHHHHHH..','..HHHHHHHHHHHHHHHHHHHH..'],
+            '........................','......HHHHHHHHHHHH......','.....HHHHHHHHHHHHHH.....','.....HHHHHHHHHHHHHH.....'],
+  beanie:  ['........................','........................','........................','......HHHHHHHHHHHH......',
+            '.....HHHHHHHHHHHHHH.....','.....HHHHHHHHHHHHHH.....','.....HHHHHHHHHHHHHH.....','......HHHHHHHHHHHH......'],
   none:    ['........................','........................','........................','........................',
-            '....RRRRRRRRRRRRRRRR....','...RRRRRRRRRRRRRRRRRR...','..RRRRRRRRRRRRRRRRRRRR..','..RRRRRRRRRRRRRRRRRRRR..'],
+            '........................','.......RRRRRRRRRR.......','......RRRRRRRRRRRR......','......RRRRRRRRRRRR......'],
 };
 const CHEF_BODY_HI = [
-  '..RRRRRRRRRRRRRRRRRRRR..',   //  0 hairline
-  '..RRSSSSSSSSSSSSSSSSRR..',   //  1 forehead
-  '..RSSSSSSSSSSSSSSSSSSR..',   //  2
-  '...SSSSSSSSSSSSSSSSSS...',   //  3
-  '...SSEESSSSSSSSSSEESS...',   //  4 eyes
-  '...SSEESSSSSSSSSSEESS...',   //  5
-  '...SSSSSSSSSSSSSSSSSS...',   //  6
-  '....SSSSSSSSSSSSSSSS....',   //  7 cheeks
-  '....SSSSSSMMMMSSSSSS....',   //  8 mouth
-  '.....SSSSSSSSSSSSSS.....',   //  9 jaw
-  '......SSSSSSSSSSSS......',   // 10 chin
-  '........NNNNNNNN........',   // 11 neck
-  '....CCCCCCCCCCCCCCCC....',   // 12 shoulders
-  '..CCCCCCLLLLLLCCCCCCCC..',   // 13 collar + lapels
-  '..CCCCCCCLLLLCCCCCCCCC..',   // 14
-  '.WWCCCCAAAAAAAACCCCCWW..',   // 15 cuffs out, apron begins
-  '.SSCCCBAAAAAAAABCCCCSS..',   // 16 buttons at the apron edge
-  '.SSCCCAAAAAAAAAACCCCSS..',   // 17 hands
-  '..CCCCAAAAAAAAAACCCCCC..',   // 18
-  '..CCCCAAAAAAAAAACCCCCC..',   // 19
-  '...TTTAAAAAAAAAATTT.....',   // 20 apron ties
-  '....CCAAAAAAAAAACC......',   // 21
-  '....CCAAAAAAAAAACC......',   // 22
-  '.....PPPP....PPPP.......',   // 23 legs
-  '.....PPPP....PPPP.......',   // 24
-  '...OOOOOO....OOOOOO.....',   // 25 shoes
+  '.......RRRRRRRRRR.......',   //  0 hair — narrow, squared head
+  '......RRRRRRRRRRRR......',   //  1
+  '......RRSSSSSSSSRR......',   //  2 hairline
+  '......RSSSSSSSSSSR......',   //  3
+  '.......SSSSSSSSSS.......',   //  4
+  '.......SEESSSSEES.......',   //  5 eyes
+  '.......SEESSSSEES.......',   //  6
+  '.......SSSSSSSSSS.......',   //  7
+  '.......SSSMMMMSSS.......',   //  8 mouth
+  '........SSSSSSSS........',   //  9 jaw — straight taper, no rounding
+  '........SSSSSSSS........',   // 10
+  '.........NNNNNN.........',   // 11 neck
+  '.....CCCCCCCCCCCCCC.....',   // 12 shoulders — square, wider than head
+  '....CCCCCCCCCCCCCCCC....',   // 13
+  '....CCCLLCCCCCCLLCCC....',   // 14 lapels
+  '....CCCCLLCCCCLLCCCC....',   // 15
+  '..WWCCCCAAAAAAAACCCCWW..',   // 16 cuffs out, apron starts
+  '..SSCCCAAAAAAAAAACCCSS..',   // 17 hands
+  '..SSCCAAAAAAAAAAAACCSS..',   // 18
+  '.....CAAAAAAAAAAAAC.....',   // 19 straight apron sides
+  '.....CAAAAAAAAAAAAC.....',   // 20
+  '.....TAAAAAAAAAAAAT.....',   // 21 ties
+  '.....CAAAAAAAAAAAAC.....',   // 22
+  '......PPPPP..PPPPP......',   // 23 legs — hard split
+  '......PPPPP..PPPPP......',   // 24
+  '.....OOOOOO..OOOOOO.....',   // 25 shoes
 ];
 /* Wardrobe pieces are authored on the 12x17 grid — scale them onto 24x34.
    One old pixel becomes a 2x2 block, so a piece drawn over the eyes still
@@ -1773,17 +1774,14 @@ function chefURL(m,px=3){
     if(colorAt(cx+1,cy)||colorAt(cx-1,cy)||colorAt(cx,cy+1)||colorAt(cx,cy-1))
       x.fillRect((cx+1)*px,(cy+1)*px,px,px);
   }
-  // fill: light on the top/left edge, shade on the bottom/right edge
+  /* v19.1: flat fill with a single shade on the bottom/right edge only.
+     v19 lit the top/left as well, and that bevel on every edge is what made
+     the sprites read as rounded and inflated — pixel art wants hard planes,
+     not a gradient on every silhouette. */
   for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
     const c=colorAt(cx,cy); if(!c) continue;
-    let out=c;
-    if(c!=='#14100c'){
-      const dark = !colorAt(cx+1,cy) || !colorAt(cx,cy+1);
-      const lit  = !colorAt(cx-1,cy) || !colorAt(cx,cy-1);
-      if(dark) out=shade(c,-.24);
-      else if(lit) out=shade(c,+.16);
-    }
-    x.fillStyle=out;
+    const dark = c!=='#14100c' && (!colorAt(cx+1,cy) || !colorAt(cx,cy+1));
+    x.fillStyle= dark ? shade(c,-.20) : c;
     x.fillRect((cx+1)*px,(cy+1)*px,px,px);
   }
   return cv.toDataURL();
