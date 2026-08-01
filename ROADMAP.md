@@ -399,6 +399,22 @@ only ignored — so the fix recovers it.
       well with an oil line, a chilled steel bay, a binchotan trough, a neta
       case. The station column IS the machine.
 
+## v17.3 — PAN UPGRADES PER RESTAURANT + REAL PAN SPRITES (SHIPPED 2026-08-01)
+- [x] Jaxon: "the upgrades are still locked even though i have the prereqs."
+      Two faults from the v17 restaurant split, both mine: (1) the pan
+      upgrades were hardcoded to THE CORNER's four stations, so KIRIN's robata
+      and sushi had NO pan upgrade at all; (2) GOLDEN PANS asked for
+      grill+saute+fry+cold specifically, a set KIRIN can never own, so it was
+      permanently locked there. Pan upgrades are GENERATED from the current
+      restaurant's line now, and allpans asks about this restaurant. Verified
+      at both kitchens.
+- [x] Jaxon: "the cook stations look like shit." They did. v17.2 stretched one
+      16px-wide tile across the entire column (background-size:100% 96px),
+      which squashes pixel art into mush. Each pan now wears its OWN
+      equipment sprite at uniform scale — grate over coals, burner ring with a
+      pan seated on it, basket in oil, chilled bay, binchotan trough, neta
+      case — sitting behind the readout and brightening when the pan is live.
+
 ## v18 — next on the career
 - [ ] HEAD CHEF loop: cooks take all pulls, PUSH command to drive a station
 - [ ] BUY THE RESTAURANT → passive income, LEGACY entry, bring one cook
