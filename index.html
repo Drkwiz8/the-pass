@@ -111,6 +111,13 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .cookTrk{height:10px;background:#0c1013;border-radius:2px;position:relative;overflow:hidden;flex:0 0 auto}
 .cookFill{height:100%;width:0;background:linear-gradient(90deg,#8a3a12,var(--hot));transition:background .15s}
 .zone{position:absolute;top:0;bottom:0;background:rgba(65,214,127,.28);border-left:1px solid var(--good);border-right:1px solid var(--good)}
+.zoneF{position:absolute;top:0;bottom:0;background:rgba(250,204,21,.3);border-left:1px solid var(--warn);border-right:1px solid var(--warn)}
+.pan.flipwin{border-color:var(--warn);box-shadow:inset 0 0 0 1px var(--warn),0 0 14px rgba(250,204,21,.25)}
+.pan.flipwin .panEmo{animation:flipTease .3s ease-in-out infinite alternate}
+@keyframes flipTease{to{transform:rotate(14deg) translateY(-2px)}}
+@keyframes flipSpin{to{transform:rotate(360deg)}}
+#combo b{color:var(--warn)}
+#combo.hot b{animation:blink .5s steps(2,end) infinite}
 
 .chefImg{image-rendering:pixelated;display:inline-block;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 .sousBadge{display:inline-flex;align-items:center;gap:5px;margin-left:auto}
@@ -268,6 +275,7 @@ body{touch-action:manipulation}
     <div class="stat" id="bank"><b>$0</b><span>BANK</span></div>
     <div class="stat" id="stars"><b>0</b><span>⭐ STARS</span></div>
     <div class="stat" id="covers"><b>0</b><span>COVERS</span></div>
+    <div class="stat" id="combo" style="display:none"><b>x0</b><span>🔥 HEAT</span></div>
     <div class="stat" id="walk"><b>0</b><span>WALKOUTS</span></div>
     <div class="stat wide" id="phase"><b id="phaseName">PREP</b><span id="toast"></span></div>
     <div id="weedsTag">IN THE WEEDS</div>
@@ -397,6 +405,8 @@ const ACHS = [
   {id:'spotless', n:'SPOTLESS',         d:'Survive a health inspection with zero fines.', test:c=>c.mode==='career'&&G.mod&&G.mod.id==='inspector'&&G.inspUntil>0&&G.fines===0},
   {id:'e300',     n:'RUSH $300',        d:'Score $300 in one Endless Rush run.', test:c=>c.mode==='endless'&&G.tips>=300},
   {id:'e5min',    n:'SURVIVOR',         d:'Last 5 minutes in Endless Rush.', test:c=>c.mode==='endless'&&G.t>=300},
+  {id:'flip10',   n:'FLIP MASTER',      d:'Land 10 flips in one service.', test:c=>G.flips>=10},
+  {id:'heat15',   n:'HEAT x15',         d:'Build a 15-pull perfect combo.', test:c=>G.comboMax>=15},
 ];
 function checkAchs(ctx){
   const fresh=[];
@@ -529,7 +539,7 @@ const G = {
   t:0, clock:SERVICE, closing:false, closeT:0,
   tips:0, covers:0, walkouts:0, waste:0,
   perfects:0, pulls:0, weeds:false, weedsTime:0, crewPulls:0, expoPlates:0, hostSaves:0,
-  criticFloored:false, partyPlated:false, fines:0,
+  criticFloored:false, partyPlated:false, fines:0, flips:0, combo:0, comboMax:0,
   nextSpawn:2.2, ticketNo:0, railCap:MAX_RAIL,
   tickets:[], pans:[], mod:null, hostCd:0,
   inspAt:0, inspUntil:0,
@@ -565,6 +575,8 @@ const SFX = {
   fire(){ noise(.26,.13); tone(160,.16,'sine',.09,110); },
   perfect(){ tone(1320,.13,'triangle',.16); tone(1980,.12,'sine',.08); },
   sous(){ tone(1046,.08,'triangle',.1); setTimeout(()=>tone(1568,.1,'sine',.07),60); },
+  flip(){ noise(.12,.12); tone(740,.1,'triangle',.13,980); },
+  combo(n){ tone(Math.min(2400,880+n*70),.1,'triangle',.13); },
   over(){ tone(430,.16,'square',.1,330); },
   raw(){ tone(190,.16,'sine',.15,120); },
   burn(){ tone(120,.5,'sawtooth',.14); noise(.5,.1); },
@@ -654,10 +666,10 @@ function buildLine(){
         <div class="panTop"><div class="panDish"></div><div class="panTicket"></div></div>
         <span class="panEmo"></span><span class="panFx"></span>
         <div class="panBig idle">EMPTY</div>
-        <div class="cookTrk" style="display:none"><div class="cookFill"></div><div class="zone"></div></div>`;
+        <div class="cookTrk" style="display:none"><div class="cookFill"></div><div class="zone"></div><div class="zoneF"></div></div>`;
       const pan={ st:st.id, key:keyLabel, el, item:null, ticket:null, t:0, cookNeed:0, winLen:0, grace:BURN_GRACE,
         dead:false, sousDecided:false, sousSkip:false,
-        fill:el.querySelector('.cookFill'), zone:el.querySelector('.zone'),
+        fill:el.querySelector('.cookFill'), zone:el.querySelector('.zone'), zoneF:el.querySelector('.zoneF'),
         trk:el.querySelector('.cookTrk'), emo:el.querySelector('.panEmo'), fx:el.querySelector('.panFx'),
         dish:el.querySelector('.panDish'), tk:el.querySelector('.panTicket'),
         big:el.querySelector('.panBig') };
@@ -702,7 +714,7 @@ function spawnTicket(opts={}){
     let m, guard=0;
     do{ m=MENU[(Math.random()*MENU.length)|0]; guard++; }while(used.includes(m.n)&&guard<12);
     used.push(m.n);
-    items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null});
+    items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null, flipped:false});
   }
   let vipChance = G.endless ? (G.t>60?.1:0) : (META.night>=2 ? .12 : 0);
   if(G.mod && G.mod.id==='vipnight') vipChance=.36;
@@ -776,6 +788,8 @@ function fire(tk,idx){
   const total=pan.cookNeed+pan.winLen+pan.grace;
   pan.zone.style.left=(pan.cookNeed/total*100)+'%';
   pan.zone.style.width=(pan.winLen/total*100)+'%';
+  pan.zoneF.style.left=(pan.cookNeed*.5/total*100)+'%';
+  pan.zoneF.style.width=(Math.min(.9,pan.cookNeed*.25)/total*100)+'%';
   it.el.className='item cooking'; it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent=pan.key;
   it.miniEl.style.display=''; it.barEl.style.background='#1a1512';
   SFX.fire();
@@ -796,24 +810,39 @@ function inspFine(reason){
   toast('INSPECTOR FINE — $30 ('+reason+')','var(--bad)'); SFX.fine();
 }
 
+function flipWin(pan){ const fs=pan.cookNeed*.5; return [fs, fs+Math.min(.9,pan.cookNeed*.25)]; }
+
 function pull(pan, byCrew=null){
   if(!G.running||G.paused||!pan.item) return;
   const it=pan.item, tk=pan.ticket, m=it.m;
-  G.pulls++;
   if(pan.t < pan.cookNeed){
-    it.state='todo'; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
+    // Before the pull window: this tap is either a FLIP (new verb) or a raw pull.
+    const [fs,fe]=flipWin(pan);
+    if(!byCrew && !it.flipped && pan.t>=fs && pan.t<=fe){
+      it.flipped=true; G.flips++;
+      pan.emo.style.animation='flipSpin .3s ease';
+      setTimeout(()=>{ pan.emo.style.animation=''; },320);
+      floatText(pan.el,'🔄 FLIPPED +20%','#facc15'); SFX.flip();
+      return;                                   // keeps cooking — flip is a bonus beat
+    }
+    G.pulls++; G.combo=0;
+    it.state='todo'; it.flipped=false; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
     toast('RAW — REFIRE '+m.n,'var(--bad)'); floatText(pan.el,'RAW','#ef4444'); SFX.raw();
     inspFine('RAW');
   } else {
+    G.pulls++;
     const over = pan.t > pan.cookNeed+pan.winLen;
     it.state='pass'; it.quality = over?'over':'perfect'; it.pulledAt=G.t;
     it.el.className='item ready'; it.tagEl.className='tag '+(over?'ov':'pf'); it.tagEl.textContent=over?'OVER':'PERF';
     it.miniEl.className='mini heat'; it.miniEl.style.display=''; it.barEl.style.background='';
-    if(over){ floatText(pan.el,'OVER','#facc15'); SFX.over(); }
+    if(over){ G.combo=0; floatText(pan.el,'OVER','#facc15'); SFX.over(); }
     else {
-      G.perfects++;
+      G.perfects++; G.combo++; G.comboMax=Math.max(G.comboMax,G.combo);
       if(byCrew){ G.crewPulls++; floatText(pan.el,'✋ '+byCrew.name,'#5ad1e6'); SFX.sous(); }
-      else { floatText(pan.el,it.m.e+' PERFECT','#41d67f'); SFX.perfect(); }
+      else {
+        floatText(pan.el, G.combo>=3 ? 'x'+G.combo+' 🔥' : it.m.e+' PERFECT','#41d67f');
+        G.combo>=3 ? SFX.combo(G.combo) : SFX.perfect();
+      }
     }
   }
   clearPan(pan);
@@ -831,8 +860,8 @@ function clearPan(pan){
 function burnPan(pan){
   const it=pan.item, tk=pan.ticket;
   it.state='todo'; it.el.className='item todo'; it.tagEl.style.display='none'; it.miniEl.style.display='none';
-  G.waste++;
-  if(!META.up.salamander) G.tips=Math.max(0,G.tips-Math.round(it.m.price*.4));
+  G.waste++; G.combo=0;
+  if(!(!G.endless&&META.up.salamander)) G.tips=Math.max(0,G.tips-Math.round(it.m.price*.4));
   toast('BURNT — '+it.m.n+' IN THE BIN','var(--bad)'); floatText(pan.el,'🔥 BURNT','#ef4444'); SFX.burn();
   inspFine('BURNT');
   clearPan(pan); refreshTicket(tk);
@@ -846,7 +875,7 @@ function plate(tk, byExpo=false){
   if(!G.running||G.paused||tk.dead||!ready(tk)) return;
   let base=0, qual=0, minHeat=1, allPerfect=true;
   tk.items.forEach(it=>{
-    base+=it.m.price;
+    base+=it.m.price*(it.flipped?1.2:1);
     qual+= it.quality==='perfect'?1.15:.6;
     if(it.quality!=='perfect') allPerfect=false;
     minHeat=Math.min(minHeat,heatOf(it));
@@ -860,6 +889,7 @@ function plate(tk, byExpo=false){
   if(tk.vip) tip*=2;
   if(tk.party) tip=Math.round(tip*1.3);
   if(!G.endless) tip=Math.round(tip*(1+.03*crewWith('fav')));
+  tip=Math.round(tip*(1+Math.min(.6,G.combo*.03)));   // heat pays on every plate
   G.tips+=tip; G.covers++;
   if(byExpo){ G.expoPlates++; floatText(tk.el,'📣 +$'+tip,'#5ad1e6'); }
   else floatText(tk.el,'+$'+tip, minHeat>.75?'#41d67f':'#facc15');
@@ -1057,6 +1087,9 @@ function render(){
   $('#bank b').textContent='$'+META.bank;
   $('#stars b').textContent=META.stars;
   $('#covers b').textContent=G.covers;
+  const cEl=$('#combo');
+  if(G.combo>=2){ cEl.style.display='flex'; cEl.querySelector('b').textContent='x'+G.combo; cEl.classList.toggle('hot',G.combo>=10); }
+  else cEl.style.display='none';
   const p=difficulty();
   $('#phaseName').textContent = G.endless
     ? (inspecting()?'INSPECTION':G.t<60?'WARMING UP':G.t<180?'THE RUSH':G.t<300?'DEEP WATER':'LEGEND HOURS')
@@ -1068,12 +1101,15 @@ function render(){
     pan.fill.style.width=Math.min(100,pan.t/total*100)+'%';
     const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
     const over  = pan.t>pan.cookNeed+pan.winLen;
+    const [ffs,ffe]=flipWin(pan);
+    const inFlip = !inWin && !over && !pan.item.flipped && pan.t>=ffs && pan.t<=ffe;
     pan.el.classList.toggle('perfect',inWin);
+    pan.el.classList.toggle('flipwin',inFlip);
     pan.el.classList.toggle('over',over && pan.t<pan.cookNeed+pan.winLen+1.5);
     pan.el.classList.toggle('burning',pan.t>=pan.cookNeed+pan.winLen+1.5);
-    pan.big.className = 'panBig'+(inWin||over?' callout':'');
-    pan.big.textContent = inWin?'PULL NOW' : over?'BURNING!' : (pan.cookNeed-pan.t).toFixed(1);
-    pan.big.style.color = inWin?'var(--good)' : over?'var(--bad)'
+    pan.big.className = 'panBig'+(inWin||over||inFlip?' callout':'');
+    pan.big.textContent = inWin?'PULL NOW' : over?'BURNING!' : inFlip?'FLIP! 🔄' : (pan.cookNeed-pan.t).toFixed(1);
+    pan.big.style.color = inWin?'var(--good)' : over?'var(--bad)' : inFlip?'var(--warn)'
       : (pan.cookNeed-pan.t)<1.5?'var(--warn)':'var(--txt)';
     pan.fill.style.background = over?'linear-gradient(90deg,#7a1414,#ef4444)'
       : inWin?'linear-gradient(90deg,#1c7a45,#41d67f)' : 'linear-gradient(90deg,#8a3a12,#ff6a1a)';
