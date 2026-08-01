@@ -2335,7 +2335,9 @@ function start(endless=false){
     if(G.wd==='TUE'){
       if(!V.duvall.off && !V.duvall.patron) G.vipSpawns.push({at:45+Math.random()*20,id:'duvall',fired:false});
       if(!V.rosa.off   && !V.rosa.patron)   G.vipSpawns.push({at:95+Math.random()*25,id:'rosa',fired:false});
-      if(!V.dee.off    && !V.dee.patron)    G.vipSpawns.push({at:148+Math.random()*25,id:'dee',fired:false});
+      /* v14.2: no Dee on Tuesday during Guide week (nights 23-28) — three VIPs +
+         a hidden guide was too many on one night. Dee books WED/THU/FRI/SAT in Guide week. */
+      if(!V.dee.off    && !V.dee.patron && weekNoFor(META.night)!==1) G.vipSpawns.push({at:148+Math.random()*25,id:'dee',fired:false});
     }
     /* v12: the rest of the book fills the week */
     if(G.wd==='WED' && !V.kenji.off  && !V.kenji.patron)  G.vipSpawns.push({at:70+Math.random()*30,id:'kenji',fired:false});

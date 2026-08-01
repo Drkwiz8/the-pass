@@ -151,6 +151,14 @@ Jaxon stuck on night 24, short a staged cook, no way through.
       (+8% patience, +8% slower tickets, stacks ×3, resets on a win) —
       framed as "word got around." Stuck is a ramp now, not a wall.
 
+## v14.2 — GUIDE WEEK RETARGET (SHIPPED 2026-08-01)
+Jaxon's playtest: night 24 was stalling on VIPs — three high-stakes patrons
+(Duvall, Rosa, Dee) plus a hidden Guide ticket and regular volume on one night.
+- [x] During Guide week (nights 23-28), @PLATEDBYDEE doesn't book Tuesday
+      — she appears WED–SAT instead. Duvall and Rosa still book every Tuesday;
+      the Guide still eats unmarked. Tuesday in Guide week is now "beat Duvall
+      and Rosa" instead of "survive four simultaneous pressure sources."
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).
