@@ -111,8 +111,8 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
    art is boxed into the middle band only (object-fit:contain letterboxes it
    at any pan height), so it can never ride over the name or the bar however
    many pans are stacked. */
-.panSurf{position:absolute;left:6px;top:22px;
-  width:calc(100% - 12px);height:calc(100% - 46px);min-height:0;
+.panSurf{position:absolute;left:6px;top:20px;
+  width:calc(100% - 12px);height:calc(100% - 44px);min-height:0;
   object-fit:contain;image-rendering:pixelated;opacity:.8;z-index:0;pointer-events:none}
 .pan.live .panSurf{opacity:.95}
 .pan.empty .panSurf{opacity:.4}
@@ -134,8 +134,9 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .station.down::after{content:'86\'D';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:rgba(120,10,10,.32);color:var(--bad);font-size:26px;font-weight:700;letter-spacing:6px;z-index:5;pointer-events:none;text-shadow:0 2px 8px #000}
 .pans{flex:1;display:flex;flex-direction:column;gap:8px;padding:9px;min-height:0}
+/* v18.5: bottom padding reserves the strip the timing bar is pinned into */
 .pan{flex:1;background:linear-gradient(180deg,#252c33,#1b2127);border:1px solid var(--line);border-radius:3px;
-  padding:8px 9px;display:flex;flex-direction:column;
+  padding:8px 9px 21px;display:flex;flex-direction:column;
   justify-content:space-between;position:relative;overflow:hidden;min-height:0;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 /* live pans sit in their station's heat */
@@ -205,7 +206,14 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
 .station[data-st=fry]   .pan.live::after{background:linear-gradient(0deg,rgba(255,216,77,.20),transparent)}
 @keyframes heatBreathe{0%,100%{opacity:.55}50%{opacity:1}}
 .pan.burning::after{animation-duration:.4s!important}
-.cookTrk{height:10px;background:#0c1013;border-radius:2px;position:relative;overflow:hidden;flex:0 0 auto;z-index:3}
+/* v18.5 (Jaxon: "i dont see the timing bar at all"). It was a flex child at
+   the bottom of a pan with overflow:hidden — so once a station carried three
+   or four pans and the column got short, the content overflowed and the bar
+   was CLIPPED out of the box. It is pinned to the bottom of the pan now, so
+   it cannot be pushed out or clipped no matter how many pans are stacked or
+   how small the viewport is. This bar is the game; it always draws. */
+.pan>.cookTrk{position:absolute;left:9px;right:9px;bottom:7px;height:10px;
+  background:#0c1013;border:1px solid #05070a;border-radius:2px;overflow:hidden;z-index:5}
 .cookFill{height:100%;width:0;background:linear-gradient(90deg,#8a3a12,var(--hot));transition:background .15s}
 .zone{position:absolute;top:0;bottom:0;background:rgba(65,214,127,.28);border-left:1px solid var(--good);border-right:1px solid var(--good)}
 .zoneF{position:absolute;top:0;bottom:0;background:rgba(250,204,21,.3);border-left:1px solid var(--warn);border-right:1px solid var(--warn)}
@@ -529,7 +537,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.4</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.5</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
