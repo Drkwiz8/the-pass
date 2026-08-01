@@ -570,7 +570,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.6</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.7</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -2186,7 +2186,7 @@ function buildChit(tk){
     d.style.borderLeft='3px solid '+st.color;
     /* v15: the cook time is on the chit now. You cannot plan a stagger you
        cannot see — this is the number the whole TIGHT PASS decision runs on. */
-    const secs=(it.m.cook+(it.m.tech&&mechOn('tech')?it.m.tech.cook:0));
+    const secs=totalCook(it.m);   // v18.7: the real time this kitchen cooks it in
     d.innerHTML=`<div class="iRow"><span class="iName"><span class="iEmo">${foodTag(it.m.n,'cooked',2,it.m.e)}</span>${it.m.n}${it.m.tech&&mechOn('tech')?' <span style="font-size:8px;opacity:.6">×2</span>':''}</span>
         <span class="fireCue"></span>
         <span class="cookSecs">${secs.toFixed(1)}s</span>
@@ -2242,7 +2242,16 @@ function cookFx(m,prog){
    The reference point is whatever finishes LAST on this ticket: any dish
    already cooking, or — if none is — the longest dish still waiting. Fire
    the long one first, and every shorter dish then counts itself down. */
-function totalCook(m){ return m.cook + (m.tech&&mechOn('tech') ? m.tech.cook : 0); }
+/* v18.7 BUGFIX (Jaxon: "the times doesnt line up"). This returned the RAW
+   menu cook time, but a pan actually runs on cookTime(), which applies PREP
+   COOK (-8%), SHARPER KNIVES (garde -15%) and KITCHEN OVERHAUL (-2%/level).
+   So the moment you owned any of those, the seconds printed on the chit and
+   every ▶ FIRE stagger were computed against numbers the kitchen no longer
+   used — the cues fired early and tight passes stopped landing. Now it asks
+   the same function the pan does. */
+function totalCook(m){
+  return cookTime(m) + (m.tech&&mechOn('tech') ? cookTime({cook:m.tech.cook, st:m.st}) : 0);
+}
 function fireCue(tk,it){
   const live=tk.items.filter(i=>i.state!=='void');
   if(live.length<2) return null;
