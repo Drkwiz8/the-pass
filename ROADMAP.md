@@ -334,7 +334,41 @@ Full spec in **THE-CAREER.md**. Key decisions:
 - BUILD GATE: stations must become per-restaurant DATA instead of the global
   STATIONS array with `unl:` night numbers. That refactor is v16's real work.
 
-## v17 — CREWS (multiplayer, the honest path)
+## v17 — RESTAURANTS + RANKS (SHIPPED 2026-08-01)
+The blocking refactor from THE-CAREER.md, plus Jaxon's "i wanna be able to
+swap between restaurants" and "acctualy pixelated cooking quipment".
+- [x] STATIONS ARE DATA: one global list gated by night number became a
+      STATION_CATALOG (6 pieces incl. ROBATA and SUSHI) that each restaurant
+      picks from in its own order. A second kitchen is now possible at all.
+- [x] FIVE RANKS gate the line, earned by GRADE not money: COMMIS (2
+      stations, alone) → LINE COOK (3, +1 cook) → CHEF DE PARTIE (4, +2) →
+      SOUS (full line, 3 cooks + expo) → HEAD CHEF (+ host). Grade points
+      S=+2 A=+1 B=0 C/D=−1, four to promote. Next-rank card in the CREW tab.
+      HEAD CHEF still jumps on any station — pans stay player-clickable at
+      every rank, which was Jaxon's explicit call.
+- [x] PER-RESTAURANT PROGRESS via non-enumerable accessors on META, so all
+      ~400 existing `META.night` / `META.up` references keep working untouched
+      and the save never double-writes. Each tour keeps its own night, rank,
+      tier, upgrades, brigade, week grades, regulars and rivalry. Bank, stars,
+      wardrobe, achievements, lifetime ledger and your chef follow YOU.
+- [x] KIRIN (izakaya) — unlocks at HEAD CHEF in THE PASS. Robata / fry /
+      sushi / sauté, 14 dishes tuned as the opposite of THE PASS: short cooks,
+      tight windows, low prices, high count. Sushi has no heat — the window is
+      all there is.
+- [x] Restaurant switcher on the title card; renovation tier names are
+      per-restaurant (KIRIN goes STANDING BAR → IZAKAYA → COUNTER → KAPPO →
+      OMAKASE) so a rebuilt izakaya isn't called a brasserie.
+- [x] PIXEL EQUIPMENT: grill grates over coals, burner ring, fry basket in
+      oil, cold well, binchotan robata, sushi neta case — drawn through the
+      same outline + edge-shade pipeline as the chefs and the food.
+
+## v18 — next on the career
+- [ ] HEAD CHEF loop: cooks take all pulls, PUSH command to drive a station
+- [ ] BUY THE RESTAURANT → passive income, LEGACY entry, bring one cook
+- [ ] KIRIN pixel food sprites (currently emoji fallback) + its own regulars
+- [ ] BRASA (steakhouse, doneness windows) and LEVAIN (bakery, proofing)
+
+## v19 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).
 1. Global leaderboard first (endless scores, name + crew tag field)

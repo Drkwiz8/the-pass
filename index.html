@@ -98,6 +98,8 @@ body.weeds #weedsTag{display:flex;animation:pulseRed .55s ease-in-out infinite a
   min-width:0;position:relative;border-top:9px solid transparent;background-clip:padding-box}
 /* the equipment itself, behind the pans */
 .station .pans{position:relative}
+.stEquip{image-rendering:pixelated;height:17px;width:auto;vertical-align:middle;margin-right:2px;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}
 .station .pans::before{content:'';position:absolute;inset:6px 5px;border-radius:3px;pointer-events:none;z-index:0;opacity:.5}
 .station[data-st=grill] .pans::before{
   background:repeating-linear-gradient(0deg,#0d0f12 0 4px,#3a2119 4px 7px),
@@ -368,6 +370,19 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 .syncLine.tight{color:#ffd84d;background:rgba(255,216,77,.14);font-weight:700}
 .syncLine.half{color:#7dd3fc;background:rgba(125,211,252,.1)}
 .syncLine.loose{color:var(--dim)}
+#restRow{display:flex;gap:7px;margin:12px 0 4px;flex-wrap:wrap}
+.restBtn{flex:1;min-width:130px;text-align:left;background:var(--panel2);border:1px solid var(--line2);
+  border-radius:4px;padding:9px 11px;cursor:pointer;font-family:var(--mono);color:var(--txt);
+  display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center}
+.restBtn .rEmo{grid-row:1/3;font-size:21px}
+.restBtn b{font-size:12px;letter-spacing:1.4px}
+.restBtn small{font-size:9px;color:var(--dim);letter-spacing:.6px}
+.restBtn:hover{border-color:var(--txt)}
+.restBtn.sel{border-color:var(--hot);background:#20272d;box-shadow:inset 0 0 0 1px rgba(255,83,48,.3)}
+.restBtn.sel b{color:var(--hot)}
+.restBtn.locked{opacity:.5;cursor:not-allowed}
+.restBtn.locked:hover{border-color:var(--line2)}
+@media (max-width:900px){ .restBtn{min-width:100%} }
 .wardPrev{position:relative;display:flex;align-items:flex-end;justify-content:center;
   background:linear-gradient(180deg,#0f151a,#141c22);border:1px solid var(--line);border-radius:3px;
   padding:6px 0 4px;margin-bottom:7px;min-height:78px}
@@ -496,7 +511,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v16</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v17</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -508,6 +523,7 @@ body{touch-action:manipulation}
 <div id="overlay">
   <div id="card">
     <h1><small>THE PASS</small>DINNER RUSH</h1>
+    <div id="restRow"></div>
     <div class="nightLine"><b id="introNight">NIGHT 1</b><span class="starB" id="introStars">⭐ 0</span><span class="bankB" id="introBank">BANK $0</span></div>
     <div id="introMod"></div>
     <p>Four stations, a printer that will not stop, and a career one service long — until you survive it. Start alone. End up running a kitchen.</p>
@@ -548,12 +564,103 @@ const COOK_COSTS=[500,800,1400];
 
 /* CAMPAIGN CURVE: `unl` = the career night a station/dish unlocks. Every night
    1-16 introduces something; endless mode ignores all gating (full kitchen). */
-const STATIONS = [
-  {id:'grill', name:'GRILL', tag:'GRL', emo:'🔥', color:'#ff5330', unl:1},
-  {id:'saute', name:'SAUTÉ', tag:'SAU', emo:'🍳', color:'#ffa41f', unl:2},
-  {id:'fry',   name:'FRY',   tag:'FRY', emo:'🧺', color:'#ffd84d', unl:4},
-  {id:'cold',  name:'GARDE', tag:'GDM', emo:'❄️', color:'#5ad1e6', unl:1},
+/* ================= v17: STATIONS ARE DATA, RESTAURANTS OWN THEM =================
+   The blocking refactor named in THE-CAREER.md. Stations used to be one global
+   list gated by night number, which made a second restaurant impossible. Now
+   there is a CATALOG of equipment, and each restaurant picks which pieces it
+   runs and in what order — so KIRIN can have a robata and a sushi counter while
+   THE PASS has a grill and a fry station, and neither knows about the other. */
+const STATION_CATALOG = [
+  {id:'grill',  name:'GRILL',  tag:'GRL', emo:'🔥', color:'#ff5330'},
+  {id:'saute',  name:'SAUTÉ',  tag:'SAU', emo:'🍳', color:'#ffa41f'},
+  {id:'fry',    name:'FRY',    tag:'FRY', emo:'🧺', color:'#ffd84d'},
+  {id:'cold',   name:'GARDE',  tag:'GDM', emo:'❄️', color:'#5ad1e6'},
+  {id:'robata', name:'ROBATA', tag:'RBT', emo:'🍢', color:'#e8623c'},
+  {id:'sushi',  name:'SUSHI',  tag:'SUS', emo:'🍣', color:'#7dd3fc'},
 ];
+const ST = id => STATION_CATALOG.find(s=>s.id===id);
+
+/* ============ v17: PIXEL EQUIPMENT (Jaxon: "acctualy pixelated cooking
+   quipment that matches") ============
+   Same pipeline as the chefs and the food — a small grid, the dark outline
+   pass, then the right/bottom edge shade — so the line is drawn in the same
+   hand as everything else instead of being CSS gradients pretending. Each
+   station gets its real equipment: grill grates over coals, a burner ring
+   with a pan on it, a fry basket in oil, a cold well, a binchotan robata,
+   and a sushi neta case. */
+const EQUIP={
+  grill:{rows:['..............','.KKKKKKKKKKKK.','.K##########K.','.K.=.=.=.=..K.','.K##########K.','.K.=.=.=.=..K.','.KooooooooooK.','..KKKKKKKKKK..'],
+    pal:{K:'#4a5158','#':'#20262b','=':'#ff6a3d',o:'#8a3a18'}},
+  saute:{rows:['..............','...KKKKKKKK...','..K########K..','..K#.oooo.##..','..K#o====o##..','..K#.oooo.##..','..K########K..','...KKKKKKKK...'],
+    pal:{K:'#4a5158','#':'#252b31',o:'#ffa41f','=':'#ff7a1f'}},
+  fry:{rows:['..............','.KK........KK.','.K#KKKKKKKK#K.','.K#++++++++#K.','.K#+oooooo+#K.','.K#+oooooo+#K.','.K##########K.','..KKKKKKKKKK..'],
+    pal:{K:'#4a5158','#':'#2a2b22','+':'#6b6650',o:'#d8bf4a'}},
+  cold:{rows:['..............','.KKKKKKKKKKKK.','.KwwwwwwwwwwK.','.Kw.=..=..=.wK','.Kwwwwwwwwww.K','.Kw........wK.','.KKKKKKKKKKKK.','..K........K..'],
+    pal:{K:'#59636b',w:'#9fb2bd','=':'#5ad1e6'}},
+  robata:{rows:['..............','.K==========K.','.K##########K.','.K.o.o.o.o..K.','.K##########K.','.KccccccccccK.','.KccccccccccK.','..KKKKKKKKKK..'],
+    pal:{K:'#4a5158','#':'#1a1d20','=':'#c9a227',o:'#ff8a3d',c:'#7a2d14'}},
+  sushi:{rows:['..............','.KKKKKKKKKKKK.','.KggggggggggK.','.Kg.r..p..w.K.','.KggggggggggK.','.KwwwwwwwwwwK.','.KKKKKKKKKKKK.','..K........K..'],
+    pal:{K:'#5a6068',g:'#c9d6de',r:'#e05a5a',p:'#f2a0b0',w:'#efeae0'}},
+};
+function equipURL(stId,px=3){
+  const E=EQUIP[stId]; if(!E) return '';
+  const rows=E.rows, W=rows[0].length, H=rows.length;
+  const cv=document.createElement('canvas');
+  cv.width=(W+2)*px; cv.height=(H+2)*px;
+  const x=cv.getContext('2d');
+  const at=(cx,cy)=>{ if(cx<0||cy<0||cx>=W||cy>=H) return null;
+    const ch=rows[cy][cx]; return ch==='.'?null:(E.pal[ch]||'#f0f'); };
+  x.fillStyle='#0a0c0f';
+  for(let cy=-1;cy<=H;cy++) for(let cx=-1;cx<=W;cx++){
+    if(at(cx,cy)) continue;
+    if(at(cx+1,cy)||at(cx-1,cy)||at(cx,cy+1)||at(cx,cy-1)) x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
+    const c=at(cx,cy); if(!c) continue;
+    const edge=!at(cx+1,cy)||!at(cx,cy+1);
+    x.fillStyle= edge ? shade(c,-.24) : c;
+    x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+  }
+  return cv.toDataURL();
+}
+
+/* The five ranks of a tour. Rank gates how much kitchen you are trusted with —
+   stations first, then people. Earned by GRADE (see rankPay), never bought. */
+const RANKS = [
+  {n:'COMMIS',         sts:2, cooks:0, expo:false, host:false,
+   d:'New hire. Two stations, nobody to help, everything is yours.'},
+  {n:'LINE COOK',      sts:3, cooks:1, expo:false, host:false,
+   d:'Trusted with a third station and your first cook.'},
+  {n:'CHEF DE PARTIE', sts:4, cooks:2, expo:false, host:false,
+   d:'Senior on the line. Two cooks cover the basics; you take the hard ones.'},
+  {n:'SOUS CHEF',      sts:9, cooks:3, expo:true,  host:false,
+   d:'Second in command. Full line, three cooks and an expo calling ready tickets.'},
+  {n:'HEAD CHEF',      sts:9, cooks:3, expo:true,  host:true,
+   d:'You run this kitchen. Work the pass — and jump on a station the second it needs you.'},
+];
+const RANK_TARGET = 4;   // grade points to promote
+function rankOf(){ return RANKS[Math.min(META.rank||0, RANKS.length-1)]; }
+function rankPay(grade){ return grade==='S'?2 : grade==='A'?1 : grade==='B'?0 : -1; }
+
+const RESTAURANTS = [
+  {id:'pass',  n:'THE PASS',  sub:'AMERICAN BISTRO', emo:'🍽️',
+   stations:['grill','saute','cold','fry'],
+   d:'Your first kitchen. Four stations, a printer that never stops, and everything to prove.',
+   unlock:null},
+  {id:'kirin', n:'KIRIN',     sub:'IZAKAYA',         emo:'🏮',
+   stations:['robata','fry','sushi','saute'],
+   d:'Skewers over binchotan, a sushi counter with no heat at all, and twice the ticket count. Small plates, fast hands.',
+   unlock:{rest:'pass', rank:4, label:'Reach HEAD CHEF at THE PASS'}},
+];
+const REST = id => RESTAURANTS.find(r=>r.id===id) || RESTAURANTS[0];
+function curRest(){ return REST(META.rest||'pass'); }
+function restUnlocked(r){
+  if(!r.unlock) return true;
+  const t=META.tours&&META.tours[r.unlock.rest];
+  return !!(t && (t.rank||0)>=r.unlock.rank);
+}
+/* Endless Rush always plays THE PASS's line — it is the fair, fixed kitchen. */
+const STATIONS = STATION_CATALOG;
 
 const MENU = [
   {n:'BURGER',      e:'🍔', st:'grill', cook:6.2, win:1.60, price:19, unl:1},
@@ -580,14 +687,46 @@ const MENU = [
   {n:'LOBSTER TAIL',e:'🦞', st:'grill', cook:7.6, win:1.04, price:44, unl:15, tech:{n:'BUTTER BASTE', cook:2.2, win:.9}},
   {n:'GNOCCHI',     e:'🥟', st:'saute', cook:6.4, win:1.40, price:23, unl:16},
   {n:'WINGS',       e:'🪽', st:'fry',   cook:6.8, win:1.60, price:15, unl:16},
+
+  /* ===================== KIRIN — IZAKAYA (v17) =====================
+     A different kitchen has to FEEL different, not just look it. Kirin's
+     numbers are the opposite of THE PASS: short cooks, tight windows, low
+     prices, high count. You are not managing four big dishes, you are
+     managing twelve small ones. The sushi counter has no heat at all —
+     the window is all there is. */
+  {n:'EDAMAME',     e:'🫛', st:'fry',    cook:2.4, win:1.30, price:7,  unl:1, rest:'kirin'},
+  {n:'GYOZA',       e:'🥟', st:'fry',    cook:4.2, win:1.00, price:12, unl:1, rest:'kirin'},
+  {n:'KARA-AGE',    e:'🍗', st:'fry',    cook:5.0, win:.95,  price:14, unl:3, rest:'kirin'},
+  {n:'TEMPURA',     e:'🍤', st:'fry',    cook:4.6, win:.80,  price:16, unl:6, rest:'kirin'},
+  {n:'NEGIMA',      e:'🍢', st:'robata', cook:3.6, win:.90,  price:11, unl:1, rest:'kirin'},
+  {n:'TSUKUNE',     e:'🍡', st:'robata', cook:4.4, win:.85,  price:13, unl:2, rest:'kirin'},
+  {n:'SHISHITO',    e:'🌶️', st:'robata', cook:2.8, win:1.10, price:9,  unl:4, rest:'kirin'},
+  {n:'HAMACHI KAMA',e:'🐟', st:'robata', cook:7.2, win:.90,  price:26, unl:8, rest:'kirin'},
+  {n:'NIGIRI',      e:'🍣', st:'sushi',  cook:2.0, win:.70,  price:15, unl:1, rest:'kirin'},
+  {n:'CHU-TORO',    e:'🍥', st:'sushi',  cook:2.6, win:.60,  price:28, unl:5, rest:'kirin'},
+  {n:'UNI',         e:'🦔', st:'sushi',  cook:3.0, win:.55,  price:34, unl:10, rest:'kirin'},
+  {n:'RAMEN',       e:'🍜', st:'saute',  cook:6.4, win:1.15, price:18, unl:2, rest:'kirin'},
+  {n:'YAKISOBA',    e:'🍝', st:'saute',  cook:5.6, win:1.05, price:16, unl:4, rest:'kirin'},
+  {n:'AGEDASHI',    e:'🍲', st:'saute',  cook:4.8, win:1.00, price:13, unl:7, rest:'kirin'},
 ];
 /* mechanic debut nights (career; endless = all on) */
 const DEBUT = {flip:3, season:4, combo:5, vip:6, bus:7, mods:8, down:9, critic:10, fourtop:12, tech:14};
 function mechOn(id){ return G.endless || META.night>=DEBUT[id]; }
-function stationsLive(){ return G.endless ? STATIONS : STATIONS.filter(s=>META.night>=s.unl); }
+/* v17: which equipment is actually on tonight — the restaurant decides the
+   line, the RANK decides how much of it you are trusted to run. Endless keeps
+   the original fixed four so leaderboard runs stay comparable forever. */
+function stationsLive(){
+  if(G.endless) return ['grill','saute','fry','cold'].map(ST);
+  const r=curRest();
+  return r.stations.slice(0, rankOf().sts).map(ST).filter(Boolean);
+}
 function menuLive(){
   const stOk=new Set(stationsLive().map(s=>s.id));
-  let out=MENU.filter(m=>stOk.has(m.st) && (G.endless || META.night>=(m.unl||1)));
+  const rid=G.endless?'pass':(META.rest||'pass');
+  const book=MENU.filter(m=>(m.rest||'pass')===rid);
+  let out=book.filter(m=>stOk.has(m.st) && (G.endless || META.night>=(m.unl||1)));
+  // a station with nothing unlocked on it yet would stall the rail
+  if(!out.length) out=book.filter(m=>stOk.has(m.st)).slice(0,4);
   // ROSA'S RECIPE: a dish as an heirloom — only patrons of the Mercado family have it
   if(!G.endless && META.vips && META.vips.rosa.patron && stOk.has('saute')) out=out.concat(POZOLE_DISH);
   return out;
@@ -870,6 +1009,12 @@ function repCost(r){
 
 /* The renovation ladder — the endgame money sink. Each tier is a whole new
    room: permanent +12% prices, a star, and a name worth grinding for. */
+/* v17: tier names are per-restaurant now — a rebuilt izakaya is not "THE PASS
+   — BRASSERIE". The room label comes from the restaurant, the tier from here. */
+const TIER_ROOMS={
+  pass:['LATE-NIGHT WINDOW','DINER','BISTRO','BRASSERIE','FINE DINING','THE MICHELIN ROOM','LEGEND'],
+  kirin:['STANDING BAR','NEIGHBOURHOOD IZAKAYA','THE COUNTER','KAPPO','OMAKASE','THE MICHELIN ROOM','LEGEND'],
+};
 const TIERS = [
   {n:'THE PASS — LATE-NIGHT WINDOW', cost:0},
   {n:'THE PASS — DINER',            cost:4000},
@@ -879,7 +1024,11 @@ const TIERS = [
   {n:'THE PASS — THE MICHELIN ROOM',cost:90000},
   {n:'THE PASS — LEGEND',           cost:180000},
 ];
-function tierName(){ return TIERS[Math.min(META.tier||0,TIERS.length-1)].n; }
+function tierName(){
+  const i=Math.min(META.tier||0,TIERS.length-1);
+  const r=curRest(), rooms=TIER_ROOMS[r.id]||TIER_ROOMS.pass;
+  return r.n+' — '+(rooms[i]||TIERS[i].n);
+}
 function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)+1] : null; }
 
 function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,flips:0,banked:0,seasons:0,mastered:0,
@@ -1009,8 +1158,62 @@ function loadMeta(){
         if(!c.gear) c.gear={};
         delete c.face;
       });
+
+      /* v17 migration: a flat save becomes THE PASS's tour, so nobody loses a
+         career. Rank is inferred from the kitchen they already run — someone
+         30 nights deep with three cooks does not get demoted to commis. */
+      if(!META.tours){
+        const t=freshTour();
+        TOUR_KEYS.forEach(k=>{ if(k in META) t[k]=META[k]; });
+        const nCooks=(META.crew||[]).filter(c=>c.role==='cook').length;
+        const hasExpo=(META.crew||[]).some(c=>c.role==='expo');
+        const hasHost=(META.crew||[]).some(c=>c.role==='host');
+        t.rank = hasHost?4 : hasExpo?3 : nCooks>=2?2 : nCooks>=1?1 : (t.night>=4?1:0);
+        t.rankPts=0;
+        META.tours={pass:t}; META.rest='pass';
+        TOUR_KEYS.forEach(k=>{ delete META[k]; });
+      }
     }
   }catch(e){}
+  bindTour();
+}
+/* ============ v17: PER-RESTAURANT PROGRESS, WITHOUT A REWRITE ============
+   Every restaurant keeps its own night count, rank, room tier, equipment,
+   brigade, week grades, regulars and rivalry. What follows YOU between them
+   is your money, your stars, your wardrobe, your achievements, your lifetime
+   record and your chef.
+
+   Rather than rewrite the several hundred `META.night` / `META.up` / etc.
+   references scattered through the game, these keys become non-enumerable
+   accessors that read and write straight through to the ACTIVE tour. Every
+   existing line keeps working untouched, and because they are
+   non-enumerable, JSON.stringify never double-writes them into the save. */
+const TOUR_KEYS=['night','rank','rankPts','tier','up','crew','wk','buff','vips',
+                 'guide','rival','rivalUntil','mercy','deeBuff','deeBad'];
+function freshTour(){
+  return {night:1, rank:0, rankPts:0, tier:0, up:{}, crew:[], wk:null, buff:null,
+          vips:freshVips(), guide:{rating:0,score:0}, deeBuff:0, deeBad:0,
+          rival:{won:0,lost:0,beaten:false,wk:null}, rivalUntil:0, mercy:0};
+}
+function bindTour(){
+  if(!META.tours) META.tours={};
+  if(!META.rest || !REST(META.rest)) META.rest='pass';
+  if(!META.tours[META.rest]) META.tours[META.rest]=freshTour();
+  TOUR_KEYS.forEach(k=>{
+    Object.defineProperty(META,k,{
+      configurable:true, enumerable:false,
+      get(){ return META.tours[META.rest][k]; },
+      set(v){ META.tours[META.rest][k]=v; },
+    });
+  });
+}
+function switchRest(id){
+  const r=REST(id);
+  if(!restUnlocked(r)) return false;
+  META.rest=r.id;
+  if(!META.tours[r.id]) META.tours[r.id]=freshTour();
+  bindTour(); saveMeta();
+  return true;
 }
 function saveMeta(){ try{ localStorage.setItem('pass_meta',JSON.stringify(META)); }catch(e){} }
 loadMeta();
@@ -1405,7 +1608,11 @@ function buildLine(){
   stationsLive().forEach(st=>{
     const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
     const here=G.endless?[]:activeCooks().filter(c=>c.station===st.id);
-    col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em>
+    /* v17: the station wears its own pixel equipment, drawn in the same hand
+       as the chefs and the food. */
+    const eq=equipURL(st.id,3);
+    col.innerHTML=`<div class="stHead" style="color:${st.color}">
+      ${eq?`<img class="stEquip" src="${eq}" alt="">`:st.emo} ${st.name}<em>${st.tag}</em>
       ${here.map(c=>`<span class="sousBadge">${memberFig(c)}<span class="nm">${c.name}</span></span>`).join('')}
       <span class="stFix"></span></div>`;
     col.querySelector('.stHead').addEventListener('click',()=>repairTap(st.id));
@@ -2447,8 +2654,9 @@ function renderShop(container){
     if(w.req){ try{ return !!w.req.test(); }catch(e){ return false; } }
     return true;
   }).length;
-  const canHire = (cooks().length<3&&META.bank>=COOK_COSTS[cooks().length]?1:0)
-                + (!expo()&&META.bank>=900?1:0) + (!host()&&META.bank>=700?1:0);
+  const RK=rankOf();
+  const canHire = (cooks().length<Math.min(3,RK.cooks)&&META.bank>=COOK_COSTS[cooks().length]?1:0)
+                + (!expo()&&RK.expo&&META.bank>=900?1:0) + (!host()&&RK.host&&META.bank>=700?1:0);
   const tabs=[
     {id:'room', l:'🏠 ROOM', n:0},
     {id:'crew', l:'👥 CREW', n:canHire},
@@ -2594,11 +2802,20 @@ function renderShop(container){
     }
     crewGrid.appendChild(d);
   });
-  const hires=[];
-  if(cooks().length<3) hires.push({role:'cook', n:(['HIRE A SOUS CHEF','HIRE A 2ND COOK','HIRE A 3RD COOK'])[cooks().length], e:'🧑‍🍳',
+  /* v17: you can only hire what your RANK is trusted with. Money is never the
+     gate on people — the grade is. */
+  const R=rankOf(), hires=[];
+  if(cooks().length<Math.min(3,R.cooks)) hires.push({role:'cook', n:(['HIRE A SOUS CHEF','HIRE A 2ND COOK','HIRE A 3RD COOK'])[cooks().length], e:'🧑‍🍳',
     cost:COOK_COSTS[cooks().length], d:'A cook on a station of your choice — pulls dishes in the window. Rolls a random quirk.'});
-  if(!expo()) hires.push({role:'expo', n:'HIRE AN EXPO', e:'📣', cost:900, d:'Calls the pass — plates every ready ticket while it\'s still hot.'});
-  if(!host()) hires.push({role:'host', n:'HIRE A HOST', e:'🎩', cost:700, d:'Works the room — patient tables, and talks furious ones out of walking.'});
+  if(!expo()&&R.expo) hires.push({role:'expo', n:'HIRE AN EXPO', e:'📣', cost:900, d:'Calls the pass — plates every ready ticket while it\'s still hot.'});
+  if(!host()&&R.host) hires.push({role:'host', n:'HIRE A HOST', e:'🎩', cost:700, d:'Works the room — patient tables, and talks furious ones out of walking.'});
+  if(META.rank<RANKS.length-1){
+    const nxt=RANKS[META.rank+1];
+    const d=document.createElement('div'); d.className='upg'; d.style.borderColor='var(--cold)';
+    d.innerHTML=`<b>⇧ NEXT RANK — ${nxt.n}</b><small>${nxt.d}<br>
+      <em style="color:var(--cold)">${Math.max(0,RANK_TARGET-(META.rankPts||0))} more grade points (S=2, A=1, B=0, C/D=−1)</em></small>`;
+    crewGrid.appendChild(d);
+  }
   hires.forEach(hcard=>{
     const d=document.createElement('div'); d.className='upg crewCard';
     d.innerHTML=`<b>${hcard.e} ${hcard.n}</b><small>${hcard.d}</small>`;
@@ -3148,6 +3365,16 @@ function finish(){
 
   META.night++;
   if(META.buff&&META.night>META.buff.until) META.buff=null;
+  /* v17: the promotion. Grade points, never money — three good services and
+     the kitchen trusts you with more of itself. */
+  if(META.rank<RANKS.length-1){
+    META.rankPts=(META.rankPts||0)+rankPay(grade);
+    if(META.rankPts>=RANK_TARGET){
+      META.rank++; META.rankPts=0; META.stars+=2;
+      const R=RANKS[META.rank];
+      weekLine+=`<div class="starLine" style="border-left-color:var(--gold)"><b style="color:var(--gold)">PROMOTED — ${R.n}</b> ${R.d} ${R.sts>RANKS[META.rank-1].sts?'A new station opens tomorrow.':''} +2 ⭐</div>`;
+    } else if(META.rankPts<0) META.rankPts=0;
+  }
   /* v14.1: stagiaires come home sharper — one service at a time */
   META.mercy=0;                       // a closed night resets the assist
   META.crew.forEach(m=>{
@@ -3299,7 +3526,24 @@ function abandonNight(){
 const TITLE_HTML=card.innerHTML;
 function initTitle(){
   try{ const b=+(localStorage.getItem('pass_best')||0); if(b) card.querySelector('#best').textContent='BEST TIPS · $'+b; }catch(e){}
-  card.querySelector('#introNight').textContent='NIGHT '+META.night+' · '+tierName().replace('THE PASS — ','');
+  const rNow=curRest();
+  card.querySelector('#introNight').textContent=rNow.n+' · NIGHT '+META.night+' · '+rankOf().n;
+  /* v17: the restaurant switcher — every kitchen you've been trusted with,
+     each keeping its own night, rank, room and brigade. */
+  const rw=card.querySelector('#restRow');
+  if(rw){
+    rw.innerHTML='';
+    RESTAURANTS.forEach(r=>{
+      const open=restUnlocked(r), here=r.id===META.rest;
+      const t=META.tours&&META.tours[r.id];
+      const b=document.createElement('button');
+      b.className='restBtn'+(here?' sel':'')+(open?'':' locked');
+      b.innerHTML=`<span class="rEmo">${r.emo}</span><b>${r.n}</b>
+        <small>${open?(t?'NIGHT '+t.night+' · '+RANKS[Math.min(t.rank||0,4)].n:'NOT OPENED YET'):'🔒 '+r.unlock.label}</small>`;
+      if(open&&!here) b.addEventListener('click',()=>{ if(switchRest(r.id)){ card.innerHTML=TITLE_HTML; initTitle(); } });
+      rw.appendChild(b);
+    });
+  }
   card.querySelector('#introBank').textContent='BANK $'+META.bank;
   card.querySelector('#introStars').textContent='⭐ '+META.stars;
   const im=card.querySelector('#introMod'), mod=modFor(META.night), news=nightNews(META.night), wd=weekdayFor(META.night);
