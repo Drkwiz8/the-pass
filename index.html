@@ -631,7 +631,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22.6</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22.7</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -1002,7 +1002,11 @@ const RESTAURANTS = [
      ladder from a late-night window to a Michelin room. The id stays 'pass'
      so nobody's save breaks. */
   {id:'pass',  n:'THE CORNER', sub:'AMERICAN BISTRO', emo:'🍽️',
-   stations:['grill','saute','cold','fry'],
+   /* v22.7: ORDER MATTERS — the first two are what a COMMIS runs. GRILL and
+      COLD are the only stations with night-1 dishes, so they lead. Putting
+      SAUTE second (as v17 did) gave a new player two stations where only one
+      could cook anything, and every ticket piled onto two grill pans. */
+   stations:['grill','cold','saute','fry'],
    d:'Your first kitchen. Four stations, a printer that never stops, and everything to prove.',
    unlock:null},
   {id:'kirin', n:'KIRIN',     sub:'IZAKAYA',         emo:'🏮',
@@ -1083,7 +1087,17 @@ function menuLive(){
   const rid=G.endless?'pass':(META.rest||'pass');
   const book=MENU.filter(m=>(m.rest||'pass')===rid);
   let out=book.filter(m=>stOk.has(m.st) && (G.endless || META.night>=(m.unl||1)));
-  // a station with nothing unlocked on it yet would stall the rail
+  /* v22.7: every station standing on the line must have something to cook.
+     If one has nothing unlocked yet, grant it its earliest dish — otherwise
+     the whole book funnels onto the stations that do, which is what made
+     night 1 unplayable. */
+  if(!G.endless){
+    for(const st of stOk){
+      if(out.some(m=>m.st===st)) continue;
+      const soonest=book.filter(m=>m.st===st).sort((a,b)=>(a.unl||1)-(b.unl||1))[0];
+      if(soonest) out.push(soonest);
+    }
+  }
   if(!out.length) out=book.filter(m=>stOk.has(m.st)).slice(0,4);
   // ROSA'S RECIPE: a dish as an heirloom — only patrons of the Mercado family have it
   if(!G.endless && META.vips && META.vips.rosa.patron && stOk.has('saute')) out=out.concat(POZOLE_DISH);
