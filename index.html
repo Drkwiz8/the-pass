@@ -586,7 +586,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22.1</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -1672,92 +1672,21 @@ const CHEF_BODY = [
   '.OO......OO.',
 ];
 
-/* ============ v22: THE BRIGADE — PIXELLAB ART, STILL RECOLOURABLE ============
-   Jaxon: "but then they arent going to change when the player changed their
-   sprite." Exactly right, and that killed the static-portrait idea. This is
-   the answer instead.
+/* ART NOTE — THE BRIGADE STAYS AT 12x17. FOUR ATTEMPTS, FOUR REVERTS.
+   v19  redrew it at 24x34 by hand      -> read as round and inflated
+   v19.1 redrew it angular              -> still wrong
+   v21  rebuilt from measurements off the PixelLab sprite -> still wrong, and
+        its 24x40 grid silently misaligned every piece of gear
+   v22  used actual PixelLab art at 48x68 with runtime recolouring, which
+        solved art quality AND kept customisation working -> but the 47
+        wardrobe pieces are authored on the 12x17 grid, so they rendered as
+        4x4 lego blocks on a smooth sprite. Worse overall.
 
-   A chef drawn by PixelLab at 48x68 — which is EXACTLY 4x the 12x17 wardrobe
-   grid, so every gear coordinate still lands on the feature it was authored
-   for. Each pixel was then classified into a REGION (hat / hair / skin /
-   coat / apron / shoes) and stored with its TONE OFFSET from that region's
-   base colour. At render time the region takes the player's chosen colour
-   and every tone shifts with it, so PixelLab's shading survives a recolour.
-
-   Result: their art, and skin/hair/coat/apron/hat all still change when the
-   player changes them. Nothing about the wardrobe economy moves. */
-const CHEF_ART_ROWS = [
-  '................................................',
-  '................................................',
-  '................................................',
-  '................................................',
-  '....................bbbbbbbb....................',
-  '.................bbbddddddddbbb.................',
-  '................eddddaaaaaaaddde................',
-  '...............bdaaaaaaaaaaaaaaab...............',
-  '..............baaaaaaaaaaaaaaaaab...............',
-  '..............baaaabaaaaaaaaccccb...............',
-  '..............baaccbcccaacccbcce................',
-  '..............bcccbbbbbbbbbbbbb.................',
-  '...............ebbbaaaaaaaaacb..................',
-  '..................baaaaaaaaacb..................',
-  '..................baaaaaaaaacb..................',
-  '..................baaaaaaaaacb..................',
-  '..................baaaaaaaaacb..................',
-  '..................gffffffffffk..................',
-  '.................ggmmmmmmmmmmkg.................',
-  '.................ggmfffmmfffmkk.................',
-  '.................gfmooommooomfk.................',
-  '.................ofmmfmpmmfmmfo.................',
-  '.................ofmmmmppmmmmfo.................',
-  '.................ffmmmmffmmmmff.................',
-  '..................fpmmmmmmmmpf..................',
-  '...................fpmoooompf...................',
-  '....................fpmmmmpf....................',
-  '.....................nnnnnn.....................',
-  '...................ihjnnnnnii...................',
-  '...............lllljihhjjjhljllll...............',
-  '..............iihhhhjjhhhiiihhhhii..............',
-  '..............ihhhhhhjjjjhhhhhhhhi..............',
-  '.............jihhhhjihhhhhhhhhhhhij.............',
-  '............jhhhhihjhhhhhhhhhhihhhhj............',
-  '...........ihhhhhihjhghhhhhhhhihhhhhi...........',
-  '...........ihhhiiihjhhhhhhhhhhiiihhhi...........',
-  '...........ihiiiiihjhhhhhhhhhhiiiiihi...........',
-  '...........jiiijjihjhghhhhhhhhijjiiij...........',
-  '............noonjihjhhhhhhhhhhijnoon............',
-  '............pmmpjihjhhhhhhhhhhijommp............',
-  '............pmmpjihjhhhhhhhhhhijpmmp............',
-  '............nmmonlljhghhhhhhhllnommn............',
-  '.............nmporjjllllllllljropmn.............',
-  '.............nmmnssssssssssssssnmmn.............',
-  '.............pmmnrrrrrrrrrrrrrrnmmp.............',
-  '.............npmnrqrrqqqqqqrrqrnmpn.............',
-  '..............noorqqqqqqqqqqqqropn..............',
-  '...............nrrqqqqqqqqqqqqrrn...............',
-  '................rqqqqqqqqqqqqqqr................',
-  '................rqqqqqqqqqqqqqqr................',
-  '................rqqqqqqqqqqqqqqr................',
-  '................rqqqqqqqqqqqqqqr................',
-  '................rqqqqqqqqqqqqqqr................',
-  '................rrqrqqqqqqqqrqrr................',
-  '.................rrrrrrrrrrrrrr.................',
-  '..................ttttt..ttttt..................',
-  '..................tkkku..ukkku..................',
-  '..................ukkku..ukkku..................',
-  '..................tkkku..ukkku..................',
-  '..................tttt....tttu..................',
-  '.................uukkt....ukkuu.................',
-  '................ukkkku....tkkkku................',
-  '................uukkuu....uukkuu................',
-  '................tttt........tttt................',
-  '................................................',
-  '................................................',
-  '................................................',
-  '................................................'
-];
-const CHEF_ART_LEGEND = {a:['H',0],b:['H',-0.408],c:['H',-0.189],d:['H',0.08],e:['H',-0.293],f:['R',0],g:['R',-0.44],h:['C',0],i:['C',-0.189],j:['C',-0.408],k:['C',-0.707],l:['C',-0.293],m:['S',0],n:['S',-0.521],o:['S',-0.298],p:['S',-0.171],q:['A',0],r:['A',-0.27],s:['A',-0.51],t:['O',0],u:['O',0.264]};
-const CHEF_ART_W = 48, CHEF_ART_H = 68, CHEF_ART_SCALE = 4;   // 4x the 12x17 gear grid
+   THE REAL CONSTRAINT: the chef sheet and the gear must share a resolution.
+   Upgrading the chef means redrawing all 47 wardrobe pieces to match — that
+   is the actual cost, and it is not something hand-drawing gets to. Until
+   somebody redraws the gear, 12x17 is the consistent choice. Options and
+   costs are in ROADMAP.md under ART DIRECTION. */
 
 
 function shade(hex,f){
@@ -1766,63 +1695,43 @@ function shade(hex,f){
   return '#'+((1<<24)+(mm(r)<<16)+(mm(g)<<8)+mm(b)).toString(16).slice(1);
 }
 function chefURL(m,px=3){
-  /* v22: draws the PixelLab sprite, recoloured from the player's palette.
-     Each pixel carries a REGION and a TONE OFFSET, so choosing a new coat
-     colour shifts all five of that region's tones together and the original
-     shading survives. Gear is authored on the 12x17 grid and this sheet is
-     exactly 4x it, so overlays land on the right feature. */
-  const W=CHEF_ART_W, H=CHEF_ART_H, S4=CHEF_ART_SCALE;
   const gearHat = m.gear&&m.gear.hat ? WARDROBE.find(w=>w.id===m.gear.hat) : null;
-  const hidHat  = gearHat || (m.hatStyle==='none');
+  const hatRows = gearHat ? gearHat.hatRows : CHEF_HATS[m.hatStyle||'toque'];
+  const rows=[...hatRows,...CHEF_BODY];
+  const W=12, H=rows.length;
   const cv=document.createElement('canvas');
-  cv.width=(W+2)*px; cv.height=(H+2)*px;
+  cv.width=(W+2)*px; cv.height=(H+2)*px;    // 1-cell margin for the outline
   const x=cv.getContext('2d');
-  const base={H:m.hat||'#f4f4f4', R:m.hair||'#3b2a1a', S:m.skin||SKINS[0],
-              C:m.coat||'#f4f4f4', A:m.apron||'#1e293b', O:'#22262b'};
-  // gear overlay, scaled from the 12x17 authoring grid onto this 48x68 sheet
+  const pal={H:m.hat,R:m.hair||'#3b2a1a',S:m.skin||SKINS[0],E:'#14100c',
+             C:m.coat||'#f4f4f4',A:m.apron,P:'#232a31',O:'#0d0f11',W:'#ffffff'};
+  if(gearHat&&gearHat.pal) Object.entries(gearHat.pal).forEach(([k,v])=>{ pal[k]= v==='HATC'?m.hat:v; });
+  // gear overlay participates in silhouette, outline, and shading
   const overlay={};
   if(m.gear){
     SLOTS.filter(s=>s!=='hat').forEach(slot=>{
       const p=m.gear[slot]&&WARDROBE.find(w=>w.id===m.gear[slot]);
-      if(!p||!p.px) return;
-      p.px.forEach(([gx,gy,c])=>{
-        const col = c==='HAIR'?(m.hair||'#3b2a1a'):c;
-        for(let dy=0;dy<S4;dy++) for(let dx=0;dx<S4;dx++)
-          overlay[(gx*S4+dx)+','+(gy*S4+dy)]=col;
-      });
-    });
-  }
-  // a gear hat replaces the toque: its 4-row art scales to the sheet's hat band
-  if(gearHat&&gearHat.hatRows){
-    const pal=gearHat.pal||{};
-    gearHat.hatRows.forEach((row,ry)=>{
-      [...row].forEach((ch,rx)=>{
-        if(ch==='.') return;
-        const col = pal[ch]==='HATC' ? (m.hat||'#f4f4f4') : (pal[ch]||'#f0f');
-        for(let dy=0;dy<S4;dy++) for(let dx=0;dx<S4;dx++)
-          overlay[(rx*S4+dx)+','+(ry*S4+dy)]=col;
-      });
+      // gear px coords are ABSOLUTE grid rows (hats occupy rows 0-3, eyes row 5)
+      if(p&&p.px) p.px.forEach(([gx,gy,c])=>{ overlay[gx+','+gy]= c==='HAIR'?(m.hair||'#3b2a1a'):c; });
     });
   }
   const colorAt=(cx,cy)=>{
     const o=overlay[cx+','+cy]; if(o) return o;
     if(cx<0||cy<0||cx>=W||cy>=H) return null;
-    const ch=CHEF_ART_ROWS[cy][cx];
-    if(ch==='.') return null;
-    const L=CHEF_ART_LEGEND[ch]; if(!L) return null;
-    const [reg,delta]=L;
-    if(reg==='H'&&hidHat) return null;          // toque hidden when gear or 'none'
-    return delta ? shade(base[reg]||'#f0f', delta) : (base[reg]||'#f0f');
+    const ch=rows[cy][cx]; return ch==='.'?null:(pal[ch]||'#f0f');
   };
-  x.fillStyle='#010104';
+  // outline pass: dark rim around the whole silhouette
+  x.fillStyle='#0a0c0f';
   for(let cy=-1;cy<=H;cy++) for(let cx=-1;cx<=W;cx++){
     if(colorAt(cx,cy)) continue;
     if(colorAt(cx+1,cy)||colorAt(cx-1,cy)||colorAt(cx,cy+1)||colorAt(cx,cy-1))
       x.fillRect((cx+1)*px,(cy+1)*px,px,px);
   }
+  // fill pass with right/bottom edge shading for form
   for(let cy=0;cy<H;cy++) for(let cx=0;cx<W;cx++){
     const c=colorAt(cx,cy); if(!c) continue;
-    x.fillStyle=c; x.fillRect((cx+1)*px,(cy+1)*px,px,px);
+    const edge = !colorAt(cx+1,cy) || !colorAt(cx,cy+1);
+    x.fillStyle= edge&&c!=='#14100c' ? shade(c,-.22) : c;
+    x.fillRect((cx+1)*px,(cy+1)*px,px,px);
   }
   return cv.toDataURL();
 }
@@ -1833,7 +1742,7 @@ function memberFig(m,big){
   if(!m) return '';
   /* v19: the grid doubled, so the pixel scale halves to keep every sprite the
      same physical size on screen — same footprint, twice the detail. */
-  const px=big?3:1;
+  const px=big?5:2;
   return `<img class="chefImg" src="${chefURL(m,px)}" alt="${m.name}">`;
 }
 
@@ -3515,7 +3424,7 @@ function renderShop(container){
    ON A CHEF — the real sprite pipeline, same outline and shading as service,
    so what you see is exactly what you get. Locked pieces preview too: you
    should know what you are working toward. */
-function previewURL(w,px=2){
+function previewURL(w,px=4){
   const base={role:'chef', skin:META.chef.skin, hair:META.chef.hair,
     hatStyle:META.chef.hatStyle||'toque', hat:META.chef.hat, coat:META.chef.coat,
     apron:META.chef.apron, gear:{}};
@@ -3577,7 +3486,7 @@ function renderLocker(){
   crewBox.appendChild(meHead);
   const meGrid=document.createElement('div'); meGrid.className='crewGrid';
   const meCard=document.createElement('div'); meCard.className='upg'; meCard.style.borderColor='var(--gold)';
-  meCard.innerHTML=`<div style="text-align:center;padding:10px 0"><img class="chefImg" src="${chefURL(META.chef,4)}" alt="${META.chef.name}"></div>
+  meCard.innerHTML=`<div style="text-align:center;padding:10px 0"><img class="chefImg" src="${chefURL(META.chef,9)}" alt="${META.chef.name}"></div>
     <b style="text-align:center">${META.chef.name} — CHEF DE CUISINE</b>
     <small style="text-align:center">Your name on the door. CROWN, STARRED TOQUE and THE HALO fit only you.</small>`;
   const meBtn=document.createElement('button'); meBtn.textContent='CUSTOMIZE ▸';
@@ -3671,7 +3580,7 @@ function renderMemberCfg(grid,m,container,afterEl){
         // render the option ON this member so you see it as it will look
         const ghost={...m, gear:{...(m.gear||{})}};
         if(w) ghost.gear[slot]=w.id; else delete ghost.gear[slot];
-        b.innerHTML=`<img src="${chefURL(ghost,2)}" alt=""><span>${w?w.n:'NONE'}</span>`;
+        b.innerHTML=`<img src="${chefURL(ghost,4)}" alt=""><span>${w?w.n:'NONE'}</span>`;
         b.addEventListener('click',()=>{
           if(!m.gear) m.gear={};
           if(w) m.gear[slot]=w.id; else delete m.gear[slot];
