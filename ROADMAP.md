@@ -143,6 +143,14 @@ Jaxon's batch: difficulty relief, real failure, his own character, stages.
       1-0 q w e r t y), EXPO WHEEL (+1 rail), FINISHING TOUCH (finish
       windows +20%), GARNISH STATION (+5% plates), WALK-IN II, TRAINING III
 
+## v14.1 — THE RAMP (SHIPPED 2026-08-01)
+Jaxon stuck on night 24, short a staged cook, no way through.
+- [x] Deadlock fix: stages count SERVICES RUN, not calendar nights — a
+      failed night still passes a night for the stagiaire
+- [x] MERCY: each consecutive fail on a night lightens the next attempt
+      (+8% patience, +8% slower tickets, stacks ×3, resets on a win) —
+      framed as "word got around." Stuck is a ramp now, not a wall.
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).

@@ -325,7 +325,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.1</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -742,6 +742,16 @@ function loadMeta(){
       if(!META.chef) META.chef=freshChef();
       if(!META.chef.gear) META.chef.gear={};
       META.chef.role='chef';
+      // v14.1: stages count SERVICES, not calendar nights (a failed night
+      // still passes a night for the stagiaire — no more deadlock), and
+      // mercy tracks consecutive fails on the current night
+      META.crew.forEach(m=>{
+        if(m.stage&&typeof m.stage.left!=='number'){
+          m.stage.left=Math.max(1,(m.stage.until||META.night+3)-META.night);
+          delete m.stage.until;
+        }
+      });
+      if(typeof META.mercy!=='number') META.mercy=0;
       // v13: the coach remembers what it has taught — and never lectures a
       // veteran on a verb their lifetime stats prove they already use
       if(!META.tut) META.tut={};
@@ -1291,6 +1301,7 @@ function spawnTicket(opts={}){
     : (!opts.critic && !opts.big && !opts.furious && !opts.duel && Math.random()<vipChance);
   let wdPat = G.wd==='WED' ? .9 : G.wd==='MON' ? 1.1 : 1;
   if(buffActive('staff')) wdPat*=1.08;
+  if(!G.endless&&META.mercy) wdPat*=(1+.08*META.mercy);   // word got around
   const baseLimit = G.endless
     ? (78-32*p)*Math.max(.6, 1-G.t/700*.4)
     : (78-32*p)*(META.up.regs?1.15:1)*patienceFactor()*(host()?1.08:1)*wdPat;
@@ -1784,6 +1795,7 @@ function step(dt){
       if(G.deeBuff) iv*=.8;                             // @platedbydee's audience showed up
       if(!G.endless&&META.rivalUntil&&META.night<=META.rivalUntil) iv*=1.15;   // Meridian's write-up thins the book
       if(G.tutStep!=null&&G.tutStep<3) iv*=1.6;         // the coach is talking — let them breathe
+      if(!G.endless&&META.mercy) iv*=(1+.08*META.mercy);// word got around — lighter book
       G.nextSpawn=iv;
     }
   }
@@ -2045,7 +2057,7 @@ function renderShop(container){
       <small><span class="quirkTag">◈ ${q?q.n:''}</span> ${q?q.d:''}${m.skill?' · staged ×'+m.skill+' (+'+(m.skill*7)+'% hands)':''}</small>`;
     if(m.stage){
       const sb=document.createElement('button'); sb.disabled=true;
-      sb.textContent='ON STAGE AT '+m.stage.at+' — BACK NIGHT '+m.stage.until;
+      sb.textContent='ON STAGE AT '+m.stage.at+' — BACK IN '+m.stage.left+(m.stage.left>1?' SERVICES':' SERVICE');
       d.appendChild(sb);
     } else {
       const b=document.createElement('button'); b.textContent='CUSTOMIZE ▸';
@@ -2059,7 +2071,7 @@ function renderShop(container){
         sb.addEventListener('click',()=>{
           if(META.bank<500) return;
           META.bank-=500;
-          m.stage={until:META.night+3, at:STAGE_SPOTS[(Math.random()*STAGE_SPOTS.length)|0]};
+          m.stage={left:3, at:STAGE_SPOTS[(Math.random()*STAGE_SPOTS.length)|0]};
           saveMeta(); SFX.buy();
           toast(m.name+' LEFT TO STAGE AT '+m.stage.at+' — BACK IN 3 NIGHTS','#5ad1e6');
           renderShop(container);
@@ -2415,6 +2427,18 @@ function failNight(){
   document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
   hideCoach();
   const lost=G.tips;
+  /* v14.1: a failed night still passes time for a stagiaire, and word gets
+     around — every consecutive fail lightens the next attempt's book */
+  META.mercy=Math.min(3,(META.mercy||0)+1);
+  let backLine='';
+  META.crew.forEach(m=>{
+    if(m.stage&&--m.stage.left<=0){
+      m.skill=Math.min(3,(m.skill||0)+1);
+      backLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage.at}</b> — ${'★'.repeat(m.skill)} (+${m.skill*7}% hands). At least someone had a good night.</div>`;
+      delete m.stage;
+    }
+  });
+  saveMeta();
   card.innerHTML=`<h1><small>NIGHT ${META.night} — SERVICE COLLAPSED</small>DOORS CLOSED EARLY</h1>
     <div id="grade" style="color:var(--bad)">✕</div>
     <div id="scores">
@@ -2425,6 +2449,9 @@ function failNight(){
     <p>The sixth table walked and the room read it on every face on the way out. Comps, apologies, an empty dining room by nine. Tonight banks NOTHING and the calendar doesn't move — night ${META.night} isn't over until you close it standing up.</p>
     <div class="modLine" style="border-left-color:var(--bad)"><b style="color:var(--bad)">RUN IT BACK</b><br>
       <span>Fire earlier. Plate the oldest ticket first. If the rail stacks past six, stop firing new dishes and CLEAR it — walkouts kill nights now, cold plates just sting.</span></div>
+    ${backLine}
+    <div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WORD GOT AROUND</b><br>
+      <span>A rough night empties tomorrow's book a little. Next attempt: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower. Win the night and the assist resets.</span></div>
     <div id="shopBoxFail"></div>
     <div id="modeBtns">
       <button id="start">RUN NIGHT ${META.night} BACK ▸</button>
@@ -2538,9 +2565,10 @@ function finish(){
 
   META.night++;
   if(META.buff&&META.night>META.buff.until) META.buff=null;
-  /* v14: stagiaires come home sharper */
+  /* v14.1: stagiaires come home sharper — one service at a time */
+  META.mercy=0;                       // a closed night resets the assist
   META.crew.forEach(m=>{
-    if(m.stage&&META.night>=m.stage.until){
+    if(m.stage&&--m.stage.left<=0){
       m.skill=Math.min(3,(m.skill||0)+1);
       weekLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">${m.name} IS BACK FROM ${m.stage.at}</b> — new scars, faster hands. ${'★'.repeat(m.skill)} (+${m.skill*7}% reaction, permanent)</div>`;
       delete m.stage;
@@ -2661,6 +2689,7 @@ function initTitle(){
   if(wd) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">${wd.d} — ${wd.n}</b><br><span>${wd.desc}</span></div>`;
   if(news.length) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW TONIGHT</b><br><span>${news.join('<br>')}</span></div>`;
   ih+=tutBlock(META.night);
+  if(META.mercy) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WORD GOT AROUND</b><br><span>A lighter book tonight: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower. Close the night to reset it.</span></div>`;
   if(mod) ih+=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   im.innerHTML=ih;
   renderShop(card.querySelector('#shopBoxIntro'));
