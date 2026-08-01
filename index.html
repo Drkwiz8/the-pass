@@ -341,31 +341,63 @@ const HAIRS = ['#1a1a1a','#3b2a1a','#6b3f1d','#a56a2a','#c9a227','#7a7a7a','#c03
 const HATSTYLES = ['toque','bandana','beanie','none'];
 const COOK_COSTS=[500,800,1400];
 
+/* CAMPAIGN CURVE: `unl` = the career night a station/dish unlocks. Every night
+   1-16 introduces something; endless mode ignores all gating (full kitchen). */
 const STATIONS = [
-  {id:'grill', name:'GRILL', tag:'GRL', emo:'🔥', color:'#ff5330'},
-  {id:'saute', name:'SAUTÉ', tag:'SAU', emo:'🍳', color:'#ffa41f'},
-  {id:'fry',   name:'FRY',   tag:'FRY', emo:'🧺', color:'#ffd84d'},
-  {id:'cold',  name:'GARDE', tag:'GDM', emo:'❄️', color:'#5ad1e6'},
+  {id:'grill', name:'GRILL', tag:'GRL', emo:'🔥', color:'#ff5330', unl:1},
+  {id:'saute', name:'SAUTÉ', tag:'SAU', emo:'🍳', color:'#ffa41f', unl:2},
+  {id:'fry',   name:'FRY',   tag:'FRY', emo:'🧺', color:'#ffd84d', unl:4},
+  {id:'cold',  name:'GARDE', tag:'GDM', emo:'❄️', color:'#5ad1e6', unl:1},
 ];
 
 const MENU = [
-  {n:'RIBEYE',      e:'🥩', st:'grill', cook:9.5, win:1.20, price:34},
-  {n:'BURGER',      e:'🍔', st:'grill', cook:6.2, win:1.60, price:19},
-  {n:'PORK CHOP',   e:'🍖', st:'grill', cook:8.0, win:1.36, price:26},
-  {n:'OCTOPUS',     e:'🐙', st:'grill', cook:5.0, win:1.12, price:22},
-  {n:'SCALLOPS',    e:'🍥', st:'saute', cook:4.6, win:1.04, price:28},
-  {n:'SALMON',      e:'🐟', st:'saute', cook:7.0, win:1.44, price:27},
-  {n:'SHROOMS',     e:'🍄', st:'saute', cook:5.4, win:1.76, price:12},
-  {n:'RISOTTO',     e:'🍚', st:'saute', cook:8.6, win:1.60, price:21},
-  {n:'FRIES',       e:'🍟', st:'fry',   cook:5.0, win:1.92, price:9},
-  {n:'CALAMARI',    e:'🦑', st:'fry',   cook:4.2, win:1.20, price:16},
-  {n:'CHX KATSU',   e:'🍗', st:'fry',   cook:7.4, win:1.44, price:23},
-  {n:'BEIGNETS',    e:'🍩', st:'fry',   cook:6.0, win:1.28, price:11},
-  {n:'CAESAR',      e:'🥗', st:'cold',  cook:3.4, win:2.08, price:13},
-  {n:'CRUDO',       e:'🍣', st:'cold',  cook:4.4, win:1.28, price:24},
-  {n:'BEETS',       e:'🍠', st:'cold',  cook:3.8, win:1.76, price:14},
-  {n:'OYSTERS',     e:'🦪', st:'cold',  cook:5.2, win:1.52, price:20},
+  {n:'BURGER',      e:'🍔', st:'grill', cook:6.2, win:1.60, price:19, unl:1},
+  {n:'PORK CHOP',   e:'🍖', st:'grill', cook:8.0, win:1.36, price:26, unl:1},
+  {n:'CAESAR',      e:'🥗', st:'cold',  cook:3.4, win:2.08, price:13, unl:1},
+  {n:'BEETS',       e:'🍠', st:'cold',  cook:3.8, win:1.76, price:14, unl:1},
+  {n:'SALMON',      e:'🐟', st:'saute', cook:7.0, win:1.44, price:27, unl:2},
+  {n:'SHROOMS',     e:'🍄', st:'saute', cook:5.4, win:1.76, price:12, unl:2},
+  {n:'SCALLOPS',    e:'🍥', st:'saute', cook:4.6, win:1.04, price:28, unl:3},
+  {n:'FRIES',       e:'🍟', st:'fry',   cook:5.0, win:1.92, price:9,  unl:4},
+  {n:'CALAMARI',    e:'🦑', st:'fry',   cook:4.2, win:1.20, price:16, unl:4},
+  {n:'RISOTTO',     e:'🍚', st:'saute', cook:8.6, win:1.60, price:21, unl:5},
+  {n:'OCTOPUS',     e:'🐙', st:'grill', cook:5.0, win:1.12, price:22, unl:5},
+  {n:'CRUDO',       e:'🍣', st:'cold',  cook:4.4, win:1.28, price:24, unl:6},
+  {n:'CHX KATSU',   e:'🍗', st:'fry',   cook:7.4, win:1.44, price:23, unl:7},
+  {n:'OYSTERS',     e:'🦪', st:'cold',  cook:5.2, win:1.52, price:20, unl:8},
+  {n:'BEIGNETS',    e:'🍩', st:'fry',   cook:6.0, win:1.28, price:11, unl:9},
+  {n:'RIBEYE',      e:'🥩', st:'grill', cook:9.5, win:1.20, price:34, unl:10},
+  {n:'TARTARE',     e:'🧆', st:'cold',  cook:4.0, win:1.10, price:29, unl:11},
+  {n:'DUCK BREAST', e:'🦆', st:'saute', cook:8.8, win:1.16, price:32, unl:12},
+  {n:'WAGYU',       e:'🐄', st:'grill', cook:10.5,win:1.00, price:48, unl:13},
+  {n:'TEMPURA',     e:'🍤', st:'fry',   cook:4.8, win:1.08, price:25, unl:13},
+  {n:'CEVICHE',     e:'🍋', st:'cold',  cook:4.6, win:1.20, price:26, unl:14},
+  {n:'LOBSTER TAIL',e:'🦞', st:'grill', cook:7.6, win:1.04, price:44, unl:15},
+  {n:'GNOCCHI',     e:'🥟', st:'saute', cook:6.4, win:1.40, price:23, unl:16},
+  {n:'WINGS',       e:'🪽', st:'fry',   cook:6.8, win:1.60, price:15, unl:16},
 ];
+/* mechanic debut nights (career; endless = all on) */
+const DEBUT = {flip:3, combo:5, vip:6, bus:7, mods:8, down:9, critic:10, fourtop:12};
+function mechOn(id){ return G.endless || META.night>=DEBUT[id]; }
+function stationsLive(){ return G.endless ? STATIONS : STATIONS.filter(s=>META.night>=s.unl); }
+function menuLive(){
+  const stOk=new Set(stationsLive().map(s=>s.id));
+  return MENU.filter(m=>stOk.has(m.st) && (G.endless || META.night>=(m.unl||1)));
+}
+function nightNews(n){
+  const out=[];
+  STATIONS.filter(s=>s.unl===n).forEach(s=>out.push('NEW STATION: '+s.emo+' '+s.name));
+  const mech={3:'NEW SKILL: THE FLIP — tap the yellow window mid-cook for +20%',
+    5:'NEW SKILL: COMBO HEAT — chain perfect pulls, multiply your tips',
+    6:'THE ROOM CHANGES: VIPs start booking — double tips, short fuses',
+    7:'bus tours start hitting the rail',8:'special conditions begin — every night is different now',
+    9:"equipment starts failing — stations can go 86'd",10:'THE CRITIC now dines here',
+    12:'4-top tickets appear'}[n];
+  if(mech) out.push(mech);
+  const dishes=MENU.filter(m=>(m.unl||1)===n).map(m=>m.e+' '+m.n);
+  if(dishes.length) out.push('NEW ON THE MENU: '+dishes.join(', '));
+  return out;
+}
 const TABLES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T12','T14','BAR1','BAR2','BAR3','PAT1','PAT2','CHEF'];
 
 const MODS = [
@@ -379,7 +411,7 @@ const MODS = [
   {id:'inspector',n:'HEALTH INSPECTOR',      d:'An inspection hits mid-service: for 25 seconds, every RAW or BURNT mistake is a $30 fine.'},
   {id:'overbook', n:'OVERBOOKED',            d:'The host double-sat the room — a bigger rail and faster tickets all night.'},
 ];
-function modFor(n){ return n>=6 ? MODS[(n*13+5)%MODS.length] : null; }
+function modFor(n){ return n>=8 ? MODS[(n*13+5)%MODS.length] : null; }
 
 const QUIRKS = [
   {id:'owl',    n:'NIGHT OWL',      d:'20% faster hands once the rush hits'},
@@ -692,7 +724,7 @@ function memberFig(m,big){
 function buildLine(){
   lineEl.innerHTML=''; G.pans.length=0;
   let ki=0;
-  STATIONS.forEach(st=>{
+  stationsLive().forEach(st=>{
     const col=document.createElement('div'); col.className='station'; col.dataset.st=st.id;
     const here=G.endless?[]:cooks().filter(c=>c.station===st.id);
     col.innerHTML=`<div class="stHead" style="color:${st.color}">${st.emo} ${st.name}<em>${st.tag}</em>
@@ -744,18 +776,19 @@ function spawnTicket(opts={}){
   let count=1;
   if(Math.random() < (.25+p*.65)*Math.min(G.endless?1.6:1.35,nm)) count++;
   if(Math.random() < p*.55*Math.min(G.endless?1.6:1.35,nm)) count++;
-  if(!G.endless && META.night>=7 && Math.random()<.12*(nm-1)) count++;
+  if(mechOn('fourtop') && !G.endless && Math.random()<.12*(nm-1)) count++;
   if(G.endless && G.t>200 && Math.random()<.15) count++;
   if(opts.critic) count=3;
   if(opts.big) count=opts.big;
+  const pool=menuLive();
   const items=[], used=[];
   for(let i=0;i<count;i++){
     let m, guard=0;
-    do{ m=MENU[(Math.random()*MENU.length)|0]; guard++; }while(used.includes(m.n)&&guard<12);
+    do{ m=pool[(Math.random()*pool.length)|0]; guard++; }while(used.includes(m.n)&&guard<12);
     used.push(m.n);
     items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null, flipped:false});
   }
-  let vipChance = G.endless ? (G.t>60?.1:0) : (META.night>=2 ? .12 : 0);
+  let vipChance = G.endless ? (G.t>60?.1:0) : (mechOn('vip') ? .12 : 0);
   if(G.mod && G.mod.id==='vipnight') vipChance=.36;
   const vip = !opts.critic && !opts.big && Math.random()<vipChance;
   const baseLimit = G.endless
@@ -827,6 +860,7 @@ function fire(tk,idx){
   const total=pan.cookNeed+pan.winLen+pan.grace;
   pan.zone.style.left=(pan.cookNeed/total*100)+'%';
   pan.zone.style.width=(pan.winLen/total*100)+'%';
+  pan.zoneF.style.display=mechOn('flip')?'':'none';
   pan.zoneF.style.left=(pan.cookNeed*.5/total*100)+'%';
   pan.zoneF.style.width=(Math.min(.9,pan.cookNeed*.25)/total*100)+'%';
   it.el.className='item cooking'; it.tagEl.style.display=''; it.tagEl.className='tag ck'; it.tagEl.textContent=pan.key;
@@ -857,7 +891,7 @@ function pull(pan, byCrew=null){
   if(pan.t < pan.cookNeed){
     // Before the pull window: this tap is either a FLIP (new verb) or a raw pull.
     const [fs,fe]=flipWin(pan);
-    if(!byCrew && !it.flipped && pan.t>=fs && pan.t<=fe){
+    if(mechOn('flip') && !byCrew && !it.flipped && pan.t>=fs && pan.t<=fe){
       it.flipped=true; G.flips++;
       pan.emo.style.animation='flipSpin .3s ease';
       setTimeout(()=>{ pan.emo.style.animation=''; },320);
@@ -876,7 +910,8 @@ function pull(pan, byCrew=null){
     it.miniEl.className='mini heat'; it.miniEl.style.display=''; it.barEl.style.background='';
     if(over){ G.combo=0; floatText(pan.el,'OVER','#facc15'); SFX.over(); }
     else {
-      G.perfects++; G.combo++; G.comboMax=Math.max(G.comboMax,G.combo);
+      G.perfects++;
+      if(mechOn('combo')){ G.combo++; G.comboMax=Math.max(G.comboMax,G.combo); }
       if(byCrew){ G.crewPulls++; floatText(pan.el,'✋ '+byCrew.name,'#5ad1e6'); SFX.sous(); }
       else {
         floatText(pan.el, G.combo>=3 ? 'x'+G.combo+' 🔥' : it.m.e+' PERFECT','#41d67f');
@@ -1079,13 +1114,14 @@ function step(dt){
     if(G.nextSpawn<=0){
       const p=difficulty(), nm=G.endless?endlessMult():nightMult();
       const busChance = G.endless ? (G.t>90?.08:0)
-        : (G.mod&&G.mod.id==='rush') ? .16 : (META.night>=3 ? .08 : 0);
+        : (G.mod&&G.mod.id==='rush') ? .16 : (mechOn('bus') ? .08 : 0);
       if(Math.random()<busChance && G.tickets.length<=G.railCap-3){
         toast('A BUS JUST PULLED UP — 3 TOPS AT ONCE','var(--hot)');
         for(let i=0;i<3;i++) spawnTicket();
       } else if(G.tickets.length<G.railCap) spawnTicket();
       let iv=((7.6-5.6*p)/nm)*(0.8+Math.random()*0.45);
       if(G.mod&&G.mod.id==='overbook') iv/=1.15;
+      if(!G.endless&&META.night<=2) iv*=1.3;   // opening nights breathe — you're learning
       G.nextSpawn=iv;
     }
   }
@@ -1144,7 +1180,7 @@ function render(){
     const inWin = pan.t>=pan.cookNeed && pan.t<=pan.cookNeed+pan.winLen;
     const over  = pan.t>pan.cookNeed+pan.winLen;
     const [ffs,ffe]=flipWin(pan);
-    const inFlip = !inWin && !over && !pan.item.flipped && pan.t>=ffs && pan.t<=ffe;
+    const inFlip = mechOn('flip') && !inWin && !over && !pan.item.flipped && pan.t>=ffs && pan.t<=ffe;
     pan.el.classList.toggle('perfect',inWin);
     pan.el.classList.toggle('flipwin',inFlip);
     pan.el.classList.toggle('over',over && pan.t<pan.cookNeed+pan.winLen+1.5);
@@ -1404,11 +1440,11 @@ function start(endless=false){
     criticAt2:0,criticDone2:true,partyAt:0,partyDone:true});
   document.body.classList.remove('weeds'); document.body.classList.remove('inspect');
   if(!endless){
-    if(META.night>=4){
-      const n = META.night>=6?2:1;
+    if(META.night>=DEBUT.down){
+      const n = META.night>=DEBUT.down+2?2:1;
       for(let i=0;i<n;i++) G.downSchedule.push({at:45+Math.random()*150, dur:10+Math.random()*5, fired:false});
     }
-    if(META.night>=5) G.criticAt=85+Math.random()*60;
+    if(META.night>=DEBUT.critic) G.criticAt=85+Math.random()*60;
     if(G.mod&&G.mod.id==='critic2'){ G.criticAt=G.criticAt||100; G.criticAt2=G.criticAt+45; G.criticDone2=false; }
     if(G.mod&&G.mod.id==='party'){ G.partyAt=95+Math.random()*45; G.partyDone=false; }
     if(G.mod&&G.mod.id==='inspector'){ G.inspAt=90+Math.random()*60; }
@@ -1423,7 +1459,11 @@ function start(endless=false){
   }
   overlay.classList.add('hide');
   if(endless) setTimeout(()=>toast('ENDLESS RUSH — 3 WALKOUTS AND THE NIGHT IS OVER','var(--cold)'),600);
-  else if(G.mod) setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),600);
+  else {
+    if(G.mod) setTimeout(()=>toast('TONIGHT: '+G.mod.n,'var(--hot)'),600);
+    const news=nightNews(META.night);
+    if(news.length) setTimeout(()=>toast(news[0],'var(--good)'),G.mod?2300:600);
+  }
   ac(); last=performance.now();
 }
 
@@ -1531,6 +1571,8 @@ function finish(){
       : 'The rail buried you. Fire earlier, pull tighter, plate faster.'}</p>
     <div id="shopBox"></div>
     <div id="achBox3"></div>
+    ${nightNews(META.night).length?`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW ON NIGHT ${META.night}</b><br>
+      <span>${nightNews(META.night).join('<br>')}</span></div>`:''}
     <div class="modLine"><b>NIGHT ${META.night} — ${Math.round((nightMult()-1)*100)}% HARDER</b><br>
       <span>${nextMod?nextMod.n+': '+nextMod.d:nightBits(META.night)}</span></div>
     <div id="modeBtns">
@@ -1548,11 +1590,11 @@ function finish(){
 
 function nightBits(n){
   const bits=[];
-  if(n>=2) bits.push('VIPs');
-  if(n>=3) bits.push('bus tours');
-  if(n>=4) bits.push("86'd stations");
-  if(n>=5) bits.push('the critic');
-  return bits.length?'In play: '+bits.join(' · ')+'.':'A quiet one. Enjoy it.';
+  if(n>=DEBUT.vip) bits.push('VIPs');
+  if(n>=DEBUT.bus) bits.push('bus tours');
+  if(n>=DEBUT.down) bits.push("86'd stations");
+  if(n>=DEBUT.critic) bits.push('the critic');
+  return bits.length?'In play: '+bits.join(' · ')+'.':'A quiet one. Learn your kitchen.';
 }
 
 /* ============================== INPUT ============================== */
@@ -1578,8 +1620,11 @@ overlay.querySelector('#startEndless').addEventListener('click',()=>start(true))
   $('#introNight').textContent='NIGHT '+META.night+' · '+tierName().replace('THE PASS — ','');
   $('#introBank').textContent='BANK $'+META.bank;
   $('#introStars').textContent='⭐ '+META.stars;
-  const im=$('#introMod'), mod=modFor(META.night);
-  if(mod) im.innerHTML=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
+  const im=$('#introMod'), mod=modFor(META.night), news=nightNews(META.night);
+  let ih='';
+  if(news.length) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW TONIGHT</b><br><span>${news.join('<br>')}</span></div>`;
+  if(mod) ih+=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
+  im.innerHTML=ih;
   const box=$('#shopBoxIntro');
   if(META.bank>0 || Object.keys(META.up).length || META.crew.length || META.stars>0) renderShop(box);
   renderAchs($('#achBoxIntro'));
