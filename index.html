@@ -300,7 +300,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v10</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v11</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -389,12 +389,17 @@ function mechOn(id){ return G.endless || META.night>=DEBUT[id]; }
 function stationsLive(){ return G.endless ? STATIONS : STATIONS.filter(s=>META.night>=s.unl); }
 function menuLive(){
   const stOk=new Set(stationsLive().map(s=>s.id));
-  return MENU.filter(m=>stOk.has(m.st) && (G.endless || META.night>=(m.unl||1)));
+  let out=MENU.filter(m=>stOk.has(m.st) && (G.endless || META.night>=(m.unl||1)));
+  // ROSA'S RECIPE: a dish as an heirloom — only patrons of the Mercado family have it
+  if(!G.endless && META.vips && META.vips.rosa.patron && stOk.has('saute')) out=out.concat(POZOLE_DISH);
+  return out;
 }
 function nightNews(n){
   const out=[];
   STATIONS.filter(s=>s.unl===n).forEach(s=>out.push('NEW STATION: '+s.emo+' '+s.name));
-  const mech={3:'NEW SKILL: THE FLIP — tap the yellow window mid-cook for +20%',
+  const mech={17:'THE WEEK BEGINS — nights have days now. Regulars book Tuesdays. Saturday grades the week.',
+    23:'THE GUIDE: Vivian Ashe eats here this week — unmarked, any night, any ticket. Rated Saturday.',
+    3:'NEW SKILL: THE FLIP — tap the yellow window mid-cook for +20%',
     5:'NEW SKILL: COMBO HEAT — chain perfect pulls, multiply your tips',
     6:'THE ROOM CHANGES: VIPs start booking — double tips, short fuses',
     7:'bus tours start hitting the rail',8:'special conditions begin — every night is different now',
@@ -443,6 +448,34 @@ function weekPayout(avg){
   return {g:'D', stars:0, pct:0};
 }
 function buffActive(id){ return META.buff && META.buff.id===id && META.night<=META.buff.until; }
+
+/* ============================== THE REGULARS (v11) ==============================
+   Named VIPs with memory. Nail their visit -> standing up. Send it cold or walk
+   them -> standing down. +3 = PATRON, a permanent named perk. -2 = they stop
+   booking, and that's a visible loss. Arc VIPs book Tuesdays; Deacon is at BAR1
+   every single night. Career nights 17+ only. */
+const VIPS = [
+  {id:'duvall', n:'CHEF DUVALL',  t:'DUVALL',  arc:true,
+   in:'CHEF DUVALL IS AT THE CHEF\'S COUNTER — HE ORDERS WHATEVER YOU DO BEST',
+   good:'DUVALL NODS. THAT\'S THE WHOLE REVIEW.', bad:'DUVALL PUTS HIS FORK DOWN.',
+   perk:'DUVALL\'S MISE — one late pull per service is rescued, automatically'},
+  {id:'rosa',   n:'ROSA MERCADO', t:'ROSA ×6', arc:true,
+   in:'THE MERCADO FAMILY IS IN — SIX PLATES, ONE TABLE, EAT TOGETHER',
+   good:'ROSA SENDS HER LOVE TO THE KITCHEN.', bad:'THE TABLE WENT QUIET.',
+   perk:'ROSA\'S RECIPE — POZOLE joins your menu. Only your menu.'},
+  {id:'deacon', n:'DEACON RILEY', t:'BAR1',    arc:false,
+   in:'DEACON\'S ON HIS STOOL. $9 TICKET. FEED HIM FAST — HE NOTICES.',
+   good:'', bad:'',
+   perk:'THE HOUSE — Deacon calls the pass: hottest ready ticket auto-plates every 20s'},
+  {id:'dee',    n:'@PLATEDBYDEE', t:'DEE 📱',  arc:true,
+   in:'@PLATEDBYDEE IS FILMING YOUR PASS — EVERY PLATE GETS POSTED',
+   good:'THE CLIP IS UP. TOMORROW WILL BE BUSY.', bad:'THE CLIP IS UP. IT\'S NOT GOOD.',
+   perk:'THE ALGORITHM — her audience books every night: +25% volume, permanently'},
+];
+const POZOLE_DISH = {n:'POZOLE', e:'🍲', st:'saute', cook:7.0, win:1.9, price:30, unl:1};
+function vipRec(id){ return META.vips && META.vips[id]; }
+function guideMult(){ return 1 + [0,.25,.6,1.2][(META.guide&&META.guide.rating)||0]; }
+function guideWeek(){ return weekNoFor(META.night)===1; }   // nights 23-28: Vivian Ashe is in the room
 
 const QUIRKS = [
   {id:'owl',    n:'NIGHT OWL',      d:'20% faster hands once the rush hits'},
@@ -546,6 +579,7 @@ const WARDROBE = [
   {id:'tatflame',n:'FLAME SLEEVE',     slot:'tattoo', stars:5, px:[[1,10,'#e25822'],[1,11,'#f2a13c'],[10,10,'#e25822'],[10,11,'#f2a13c']], d:'Both forearms. Zero regrets.', req:{label:'Land 50 lifetime flips', test:()=>META.life.flips>=50}},
   {id:'cig',     n:'CIGARETTE BEHIND THE EAR', slot:'accessory', stars:2, px:[[9,4,'#f8fafc'],[10,4,'#e25822']], d:'Never lit during service.', req:{label:'10 lifetime clean nights (zero walkouts)', test:()=>META.life.cleanNights>=10}},
   {id:'halo',    n:'THE HALO',         slot:'accessory', stars:10, px:[[4,0,'#ffd84d'],[5,0,'#ffd84d'],[6,0,'#ffd84d'],[7,0,'#ffd84d']], d:'Six consecutive perfect-attendance services. The hardest condition in the game, on purpose.', req:{label:'6 clean nights IN A ROW', test:()=>META.life.cleanStreak>=6}},
+  {id:'starredtq',n:'THE STARRED TOQUE', slot:'hat', stars:8, hatRows:['..WWWWWWWW..','.WWW*WWWWWW.','.GGGGGGGGGG.','..WWWWWWWW..'], pal:{W:'#fbfbf6','*':'#ffd84d',G:'#d4af37'}, d:'White toque, gold band, one gold star. Status you wear.', req:{label:'Guide rating ≥ 1 star', test:()=>((META.guide&&META.guide.rating)||0)>=1}},
 ];
 const CORE_SLOTS=['hat','face','body','hand'];               // the original 4 — DRESSED TO KILL uses this
 const SLOTS=[...CORE_SLOTS,'shoes','tattoo','accessory'];    // the UI dresses all 7
@@ -591,9 +625,9 @@ const TIERS = [
   {n:'THE PASS — DINER',            cost:4000},
   {n:'THE PASS — BISTRO',           cost:10000},
   {n:'THE PASS — BRASSERIE',        cost:24000},
-  {n:'THE PASS — FINE DINING',      cost:60000},
-  {n:'THE PASS — THE MICHELIN ROOM',cost:150000},
-  {n:'THE PASS — LEGEND',           cost:400000},
+  {n:'THE PASS — FINE DINING',      cost:45000},
+  {n:'THE PASS — THE MICHELIN ROOM',cost:90000},
+  {n:'THE PASS — LEGEND',           cost:180000},
 ];
 function tierName(){ return TIERS[Math.min(META.tier||0,TIERS.length-1)].n; }
 function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)+1] : null; }
@@ -601,7 +635,13 @@ function nextTier(){ return (META.tier||0)<TIERS.length-1 ? TIERS[(META.tier||0)
 function freshLife(){ return {services:0,pulls:0,perfects:0,waste:0,covers:0,flips:0,banked:0,
   cleanNights:0,cleanStreak:0,bestCombo:0,criticFloors:0,weeds60:false,zeroWaste:false,survived86:false,friClean:false,
   byStation:{grill:0,saute:0,fry:0,cold:0},dishes:{}}; }
-let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}, life:freshLife(), wk:null, buff:null};
+function freshVips(){ return {
+  duvall:{v:0,s:0,patron:false,off:false},
+  rosa:{v:0,s:0,patron:false,off:false},
+  deacon:{v:0,s:0,patron:false,off:false,streak:0},
+  dee:{v:0,s:0,patron:false,off:false}}; }
+let META = {night:1, bank:0, stars:0, tier:0, up:{}, crew:[], ward:{}, ach:{}, life:freshLife(), wk:null, buff:null,
+            vips:freshVips(), guide:{rating:0,score:0}, deeBuff:0, deeBad:0};
 function loadMeta(){
   try{
     const m=JSON.parse(localStorage.getItem('pass_meta')||'null');
@@ -619,6 +659,13 @@ function loadMeta(){
       if(!('wk' in META)) META.wk=null;
       if(!('buff' in META)) META.buff=null;
       META.crew.forEach(c=>{ if(typeof c.services!=='number') c.services=0; });
+      // v11 migration: the regulars + the guide
+      if(!META.vips) META.vips=freshVips();
+      Object.entries(freshVips()).forEach(([k,v])=>{ if(!META.vips[k]) META.vips[k]=v; });
+      if(typeof META.vips.deacon.streak!=='number') META.vips.deacon.streak=0;
+      if(!META.guide) META.guide={rating:0,score:0};
+      if(typeof META.deeBuff!=='number') META.deeBuff=0;
+      if(typeof META.deeBad!=='number') META.deeBad=0;
       if(m.sous && !META.crew.length){
         META.crew.push({role:'cook', name:m.sous.name, hat:m.sous.hat,
           apron:m.sous.apron, station:m.sous.station, quirk:rollQuirk()});
@@ -973,6 +1020,13 @@ const FOOD_ART = {
     pal:{N:'#f2e8d4',W:'#c05a24',H:'#ef9440'},
     raw:{W:'#e8b8a0',H:'#f2d0b8'},
     burnt:{W:'#2e1a10',H:'#4a2c16'}
+  },
+  // POZOLE — Rosa's recipe: red bowl, hominy dots, lime + radish garnish
+  'POZOLE': {
+    rows:['..........','..G....L..','..RRRRRR..','.RHRHRHRR.','.RRRRRRRR.','..BBBBBB..','...BBBB...','..........'],
+    pal:{R:'#c0392b',H:'#f5ecd8',B:'#7a4a2a',G:'#5fbf4a',L:'#7ad14a'},
+    raw:{R:'#d9807a'},
+    burnt:{R:'#4a1c16',H:'#8a7458'}
   }
 };
 const FOOD_CACHE={};
@@ -1067,11 +1121,16 @@ function spawnTicket(opts={}){
   if(G.endless && G.t>200 && Math.random()<.15) count++;
   if(opts.critic) count=3;
   if(opts.big) count=opts.big;
+  const VD = opts.vipId ? VIPS.find(v=>v.id===opts.vipId) : null;
+  if(VD) count = VD.id==='rosa'?5 : VD.id==='dee'?2 : 1;
+  if(opts.furious) count=1;
   const pool=menuLive();
   const items=[], used=[];
   for(let i=0;i<count;i++){
     let m, guard=0;
     do{ m=pool[(Math.random()*pool.length)|0]; guard++; }while(used.includes(m.n)&&guard<12);
+    if(VD&&VD.id==='duvall') m=[...pool].sort((a,b)=>b.price-a.price)[0];   // he orders your best
+    if(VD&&VD.id==='deacon') m=[...pool].sort((a,b)=>a.price-b.price)[0];   // the $9 ticket
     used.push(m.n);
     items.push({m, state:'todo', quality:null, pulledAt:0, pan:null, el:null, flipped:false});
   }
@@ -1079,7 +1138,8 @@ function spawnTicket(opts={}){
   if(G.mod && G.mod.id==='vipnight') vipChance=.36;
   if(!G.endless && G.wd==='TUE') vipChance=Math.max(vipChance,.3);
   if(!G.endless && G.wd==='SAT') vipChance=Math.max(vipChance,.2);
-  const vip = !opts.critic && !opts.big && Math.random()<vipChance;
+  const vip = VD ? VD.id!=='deacon'
+    : (!opts.critic && !opts.big && !opts.furious && Math.random()<vipChance);
   let wdPat = G.wd==='WED' ? .9 : G.wd==='MON' ? 1.1 : 1;
   if(buffActive('staff')) wdPat*=1.08;
   const baseLimit = G.endless
@@ -1087,9 +1147,8 @@ function spawnTicket(opts={}){
     : (78-32*p)*(META.up.regs?1.15:1)*patienceFactor()*(host()?1.08:1)*wdPat;
   const tk={
     id:++G.ticketNo,
-    table: opts.critic?'CRITIC★' : opts.big?'PARTY×'+count
-      : vip?(G.wd==='TUE'?REGULAR_TABLES[(Math.random()*REGULAR_TABLES.length)|0]:'VIP★')
-      : TABLES[(Math.random()*TABLES.length)|0],
+    table: VD?VD.t : opts.critic?'CRITIC★' : opts.big?'PARTY×'+count
+      : vip?'VIP★' : TABLES[(Math.random()*TABLES.length)|0],
     items, born:G.t, el:null, dead:false, readyAt:0, saved:false,
     vip, critic:!!opts.critic, party:!!opts.big,
     limit:baseLimit,
@@ -1097,9 +1156,22 @@ function spawnTicket(opts={}){
   if(vip) tk.limit*=.62;
   if(tk.critic) tk.limit=Math.max(tk.limit,62);
   if(tk.party) tk.limit*=1.45;
+  if(VD){
+    tk.vipId=VD.id;
+    if(VD.id==='rosa')   tk.limit=baseLimit*1.5;            // the family is patient; six plates aren't
+    if(VD.id==='dee')    tk.limit*=.85;                     // content waits for no one
+    if(VD.id==='deacon') tk.limit=Math.max(tk.limit,150);   // he's not going anywhere
+  }
+  if(opts.furious) tk.limit*=.35;
+  /* THE GUIDE: some night this week, one ordinary ticket is secretly hers */
+  if(!G.endless && guideWeek() && !G.asheSet && !VD && !opts.critic && !opts.big && !opts.furious && G.t>50){
+    tk.ashe=true; G.asheSet=true;
+  }
   tk.left=tk.limit;
   G.tickets.push(tk); buildChit(tk);
-  if(tk.critic){ toast('THE CRITIC IS IN THE ROOM','#c084fc'); SFX.vip(); }
+  if(VD){ toast(VD.in, VD.id==='deacon'?'#5ad1e6':'var(--gold)'); SFX.vip(); }
+  else if(opts.furious){ toast('A FURIOUS TABLE SAT — THEY SAW THE CLIP','var(--bad)'); SFX.walk(); }
+  else if(tk.critic){ toast('THE CRITIC IS IN THE ROOM','#c084fc'); SFX.vip(); }
   else if(tk.party){ toast('THE BIG PARTY IS HERE — '+count+' PLATES, ONE WINDOW','#22d3ee'); SFX.vip(); }
   else if(vip){ toast('VIP SAT AT '+tk.table+' — DOUBLE TIPS','var(--gold)'); SFX.vip(); }
   else SFX.ticket();
@@ -1181,6 +1253,12 @@ function flipWin(pan){ const fs=pan.cookNeed*.5; return [fs, fs+Math.min(.9,pan.
 function pull(pan, byCrew=null){
   if(!G.running||G.paused||!pan.item) return;
   const it=pan.item, tk=pan.ticket, m=it.m;
+  /* DUVALL'S MISE: patron perk — one late pull per service is quietly rescued */
+  if(!G.endless && !byCrew && META.vips.duvall.patron && !G.miseUsed
+     && pan.t > pan.cookNeed+pan.winLen){
+    G.miseUsed=true; pan.t=pan.cookNeed+.01;
+    floatText(pan.el,"DUVALL'S MISE",'#d4af37');
+  }
   if(pan.t < pan.cookNeed){
     // Before the pull window: this tap is either a FLIP (new verb) or a raw pull.
     const [fs,fe]=flipWin(pan);
@@ -1252,6 +1330,7 @@ function plate(tk, byExpo=false){
   if(!G.endless&&META.up.menu) base*=1.1;
   if(!G.endless) base*=(1+.04*(META.up.menuDev||0));
   if(!G.endless) base*=(1+.12*(META.tier||0));   // renovated rooms charge renovated prices
+  if(!G.endless) base*=guideMult();              // a rated room charges rated prices
   const age=G.t-tk.born;
   const speed = age<25?1.2 : age<45?1.05 : age<65?.92 : .8;
   let tip=Math.max(1,Math.round(base*qual*minHeat*speed*.55));
@@ -1276,6 +1355,32 @@ function plate(tk, byExpo=false){
     }
   } else if(tk.party){ G.partyPlated=true; }
   else if(minHeat<.6) toast('SENT COLD — TABLE NOTICED','var(--warn)');
+  /* THE GUIDE: her ticket is scored in silence */
+  if(!G.endless && tk.ashe) META.guide.score += (allPerfect&&minHeat>.7) ? 1 : -1;
+  /* THE REGULARS: they remember this plate */
+  if(!G.endless && tk.vipId){
+    const rec=META.vips[tk.vipId], V=VIPS.find(v=>v.id===tk.vipId);
+    const good=allPerfect&&minHeat>.7;
+    rec.v++;
+    if(tk.vipId==='deacon'){
+      if(G.t-tk.born<=60) G.deaconFast=true;
+    } else {
+      if(tk.vipId==='dee'){ if(good) META.deeBuff=1; else META.deeBad=1; }
+      if(good){
+        rec.s=Math.min(3,rec.s+1);
+        if(V.good) toast(V.good,'var(--gold)');
+        if(rec.s>=3&&!rec.patron){
+          rec.patron=true; META.stars+=2; SFX.star();
+          setTimeout(()=>toast('★ '+V.n+' IS A PATRON — '+V.perk,'var(--gold)'),1700);
+        }
+      } else if(minHeat<.6){
+        rec.s=Math.max(-2,rec.s-1);
+        if(V.bad) toast(V.bad,'var(--warn)');
+        if(rec.s<=-2&&!rec.off){ rec.off=true; setTimeout(()=>toast(V.n+' BOOKS AT MERIDIAN NOW.','var(--bad)'),1700); }
+      }
+    }
+    saveMeta();
+  }
   SFX.serve();
   killTicket(tk,'dying');
 }
@@ -1299,6 +1404,14 @@ function killTicket(tk,cls){
 
 function walkout(tk){
   G.walkouts++;
+  if(!G.endless && tk.ashe) META.guide.score-=2;
+  if(!G.endless && tk.vipId && tk.vipId!=='deacon'){
+    const rec=META.vips[tk.vipId], V=VIPS.find(v=>v.id===tk.vipId);
+    rec.s=Math.max(-2,rec.s-1);
+    if(tk.vipId==='dee') META.deeBad=1;
+    if(rec.s<=-2&&!rec.off){ rec.off=true; toast(V.n+' BOOKS AT MERIDIAN NOW.','var(--bad)'); }
+    saveMeta();
+  }
   let pen=G.endless?10:(tk.vip?14:7)+Math.min(12,META.night);
   if(!G.endless&&META.up.valet) pen=Math.round(pen/2);
   G.tips=Math.max(0,G.tips-pen);
@@ -1407,6 +1520,24 @@ function step(dt){
     G.partyDone=true; spawnTicket({big:5});
   }
 
+  /* v11: named regulars walk in on schedule */
+  for(const ev of (G.vipSpawns||[])){
+    if(!ev.fired && G.t>=ev.at && !G.closing && G.tickets.length<G.railCap){
+      ev.fired=true;
+      spawnTicket(ev.id==='_furious'?{furious:true}:{vipId:ev.id});
+    }
+  }
+  /* THE HOUSE: patron Deacon calls the pass — hottest ready ticket out every 20s */
+  if(!G.endless && META.vips.deacon.patron && G.t>=G.deaconNext){
+    G.deaconNext=G.t+20;
+    const rdy=G.tickets.filter(t=>!t.dead&&ready(t));
+    if(rdy.length){
+      rdy.sort((a,b)=>a.born-b.born);
+      toast('DEACON CALLS IT — '+rdy[0].table+' OUT','#5ad1e6');
+      plate(rdy[0],true);
+    }
+  }
+
   if(!G.closing){
     G.nextSpawn-=dt;
     if(G.nextSpawn<=0){
@@ -1425,6 +1556,7 @@ function step(dt){
       if(G.wd==='MON') iv*=1.45;                        // staff meal: light book
       if(G.wd==='WED') iv*=(G.t<60?1.8:.8);             // industry: dead, then the slam
       if(G.wd==='THU') iv*=.85;                         // the book is full
+      if(G.deeBuff) iv*=.8;                             // @platedbydee's audience showed up
       G.nextSpawn=iv;
     }
   }
@@ -1590,6 +1722,28 @@ function renderShop(container){
     rCard.innerHTML=`<b>🏆 ${tierName()}</b><small>There is nothing above this. They write books about this room.</small>`;
   }
   box.appendChild(rCard);
+
+  /* v11: the regulars book — who loves you, who you lost */
+  if(META.night>=17){
+    const gHead=document.createElement('div'); gHead.className='crewHead'; gHead.style.color='var(--gold)';
+    const gr=(META.guide&&META.guide.rating)||0;
+    gHead.innerHTML=`<span>THE REGULARS BOOK${gr?' · GUIDE '+'★'.repeat(gr)+' (+'+Math.round((guideMult()-1)*100)+'% prices)':''}</span>`;
+    box.appendChild(gHead);
+    const vGrid=document.createElement('div'); vGrid.className='crewGrid';
+    VIPS.forEach(v=>{
+      const r=META.vips[v.id];
+      const status = r.off ? 'GONE — books at Meridian now.'
+        : r.patron ? '★ PATRON — '+v.perk
+        : v.id==='deacon' ? 'On his stool every night. Fed fast '+ (r.streak||0)+'/6 nights running.'
+        : '●'.repeat(Math.max(0,r.s))+'○'.repeat(3-Math.max(0,r.s))+(r.s<0?' — you\'re on thin ice':' — books Tuesdays');
+      const d=document.createElement('div'); d.className='upg';
+      d.style.borderColor = r.off?'var(--bad)' : r.patron?'var(--gold)' : 'var(--line)';
+      if(r.off) d.style.opacity=.55;
+      d.innerHTML=`<b>${v.n}</b><small>${status}</small>`;
+      vGrid.appendChild(d);
+    });
+    box.appendChild(vGrid);
+  }
 
   const bHead=document.createElement('div'); bHead.className='crewHead'; bHead.innerHTML=`<span>YOUR BRIGADE — ${META.crew.length?META.crew.length+' ON STAFF':'NOBODY YET. IT\'S JUST YOU.'}</span>`;
   box.appendChild(bHead);
@@ -1824,6 +1978,23 @@ function start(endless=false){
       if(!G.partyAt){ G.partyAt=95+Math.random()*45; G.partyDone=false; }
     }
   }
+  /* v11: the regulars book tonight's visits */
+  G.vipSpawns=[]; G.miseUsed=false; G.deaconNext=20; G.deaconFast=false;
+  G.asheSet=false; G.deeBuff=0;
+  if(!endless && META.night>=17){
+    const V=META.vips;
+    if(!V.deacon.off) G.vipSpawns.push({at:15,id:'deacon',fired:false});
+    if(G.wd==='TUE'){
+      if(!V.duvall.off && !V.duvall.patron) G.vipSpawns.push({at:45+Math.random()*20,id:'duvall',fired:false});
+      if(!V.rosa.off   && !V.rosa.patron)   G.vipSpawns.push({at:95+Math.random()*25,id:'rosa',fired:false});
+      if(!V.dee.off    && !V.dee.patron)    G.vipSpawns.push({at:148+Math.random()*25,id:'dee',fired:false});
+    }
+    if(V.dee.patron || META.deeBuff) G.deeBuff=1;          // the algorithm delivers
+    if(META.deeBad){                                        // the clip went viral the wrong way
+      G.vipSpawns.push({at:6,id:'_furious',fired:false},{at:11,id:'_furious',fired:false});
+    }
+    META.deeBuff=0; META.deeBad=0;
+  }
   railEl.innerHTML='<div id="railEmpty">RAIL CLEAR</div>';
   buildLine();
   if(G.mod&&G.mod.id==='short'){
@@ -1931,9 +2102,29 @@ function finish(){
   if(clean){ L.cleanNights++; L.cleanStreak++; } else L.cleanStreak=0;
   META.crew.forEach(m=>{ m.services=(m.services||0)+1; });
 
-  /* v9: the week grade — consistency becomes the skill */
-  const wdClosed=weekdayFor(closedNight);
+  /* v11: Deacon's habit — plate him inside 60s, six nights running */
   let weekLine='';
+  if(closedNight>=17 && (G.vipSpawns||[]).some(e=>e.id==='deacon'&&e.fired)){
+    const dk=META.vips.deacon;
+    dk.streak = G.deaconFast ? dk.streak+1 : 0;
+    if(dk.streak>=6 && !dk.patron){
+      dk.patron=true; META.stars+=2;
+      weekLine+=`<div class="starLine" style="border-left-color:#5ad1e6"><b style="color:#5ad1e6">DEACON RILEY IS A PATRON</b> — six straight nights fed inside a minute. THE HOUSE: he calls the pass now — the hottest ready ticket auto-plates every 20s. +2 ⭐</div>`;
+    } else if(!dk.patron && dk.streak>0){
+      weekLine+=`<div class="starLine" style="border-left-color:var(--line2);color:var(--dim)">DEACON: fed fast ${dk.streak}/6 nights running.</div>`;
+    }
+  }
+
+  /* v11: THE GUIDE rates you at the close of week B */
+  const wdClosed=weekdayFor(closedNight);
+  if(wdClosed&&wdClosed.d==='SAT'&&weekNoFor(closedNight)===1){
+    const sc=META.guide.score;
+    META.guide.rating = sc>=5?3 : sc>=3?2 : sc>=1?1 : 0;
+    const r=META.guide.rating;
+    weekLine+=`<div class="starLine" style="border-left-color:#c084fc"><b style="color:#c084fc">THE GUIDE HAS SPOKEN: ${r?'★'.repeat(r):'NO STARS'}</b> — Vivian Ashe ate here six times, unmarked. ${r?'Menu prices +'+Math.round((guideMult()-1)*100)+'%, permanent. Wear it.':'No mention this year. She was here, though. She\'ll be back.'}${r>=1?' The STARRED TOQUE is unlocked in the wardrobe.':''}</div>`;
+  }
+
+  /* v9: the week grade — consistency becomes the skill */
   if(wdClosed){
     if(wdClosed.d==='FRI'&&clean) L.friClean=true;
     if(!META.wk||META.wk.no!==weekNoFor(closedNight)) META.wk={no:weekNoFor(closedNight),g:[],tips:0};
@@ -1944,9 +2135,9 @@ function finish(){
       const pay=weekPayout(avg);
       const bonus=Math.round(META.wk.tips*pay.pct);
       META.stars+=pay.stars; META.bank+=bonus;
-      weekLine=`<div class="starLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WEEK GRADE: ${pay.g}</b> — six services, averaged. ${pay.stars?'+'+pay.stars+' ⭐':'No stars.'}${bonus?' · bank bonus +$'+bonus.toLocaleString()+' ('+Math.round(pay.pct*100)+'% of the week\'s tips)':''}${pay.g==='D'?' The street noticed.':''}</div>`;
+      weekLine+=`<div class="starLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WEEK GRADE: ${pay.g}</b> — six services, averaged. ${pay.stars?'+'+pay.stars+' ⭐':'No stars.'}${bonus?' · bank bonus +$'+bonus.toLocaleString()+' ('+Math.round(pay.pct*100)+'% of the week\'s tips)':''}${pay.g==='D'?' The street noticed.':''}</div>`;
     } else {
-      weekLine=`<div class="starLine" style="border-left-color:var(--cold);color:var(--dim)">WEEK SO FAR: ${META.wk.g.map(v=>'DCBAS'[v]).join(' · ')} — graded Saturday. Consistency is the skill.</div>`;
+      weekLine+=`<div class="starLine" style="border-left-color:var(--cold);color:var(--dim)">WEEK SO FAR: ${META.wk.g.map(v=>'DCBAS'[v]).join(' · ')} — graded Saturday. Consistency is the skill.</div>`;
     }
   }
 

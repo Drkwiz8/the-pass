@@ -69,11 +69,28 @@ Built from hermes-air's ENDGAME + WARDROBE-40 design docs (#handoffs).
 - Sprite redesign candidates flagged by the draft pass: RISOTTO (weak
   silhouette), CEVICHE vs CRUDO similarity, OCTOPUS abstraction
 
-## v11 — the cooking process + endgame systems (next)
+## v11 — THE REGULARS + THE GUIDE (SHIPPED 2026-07-31)
+- [x] 4 named VIPs with memory (standing -2..+3): CHEF DUVALL (orders your
+      best dish, Tuesdays), ROSA MERCADO ×6 (six plates, one table), DEACON
+      RILEY ($9 ticket at BAR1 every single night), @PLATEDBYDEE (2 plates,
+      short fuse, posts every plate — good clip = +25% volume tomorrow, bad
+      clip = furious tables at open)
+- [x] PATRON perks at +3 standing: DUVALL'S MISE (one late pull/night
+      rescued), ROSA'S RECIPE (POZOLE, your menu only), THE HOUSE (Deacon
+      auto-plates hottest ready ticket every 20s after 6 fast-fed nights),
+      THE ALGORITHM (permanent +25% volume). At -2 they book at Meridian.
+- [x] THE GUIDE (nights 23-28): one unmarked Ashe ticket per night, scored
+      in silence; SAT sets a 0-3★ rating = +25/60/120% menu prices,
+      permanent. STARRED TOQUE unlocks at 1★.
+- [x] REGULARS BOOK panel in the back office; tier ladder retuned to
+      $45k/$90k/$180k (LEGEND was ~200 nights away — now spans seasons)
+
+## v12 — the cooking process + rivalry (next)
 - [ ] Deeper cook interactions per station (the "actual cooking process":
       prep steps, sear/flip/rest verbs beyond the current flip)
-- [ ] Remaining endgame doc systems: named VIP arcs, Meridian rival, crew
-      morale/storylines, Cook-Off week, The Guide rating, prestige
+- [ ] Meridian rival + crew morale/storylines + Cook-Off week + prestige
+- [ ] Remaining 4 VIPs from the endgame doc (Ashe as bookable patron, Kenji,
+      Leona, Adrian)
 
 ## Later / earn-it list
 - True multiplayer (live co-op service, split stations) — real netcode + a
