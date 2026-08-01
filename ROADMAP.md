@@ -179,6 +179,15 @@ Jaxon: still stuck on 24; "if you end the service it just moves you on";
 - [x] Mercy deepened: cap 3 → 6 stacks, and at 2+ one less thing breaks,
       at 4+ nothing breaks at all ("the tech finally came by")
 
+## v14.4 — NEVER A WALL (SHIPPED 2026-08-01)
+Jaxon: "im already stuck on 25 because of the bug and i cant beat it."
+- [x] CALL IT A NIGHT: after two failed attempts at the same night, the fail
+      card offers to write it off — the night closes as a D, nothing banks,
+      no stars, the D goes on the week grade, and the calendar MOVES. A
+      permanent wall is worse design than any difficulty; a real kitchen's
+      disaster night still ends with tomorrow. Failure still stings without
+      ever being terminal.
+
 ## v15 — CREWS (multiplayer, the honest path)
 "Guild-like things" = crews. Needs the backend the leaderboard needs — one
 Supabase project covers both (J4 research picked it; Jaxon owns the account).

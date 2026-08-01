@@ -334,7 +334,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.3</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v14.4</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -2550,16 +2550,43 @@ function failNight(){
     ${backLine}
     <div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WORD GOT AROUND</b><br>
       <span>A rough night empties tomorrow's book a little. Next attempt: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower${META.mercy>=4?', and the equipment tech finally came by — nothing goes down':META.mercy>=2?', and one less thing breaks':''}. Win the night and the assist resets.</span></div>
+    ${META.mercy>=2?`<div class="modLine" style="border-left-color:var(--warn)"><b style="color:var(--warn)">OR CALL IT A NIGHT</b><br>
+      <span>Two rough services on the same night. Every kitchen has a week like this — you can write tonight off as a <b>D</b> and open tomorrow anyway. It costs you: no tips, no stars, and the D goes on the week. But the calendar moves and you are not stuck.</span></div>`:''}
     <div id="shopBoxFail"></div>
     <div id="modeBtns">
       <button id="start">RUN NIGHT ${META.night} BACK ▸</button>
+      ${META.mercy>=2?`<button id="concede" style="background:transparent;color:var(--warn);border:1px solid var(--warn)">TAKE THE D — OPEN TOMORROW ▸</button>`:''}
       <button id="startEndless">ENDLESS RUSH ∞</button>
     </div>`;
   renderShop(card.querySelector('#shopBoxFail'));
   overlay.classList.remove('hide');
   card.querySelector('#start').addEventListener('click',()=>start(false));
+  const cc=card.querySelector('#concede');
+  if(cc) cc.addEventListener('click',concedeNight);
   card.querySelector('#startEndless').addEventListener('click',()=>start(true));
   SFX.walk();
+}
+
+/* v14.4: never a permanent wall. After three failed attempts at the same
+   night you can take the loss and open tomorrow — a D on the week, nothing
+   banked, but the calendar moves. Being stuck forever is worse design than
+   any difficulty, and a real kitchen's bad night still ends with tomorrow. */
+function concedeNight(){
+  const closed=META.night;
+  if(META.wk && weekdayFor(closed)) META.wk.g.push(0);       // a D on the week
+  META.life.services++;
+  META.crew.forEach(m=>{ if(!m.stage) m.services=(m.services||0)+1; });
+  META.night++;
+  META.mercy=0;
+  if(META.buff&&META.night>META.buff.until) META.buff=null;
+  META.life.cleanStreak=0;
+  saveMeta();
+  card.innerHTML=`<h1><small>NIGHT ${closed} — WRITTEN OFF</small>TOMORROW OPENS</h1>
+    <p>You closed the doors, put the chairs up, and let it go. Night ${closed} goes in the book as a <b style="color:var(--bad)">D</b> — nothing banked, no stars. Nobody gets every night. The prep list for night ${META.night} is on the board.</p>
+    <div id="shopBoxCon"></div>
+    <div id="modeBtns"><button id="start">PREP NIGHT ${META.night} ▸</button></div>`;
+  renderShop(card.querySelector('#shopBoxCon'));
+  card.querySelector('#start').addEventListener('click',()=>start(false));
 }
 
 function starHaul(grade){
