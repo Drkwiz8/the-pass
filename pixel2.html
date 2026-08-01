@@ -19,10 +19,10 @@ canvas{image-rendering:pixelated;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6))}
 </style>
 </head>
 <body>
-<h1><small>THE PASS — PIXEL 2.0</small>The 22×30 chef</h1>
-<p>Same soul, 2.5× the pixels. Pleated toque, eyebrows, two-tone eyes, nose, mouth,
-cheek shading, neck shadow, double-breasted buttons, apron pocket, hip towel, hands, shoes.
-Three kits, three sizes — the smallest is roughly how they'd stand on the line.</p>
+<h1><small>THE PASS — PIXEL 2.0</small>Style A, grown up — 18×24</h1>
+<p>The Line Cook you picked, with double the pixels: eyebrows, two-tone eyes, nose, mouth,
+pleated toque, buttons, apron pocket, hip towel — but keeping A's compact proportions.
+Enough canvas that accessories can be shapes, not blocks. Three kits, three sizes.</p>
 <div class="row" id="row"></div>
 <div class="pick"><b>If this is the guy</b>, say so and the whole game moves to him — locker room page,
 every wardrobe piece redrawn at this scale, more slots. <b>If he's still not right:</b> name any game
@@ -33,37 +33,32 @@ proportion and shading style exactly. A reference beats ten more guesses.</div>
 /* 22 cols x 30 rows. Keys: H hat, h hat shade, R hair, S skin, s skin shade,
    E eye, W white, C coat, c coat shade/buttons, A apron, a apron shade/pocket,
    P pants, O shoe, T towel */
+/* Style A proportions, 18x24 — "the line cook, grown up" */
 const CHEF=[
-'......HHHHHHHHHH......',
-'....HHHHHHHHHHHHHH....',
-'...HHHHHHHHHHHHHHHH...',
-'...HHHHHHHHHHHHHHHH...',
-'...HhHHhHHhHHhHHhHH...',
-'...HHHHHHHHHHHHHHHH...',
-'...hhhhhhhhhhhhhhhh...',
-'...RRSSSSSSSSSSSSRR...',
-'...RSSSSSSSSSSSSSSR...',
-'...SSRRRSSSSSSRRRSS...',
-'...SSWWESSSSSSWWESS...',
-'...SSWWESSSSSSWWESS...',
-'...SSSSSSSssSSSSSSS...',
-'...sSSSSSSSSSSSSSSs...',
-'...SSSSSsssssSSSSSS...',
-'...SSSSSSSSSSSSSSSS...',
-'.....ssssssssssss.....',
-'.....CCCCCCCCCCCC.....',
-'...CCCCCcCCCCcCCCCC...',
-'..CCCCCCcCCCCcCCCCCC..',
-'..CCcCCAAAAAAAACCcCC..',
-'..CCcCCAAAAAAAACCcTT..',
-'..CCcCCAaaaaaaACCcTT..',
-'..CCcCCAaaaaaaACCcTT..',
-'..SScCCAAAAAAAACCcSS..',
-'....CCAAAAAAAAAACC....',
-'.....PPPP....PPPP.....',
-'.....PPPP....PPPP.....',
-'....OOOOO....OOOOO....',
-'...OOOOOO....OOOOOO...',
+'....HHHHHHHHHH....',
+'..HHHHHHHHHHHHHH..',
+'..HHHHHHHHHHHHHH..',
+'..HhHHhHHhHHhHHH..',
+'..HHHHHHHHHHHHHH..',
+'..hhhhhhhhhhhhhh..',
+'..RSSSSSSSSSSSSR..',
+'..SRRRSSSSSSRRRS..',
+'..SWWESSSSSSWWES..',
+'..SWWESSSSSSWWES..',
+'..SSSSSSssSSSSSS..',
+'..SSSSSssssSSSSS..',
+'..SSSSSSSSSSSSSS..',
+'....ssssssssss....',
+'...CCCCCCCCCCCC...',
+'..WCCCCcCCcCCCCW..',
+'..SCCAAAAAAAACCS..',
+'..SCCAAAAAAAACCS..',
+'..SCCAaaaaaaACCTT.',
+'..SCCAaaaaaaACCTT.',
+'...CCAAAAAAAACC...',
+'...PPP......PPP...',
+'...PPP......PPP...',
+'..OOOO......OOOO..',
 ];
 function shade(hex,f){
   const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
@@ -71,7 +66,7 @@ function shade(hex,f){
   return '#'+((1<<24)+(m(r)<<16)+(m(g)<<8)+m(b)).toString(16).slice(1);
 }
 function draw(pal,px){
-  const W=22,H=CHEF.length;
+  const W=18,H=CHEF.length;
   const cv=document.createElement('canvas');
   cv.width=(W+2)*px; cv.height=(H+2)*px;
   const x=cv.getContext('2d');
