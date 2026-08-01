@@ -529,7 +529,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.3</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v18.4</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -3108,6 +3108,23 @@ function renderShop(container){
   } /* end ROOM tab */
 
   if(SHOP_TAB==='crew'){
+  /* v18.4 (Jaxon: "i cant see the crown to put on my guy even though i have it
+     unlocked"). The gating was right — CROWN, THE STARRED TOQUE and THE HALO
+     are chef-only and DO appear for the chef. The problem was WHERE: the chef
+     only existed in the LOCKER ROOM, so the CREW tab — the obvious place to
+     go and dress someone — listed cooks and nothing else. He's here now. */
+  const cHead=document.createElement('div'); cHead.className='crewHead'; cHead.style.color='var(--gold)';
+  cHead.innerHTML='<span>THE CHEF — YOU</span>';
+  box.appendChild(cHead);
+  const chefGrid=document.createElement('div'); chefGrid.className='crewGrid';
+  const chefCard=document.createElement('div'); chefCard.className='upg crewCard'; chefCard.style.borderColor='var(--gold)';
+  const cOwned=WARDROBE.filter(w=>w.chefOnly&&META.ward[w.id]).map(w=>w.n);
+  chefCard.innerHTML=`<b>${memberFig(META.chef)} ${META.chef.name} — ${rankOf().n}</b>
+    <small>Your name on the door.${cOwned.length?' <span style="color:var(--gold)">Yours alone: '+cOwned.join(', ')+'</span>':' CROWN, THE STARRED TOQUE and THE HALO fit only you.'}</small>`;
+  const cBtn=document.createElement('button'); cBtn.textContent='CUSTOMIZE ▸';
+  cBtn.addEventListener('click',()=>renderMemberCfg(chefGrid,META.chef,container,chefCard));
+  chefCard.appendChild(cBtn); chefGrid.appendChild(chefCard); box.appendChild(chefGrid);
+
   const bHead=document.createElement('div'); bHead.className='crewHead'; bHead.innerHTML=`<span>YOUR BRIGADE — ${META.crew.length?META.crew.length+' ON STAFF':'NOBODY YET. IT\'S JUST YOU.'}</span>`;
   box.appendChild(bHead);
   const crewGrid=document.createElement('div'); crewGrid.className='crewGrid';
@@ -3299,7 +3316,9 @@ function wardCard(w,rerender){
   if(!owned&&!reqOk) d.classList.add('lockedWard');
   const src=previewURL(w);
   d.innerHTML=`<div class="wardPrev"><img src="${src}" alt="${w.n}">${owned?'<span class="wOwned">✓</span>':''}</div>
-    <b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}${w.chefOnly?' · <span style="color:var(--gold)">CHEF ONLY</span>':''}</em>${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
+    <b>${w.n}</b><small>${w.d}<br><em style="color:var(--dim)">slot: ${w.slot}</em>${
+      w.chefOnly?`<br><em style="color:var(--gold)">👑 CHEF ONLY — equip it on YOU in the CREW tab${owned?'':', not on a cook'}</em>`:''
+    }${w.req&&!owned?`<br><em style="color:${reqOk?'var(--good)':'var(--warn)'}">${reqOk?'✓':'🔒'} ${w.req.label}</em>`:''}</small>`;
   const b=document.createElement('button');
   b.textContent=owned?'UNLOCKED':'⭐'+w.stars;
   b.disabled=owned||META.stars<w.stars||!reqOk;
