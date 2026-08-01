@@ -108,6 +108,11 @@ Built from hermes-air's ENDGAME + WARDROBE-40 design docs (#handoffs).
       and nobody (cooks/expo/Deacon) touches the Cook-Off ticket. With a full
       crew your job becomes: fire everything, work the season/flip windows,
       personally finish the premium dishes, win the duels.
+- [x] v12.2 (Jaxon mobile note: "service closed screen is a mess — upgrades
+      and cosmetics need to be separate"): the back office is TABS — ROOM /
+      CREW / GEAR / LINE / GOALS, gold badges show affordable counts, last
+      tab sticks, single-column cards + bigger touch targets on mobile.
+      Achievements live in the GOALS tab (endless keeps its own board).
 
 ## v13 — next
 - [ ] Prestige seasons (endgame doc §6) — the go-around-again layer

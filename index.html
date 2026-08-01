@@ -250,6 +250,12 @@ body.inspect #vig{opacity:1;box-shadow:inset 0 0 130px 22px rgba(250,204,21,.4);
 #lockerBtn{margin-top:10px;width:100%;background:transparent;border:1px solid var(--star);color:var(--star);
   font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:2px;padding:8px 0;border-radius:3px;cursor:pointer}
 #lockerBtn:hover{background:rgba(250,204,21,.1)}
+#shopTabs{display:flex;gap:6px;margin:10px 0 12px;flex-wrap:wrap}
+.shopTab{flex:1;min-width:64px;background:var(--panel2);border:1px solid var(--line2);border-radius:3px;color:var(--dim);
+  font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.5px;padding:9px 4px;cursor:pointer;white-space:nowrap}
+.shopTab:hover{color:var(--txt)}
+.shopTab.sel{color:var(--txt);border-color:var(--hot);background:#20272d}
+.shopTab em{font-style:normal;background:var(--gold);color:#1a1200;border-radius:8px;padding:0 5px;font-size:9px;margin-left:2px}
 
 /* ---------- mobile ---------- */
 body{touch-action:manipulation}
@@ -279,6 +285,9 @@ body{touch-action:manipulation}
   #card h1{font-size:22px}
   #scores b{font-size:15px}
   .wardGrid,.achGrid{grid-template-columns:1fr 1fr}
+  #shop,.crewGrid{grid-template-columns:1fr}
+  .shopTab{padding:11px 2px;font-size:10px;min-width:56px}
+  .upg button{padding:9px 0}
 }
 </style>
 </head>
@@ -308,7 +317,7 @@ body{touch-action:manipulation}
       <kbd>F</kbd> fire oldest &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v12.1</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v12.2</span>
     <button id="quit">END SERVICE</button>
   </footer>
 </div>
@@ -330,7 +339,6 @@ body{touch-action:manipulation}
       <div><em>STARS —</em> money can't buy style. Earn <span style="color:var(--star)">⭐ service stars</span> with clean nights, S-grades, and flooring the critic — spend them in the wardrobe.</div>
     </div>
     <div id="shopBoxIntro"></div>
-    <div id="achBoxIntro"></div>
     <div id="modeBtns">
       <button id="start">CAREER ▸</button>
       <button id="startEndless">ENDLESS RUSH ∞</button>
@@ -1822,11 +1830,41 @@ function hireMember(role, station){
   return m;
 }
 
+/* v12.2 (Jaxon mobile note): the back office is TABS now — one concern per
+   screen instead of a five-system scroll. Last tab sticks for the session. */
+let SHOP_TAB='room';
 function renderShop(container){
   container.innerHTML='';
   const box=document.createElement('div');
   box.innerHTML=`<div id="shopHead"><span>THE BACK OFFICE</span><span style="color:var(--gold)">$${META.bank} · <span style="color:var(--star)">⭐${META.stars}</span></span></div>`;
 
+  const canBuyLine = UPGRADES.filter(u=>!META.up[u.id]&&upgAvailable(u)&&META.bank>=u.cost).length
+                   + REPEATS.filter(r=>!(r.cap&&(META.up[r.id]||0)>=r.cap)&&META.bank>=repCost(r)).length;
+  const canBuyGear = WARDROBE.filter(w=>{
+    if(META.ward[w.id]||META.stars<w.stars) return false;
+    if(w.req){ try{ return !!w.req.test(); }catch(e){ return false; } }
+    return true;
+  }).length;
+  const canHire = (cooks().length<3&&META.bank>=COOK_COSTS[cooks().length]?1:0)
+                + (!expo()&&META.bank>=900?1:0) + (!host()&&META.bank>=700?1:0);
+  const tabs=[
+    {id:'room', l:'🏠 ROOM', n:0},
+    {id:'crew', l:'👥 CREW', n:canHire},
+    {id:'gear', l:'🧥 GEAR', n:canBuyGear},
+    {id:'line', l:'⚙️ LINE', n:canBuyLine},
+    {id:'goals',l:'🎯 GOALS', n:0},
+  ];
+  const bar=document.createElement('div'); bar.id='shopTabs';
+  tabs.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='shopTab'+(SHOP_TAB===t.id?' sel':'');
+    b.innerHTML=t.l+(t.n?` <em>${t.n}</em>`:'');
+    b.addEventListener('click',()=>{ SHOP_TAB=t.id; renderShop(container); });
+    bar.appendChild(b);
+  });
+  box.appendChild(bar);
+
+  if(SHOP_TAB==='room'){
   /* ----- renovation ----- */
   const nt=nextTier();
   const rHead=document.createElement('div'); rHead.className='crewHead'; rHead.style.color='var(--hot)';
@@ -1889,7 +1927,9 @@ function renderShop(container){
       : `<b>⚔ MERIDIAN</b><small>All-time rounds ${R.won}–${R.lost}.${META.rivalUntil>=META.night?' Their write-up is thinning your book this week.':''} They keep a table open for your regulars. The next Cook-Off week is coming.</small>`;
     box.appendChild(rv);
   }
+  } /* end ROOM tab */
 
+  if(SHOP_TAB==='crew'){
   const bHead=document.createElement('div'); bHead.className='crewHead'; bHead.innerHTML=`<span>YOUR BRIGADE — ${META.crew.length?META.crew.length+' ON STAFF':'NOBODY YET. IT\'S JUST YOU.'}</span>`;
   box.appendChild(bHead);
   const crewGrid=document.createElement('div'); crewGrid.className='crewGrid';
@@ -1923,14 +1963,18 @@ function renderShop(container){
     d.appendChild(b); crewGrid.appendChild(d);
   });
   box.appendChild(crewGrid);
+  } /* end CREW tab */
 
+  if(SHOP_TAB==='gear'){
   const wHead=document.createElement('div'); wHead.className='wardHead';
   wHead.innerHTML=`<span>THE WARDROBE — EARNED, NEVER BOUGHT</span><span>⭐${META.stars}</span>`;
   box.appendChild(wHead);
   const wGrid=document.createElement('div'); wGrid.className='wardGrid';
   WARDROBE.forEach(w=>wGrid.appendChild(wardCard(w,()=>renderShop(container))));
   box.appendChild(wGrid);
+  } /* end GEAR tab */
 
+  if(SHOP_TAB==='line'){
   const uHead=document.createElement('div'); uHead.className='crewHead'; uHead.style.color='var(--gold)'; uHead.innerHTML='<span>THE LINE</span>';
   box.appendChild(uHead);
   const grid=document.createElement('div'); grid.id='shop';
@@ -1966,7 +2010,12 @@ function renderShop(container){
     });
     d.appendChild(b); grid.appendChild(d);
   });
-  box.appendChild(grid); container.appendChild(box);
+  box.appendChild(grid);
+  } /* end LINE tab */
+
+  if(SHOP_TAB==='goals') renderAchs(box);
+
+  container.appendChild(box);
 }
 
 function wardCard(w,rerender){
@@ -2345,7 +2394,6 @@ function finish(){
       : grade==='C'?'Rough push. Too many refires, too much on the rail.'
       : 'The rail buried you. Fire earlier, pull tighter, plate faster.'}</p>
     <div id="shopBox"></div>
-    <div id="achBox3"></div>
     ${nightNews(META.night).length?`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW ON NIGHT ${META.night}</b><br>
       <span>${nightNews(META.night).join('<br>')}</span></div>`:''}
     <div class="modLine"><b>NIGHT ${META.night}${weekdayFor(META.night)?' · '+weekdayFor(META.night).d+' — '+weekdayFor(META.night).n:''} — ${Math.round((nightMult()-1)*100)}% HARDER</b><br>
@@ -2356,7 +2404,6 @@ function finish(){
     </div>
     <div id="best">BEST TIPS · $${best}</div>`;
   renderShop(card.querySelector('#shopBox'));
-  renderAchs(card.querySelector('#achBox3'));
   overlay.classList.remove('hide');
   const goDark=isDarkAfter(closedNight);
   card.querySelector('#start').addEventListener('click',()=>goDark?renderDark():start(false));
@@ -2434,9 +2481,7 @@ function initTitle(){
   if(news.length) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW TONIGHT</b><br><span>${news.join('<br>')}</span></div>`;
   if(mod) ih+=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   im.innerHTML=ih;
-  const box=card.querySelector('#shopBoxIntro');
-  if(META.bank>0 || Object.keys(META.up).length || META.crew.length || META.stars>0) renderShop(box);
-  renderAchs(card.querySelector('#achBoxIntro'));
+  renderShop(card.querySelector('#shopBoxIntro'));
   card.querySelector('#start').addEventListener('click',()=>start(false));
   card.querySelector('#startEndless').addEventListener('click',()=>start(true));
   card.querySelector('#lockerBtn').addEventListener('click',renderLocker);
