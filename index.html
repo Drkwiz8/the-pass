@@ -631,7 +631,7 @@ body{touch-action:manipulation}
       <b style="color:var(--hot)"><kbd>F</kbd> fire oldest</b> &nbsp;·&nbsp; <kbd>space</kbd> plate &nbsp;·&nbsp; <kbd>P</kbd> pause
     </div>
     <div id="crewDock"></div>
-    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22.7</span>
+    <span style="font-size:9px;color:var(--dim);letter-spacing:1px">v22.8</span>
     <button id="fireOldestBtn" title="Fire the next dish on the oldest ticket (F)">🔥 FIRE OLDEST <kbd>F</kbd></button>
     <button id="quit">END SERVICE</button>
   </footer>
@@ -2200,6 +2200,23 @@ function tutBlock(n){
 /* ============================== TICKETS ============================== */
 function difficulty(){ return Math.min(1, G.t/195); }
 
+/* v22.8 (Jaxon, twice: "i cant beat night 1"). v14 made 6 walkouts end a
+   night, and I applied that flat across the whole career — including the
+   nights where a player is still learning which key pulls a pan. Before v14
+   there was no fail state at all, so a messy first night still finished with
+   a bad grade, which is why night 1 played fine for 19 versions.
+
+   The early nights are the tutorial. They cannot be failable, or the game
+   ends before anyone learns the verbs it is built on. Failure still arrives —
+   it just waits until the player knows what they are doing. */
+function failLimit(){
+  const n=META.night;
+  if(n<=3)  return Infinity;   // learning the loop: fire, pull, plate
+  if(n<=6)  return 12;         // learning the verbs: flip, season, combo
+  if(n<=10) return 9;
+  return 6;                    // the real stakes
+}
+
 function spawnTicket(opts={}){
   const p=difficulty(), nm=G.endless?endlessMult():nightMult();
   let count=1;
@@ -2846,7 +2863,7 @@ function step(dt){
 
   if(G.endless){
     if(G.walkouts>=3){ finishEndless(); return; }
-  } else if(G.walkouts>=6){
+  } else if(G.walkouts>=failLimit()){
     failNight(); return;                    // v14: the room empties — the night is LOST
   } else if(!G.closing){
     G.clock-=dt;
@@ -2994,7 +3011,7 @@ function render(){
     $('#clock b').textContent=G.closing?'CLOSE':`${m}:${String(s).padStart(2,'0')}`;
     $('#clock').classList.toggle('low',!G.closing&&G.clock<30);
     $('#night b').textContent=META.night;
-    $('#walk b').textContent=G.walkouts;
+    $('#walk b').textContent = failLimit()===Infinity ? G.walkouts : G.walkouts+'/'+failLimit();
   }
   $('#tips b').textContent='$'+G.tips;
   $('#bank b').textContent='$'+META.bank;
@@ -3841,11 +3858,11 @@ function failNight(){
   card.innerHTML=`<h1><small>NIGHT ${META.night} — SERVICE COLLAPSED</small>DOORS CLOSED EARLY</h1>
     <div id="grade" style="color:var(--bad)">✕</div>
     <div id="scores">
-      <div><b style="color:var(--bad)">6</b><span>WALKOUTS</span></div>
+      <div><b style="color:var(--bad)">${G.walkouts}</b><span>WALKOUTS</span></div>
       <div><b style="color:var(--bad)">$${lost}</b><span>TIPS — GONE</span></div>
       <div><b>${G.covers}</b><span>COVERS BEFORE IT BROKE</span></div>
     </div>
-    <p>The sixth table walked and the room read it on every face on the way out. Comps, apologies, an empty dining room by nine. Tonight banks NOTHING and the calendar doesn't move — night ${META.night} isn't over until you close it standing up.</p>
+    <p>That many tables walked, and the room read it on every face on the way out. Comps, apologies, an empty dining room by nine. Tonight banks NOTHING and the calendar doesn't move — night ${META.night} isn't over until you close it standing up.</p>
     <div class="modLine" style="border-left-color:var(--bad)"><b style="color:var(--bad)">RUN IT BACK</b><br>
       <span>Fire earlier. Plate the oldest ticket first. If the rail stacks past six, stop firing new dishes and CLEAR it — walkouts kill nights now, cold plates just sting.</span></div>
     ${backLine}
@@ -4204,6 +4221,9 @@ function initTitle(){
   if(wd) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">${wd.d} — ${wd.n}</b><br><span>${wd.desc}</span></div>`;
   if(news.length) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">NEW TONIGHT</b><br><span>${news.join('<br>')}</span></div>`;
   ih+=tutBlock(META.night);
+  /* v22.8: the first nights cannot be lost — say so, or a rough one reads as
+     failure and a new player quits before the game has taught them anything. */
+  if(META.night<=3) ih+=`<div class="modLine" style="border-left-color:var(--good)"><b style="color:var(--good)">YOU CANNOT LOSE TONIGHT</b><br><span>The first three services are yours to learn on — walkouts cost you tips and your grade, but the doors stay open. Get the rhythm: fire, pull in the green, plate it hot.</span></div>`;
   if(META.mercy) ih+=`<div class="modLine" style="border-left-color:var(--cold)"><b style="color:var(--cold)">WORD GOT AROUND</b><br><span>A lighter book tonight: tables ${8*META.mercy}% more patient, tickets ${8*META.mercy}% slower${META.mercy>=4?', and nothing breaks — the tech finally came by':META.mercy>=2?', and one less thing breaks':''}. Close the night to reset it.</span></div>`;
   if(mod) ih+=`<div class="modLine"><b>TONIGHT: ${mod.n}</b><br><span>${mod.d}</span></div>`;
   im.innerHTML=ih;
